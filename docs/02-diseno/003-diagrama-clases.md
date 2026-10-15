@@ -1,5 +1,9 @@
-# 003 - Diagrama de Clases
+---
 
+### Documento 2: 003-diagrama-clases.md
+
+```markdown
+# 003 - Diagrama de Clases
 
 ## Objetivo
 
@@ -24,8 +28,31 @@ classDiagram
     class Paciente {
         +UUID id
         +date fechaNacimiento
+        +Sexo sexo
+        +string direccion
+        +string ocupacion
+        +boolean poblacionMigrante
+        +string nombreResponsable
+    }
+
+    class AntecedentesGenerales {
+        +UUID id
+        +string medicos
+        +string quirurgicos
+        +string familiares
+        +string habitos
         +string alergias
-        +string antecedentes
+    }
+
+    class AntecedentesGinecoObstetricos {
+        +UUID id
+        +date fur
+        +int gestas
+        +int partos
+        +int cesareas
+        +int abortos
+        +int hijosVivos
+        +string planificacion
     }
 
     class Medico {
@@ -62,9 +89,23 @@ classDiagram
 
     class Consulta {
         +UUID id
+        +TipoFicha tipoFicha
+        +string motivoConsulta
+        +string historiaActual
+        +string evaluacionClinicaJSON
         +string diagnostico
-        +string notasClinicas
+        +string observaciones
         +datetime fechaConsulta
+    }
+
+    class SignosVitales {
+        +UUID id
+        +decimal pesoLb
+        +decimal tallaCm
+        +decimal temperatura
+        +string presionArterial
+        +int frecCardiaca
+        +int frecRespiratoria
     }
 
     class Receta {
@@ -92,6 +133,13 @@ classDiagram
         ADMINISTRADOR
     }
 
+    class TipoFicha {
+        <<enumeration>>
+        ADULTO
+        PRENATAL
+        NEONATO
+    }
+
     class EstadoCita {
         <<enumeration>>
         PENDIENTE
@@ -101,34 +149,28 @@ classDiagram
         REPROGRAMADA
         COMPLETADA
     }
+    
+    class Sexo {
+        <<enumeration>>
+        M
+        F
+    }
 
     Usuario "1" --> "0..1" Paciente : tiene perfil
     Usuario "1" --> "0..1" Medico : tiene perfil
     Usuario --> Rol : usa
+    Paciente "1" --> "0..1" AntecedentesGenerales : posee
+    Paciente "1" --> "0..1" AntecedentesGinecoObstetricos : posee
+    Paciente --> Sexo : usa
     Especialidad "1" --> "0..*" Medico : clasifica
     Medico "1" --> "0..*" Disponibilidad : publica
     Paciente "1" --> "0..*" Cita : solicita
     Medico "1" --> "0..*" Cita : atiende
     Disponibilidad "1" --> "0..1" Cita : se reserva en
     Cita "1" --> "0..1" Consulta : genera
+    Consulta "1" --> "0..1" SignosVitales : registra
     Consulta "1" --> "0..*" Receta : incluye
     Cita "0..1" --> "0..*" Cita : cita origen
     Usuario "1" --> "0..*" Auditoria : realiza
     Cita --> EstadoCita : usa
-```
-
-## Reglas representadas
-
-- Un Usuario tiene un solo rol y solo un perfil compatible con ese rol.
-- Un Medico pertenece a una Especialidad y publica bloques de Disponibilidad de 30 minutos.
-- Una Cita relaciona un Paciente, un Medico y un bloque de Disponibilidad.
-- Una Cita puede generar como maximo una Consulta; una Consulta puede tener cero o varias Recetas.
-- Una Cita reprogramada conserva la referencia a su Cita de origen para no perder historial.
-- Auditoria registra la accion realizada por un Usuario sobre una entidad del dominio.
-- Las operaciones de `Cita` solo permiten transiciones validas segun su estado y fecha/hora.
-
-## Restricciones de acceso
-
-- `notasClinicas` solo puede ser consultado por el Medico asociado a la Cita.
-- El Paciente solo consulta sus propias Citas, diagnosticos y Recetas.
-- El Administrador no puede acceder a datos clinicos ni modificar Consultas o Recetas.
+    Consulta --> TipoFicha : usa
