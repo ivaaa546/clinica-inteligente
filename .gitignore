@@ -2,3 +2,5 @@
 .env
 .env.local
 .env.*.local
+backend/node_modules/
+backend/dist/
