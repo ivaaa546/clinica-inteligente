@@ -1,1 +1,1 @@
-console.log("Seed runner is ready for Prisma configuration in T-002.");
+console.log("El ejecutor de seed esta listo para la configuracion de Prisma en T-002.");
