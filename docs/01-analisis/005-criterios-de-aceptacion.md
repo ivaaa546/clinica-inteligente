@@ -19,6 +19,11 @@
 - [ ] **CA-017:** La auditoria de eventos sensibles se registra internamente y no esta disponible como vista para el Administrador.
 - [ ] **CA-018:** Al desactivar una cuenta, sus citas, consultas y recetas permanecen disponibles en el historial clinico autorizado.
 - [ ] **CA-019:** El sistema valida que se ingresen los signos vitales obligatorios (peso, presión, temperatura, etc.) antes de permitir cerrar una consulta, dependiendo del tipo de ficha seleccionada.
+- [ ] **CA-020:** Una reserva concurrente del mismo bloque solo crea una cita activa; las solicitudes restantes reciben un conflicto de disponibilidad.
+- [ ] **CA-021:** Las fechas de disponibilidad, citas y consultas se conservan con zona horaria y se presentan en la zona horaria configurada para la clinica.
+- [ ] **CA-022:** El Paciente puede completar su preconsulta antes de la atencion; una vez registrada la Consulta, la preconsulta no puede modificarse y solo es visible en el expediente autorizado.
+- [ ] **CA-023:** Solo un Medico relacionado con el Paciente puede actualizar antecedentes, y la accion queda auditada sin exponer el contenido al Administrador.
+- [ ] **CA-024:** Al registrar o cambiar una contrasena, el sistema persiste un hash Argon2id y no expone la contrasena en respuestas, auditorias ni registros.
 
 ## Definition of Done
 

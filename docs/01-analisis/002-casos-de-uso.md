@@ -56,6 +56,13 @@
 - **Flujo principal:** La persona ingresa los datos requeridos y el sistema crea una cuenta con rol Paciente.
 - **Alternativos:** El sistema rechaza intentos de registro publico como Medico o Administrador, y datos incompletos o invalidos.
 
+## CU-009 - Completar preconsulta
+
+- **Actor:** Paciente
+- **Prioridad:** Must
+- **Flujo principal:** Despues de solicitar una cita propia y antes de la atencion medica, el Paciente registra o actualiza sus datos basicos, motivo de consulta y antecedentes iniciales. El Medico asignado consulta esta informacion al registrar la Consulta.
+- **Alternativos:** El sistema impide crear o editar una preconsulta para una cita ajena, completada, cancelada o posterior a la atencion medica.
+
 ## Casos limite
 
 - Dos Pacientes intentan solicitar el mismo horario al mismo tiempo.
@@ -65,3 +72,4 @@
 - Un Paciente intenta ver registros clinicos detallados de la consulta.
 - Un Administrador intenta modificar datos clinicos o eliminar una especialidad en uso.
 - Un usuario autenticado intenta acceder a una funcion de otro rol.
+- Un Paciente intenta modificar una preconsulta despues de que el Medico haya registrado la Consulta.

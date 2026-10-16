@@ -22,3 +22,10 @@
 - **RN-020 - Auditoria interna:** Los eventos sensibles se registran internamente y no se exponen al Administrador en el MVP.
 - **RN-021 - Retencion clinica:** Los datos clinicos no se eliminan. Al desactivar una cuenta se conservan sus citas, consultas y recetas para preservar el historial.
 - **RN-022 - Asignación de Ficha Clínica:** El sistema debe permitir al Médico elegir o sugerir la ficha clínica adecuada basándose en la edad y sexo del paciente (ej. Neonato si tiene < 28 días; Ficha Prenatal solo para mujeres).
+- **RN-023 - Zona horaria:** Toda fecha y hora se almacena con zona horaria en UTC y se presenta en la zona horaria configurada para la clinica.
+- **RN-024 - Transiciones de cita:** `PENDIENTE` puede pasar a `ACEPTADA`, `RECHAZADA`, `CANCELADA` o `REPROGRAMADA`; `ACEPTADA` puede pasar a `CANCELADA`, `REPROGRAMADA` o `COMPLETADA`. Los demas estados son terminales.
+- **RN-025 - Reserva atomica:** La creacion o reprogramacion de una cita se realiza en una transaccion y no puede existir mas de una cita activa (`PENDIENTE` o `ACEPTADA`) para un mismo bloque de disponibilidad.
+- **RN-026 - Signos vitales minimos:** Para cerrar una Consulta se requieren peso, talla, temperatura, presion arterial, frecuencia cardiaca y frecuencia respiratoria. Los requisitos adicionales por ficha se definiran antes de incorporarse al MVP.
+- **RN-027 - Actualizacion de antecedentes:** Solo el Medico relacionado con una cita del Paciente puede actualizar antecedentes. Toda actualizacion genera un evento de auditoria atribuible; el Administrador no puede leer ni editar esos datos.
+- **RN-028 - Sexo registrado y ficha clinica:** El sexo registrado admite `M`, `F` o `NO_ESPECIFICADO` y no decide por si solo la ficha clinica. El Medico selecciona la ficha aplicable segun la informacion clinica disponible.
+- **RN-029 - Preconsulta:** El Paciente completa o actualiza la preconsulta de su Cita antes de que exista una Consulta. Incluye datos basicos, motivo y antecedentes iniciales; despues queda solo para lectura autorizada.

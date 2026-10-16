@@ -57,6 +57,12 @@ clinica-inteligente/
         auth/
         appointments/
         consultations/
+        preconsultations/
+          preconsultations.routes.ts
+          preconsultations.controller.ts
+          preconsultations.service.ts
+          preconsultations.schema.ts
+          preconsultations.repository.ts
         prescriptions/
         doctors/
         admin/
@@ -160,4 +166,7 @@ Cada modulo es autocontenido y se comunica con otros unicamente a traves de sus 
 - El frontend no decide permisos ni reglas clinicas; el backend los valida en cada solicitud.
 - La API no devuelve notas clinicas a Pacientes ni datos clinicos a Administradores.
 - Las operaciones de reserva, reprogramacion y registro de Consulta usan transacciones.
+- PostgreSQL respalda la exclusividad de una cita activa por bloque mediante un indice unico parcial; la validacion de la API no es el unico control contra reservas dobles.
+- Los instantes se persisten como `timestamptz` en UTC; la conversion a hora local se hace en el borde de presentacion.
 - Las credenciales se almacenan como hashes y los secretos se obtienen desde variables de entorno.
+- Las contrasenas se generan y verifican con Argon2id a traves de una biblioteca mantenida. Los parametros se calibran para el entorno y el hash incluye sus propios parametros y sal.

@@ -14,6 +14,7 @@
 - **RF-033:** Conservar internamente la auditoria de eventos sensibles sin mostrarla al Administrador en el MVP.
 - **RF-034:** Desactivar cuentas sin eliminar sus citas, consultas, recetas ni otros datos clinicos asociados.
 - **RF-035:** Mantener un registro histórico y permitir la actualización de los antecedentes personales y gineco-obstétricos de forma independiente a la consulta diaria.
+- **RF-036:** Permitir que el Paciente complete una preconsulta de sus propias citas antes de la atencion medica, con datos basicos, motivo y antecedentes iniciales, y hacerla visible solo al Medico asignado.
 
 ## Requisitos no funcionales y seguridad
 
@@ -22,6 +23,7 @@
 - **RNF-003:** Proteger confidencialidad e integridad de diagnosticos, registros clinicos estructurados y recetas.
 - **RNF-004:** Prevenir Broken Access Control (OWASP A01) en expedientes, citas y administracion.
 - **RNF-005:** Proteger credenciales y datos sensibles en almacenamiento y transmision para evitar Cryptographic Failures (OWASP A02).
+- **RNF-005.1:** Generar y verificar hashes de contrasena con Argon2id mediante una biblioteca mantenida; no registrar ni exponer contrasenas en texto plano.
 - **RNF-006:** Validar entradas y prevenir Injection (OWASP A03).
 - **RNF-007:** Aplicar las reglas de seguridad desde el diseno para evitar Insecure Design (OWASP A04).
 - **RNF-008:** Evitar configuraciones inseguras que expongan datos o funciones internas (OWASP A05).
@@ -29,3 +31,5 @@
 - **RNF-010:** Registrar eventos sensibles para auditoria y deteccion de uso indebido (OWASP A09).
 - **RNF-011:** Mostrar la minima informacion necesaria para cada actor.
 - **RNF-012 a RNF-015:** Mantener disponibilidad, rendimiento interactivo, integridad del historial y flujos comprensibles.
+- **RNF-016:** Almacenar instantes de agenda y atencion con zona horaria, en UTC, y presentarlos en la zona horaria configurada para la clinica.
+- **RNF-017:** Ejecutar en transaccion la reserva, reprogramacion y cierre de Consulta, y respaldar las invariantes de agenda con restricciones de base de datos.

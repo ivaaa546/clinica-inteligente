@@ -19,6 +19,11 @@ sequenceDiagram
         DB-->>API: Cita creada
         API-->>UI: 201 Cita pendiente
         UI-->>Paciente: Mostrar estado pendiente
+        Paciente->>UI: Completar preconsulta
+        UI->>API: PUT /appointments/:id/preconsultation
+        API->>DB: Validar propiedad de la cita y que no exista Consulta
+        DB-->>API: Preconsulta guardada
+        API-->>UI: 200 Preconsulta actualizada
         Medico->>UI: Revisar citas pendientes
         UI->>API: PATCH /appointments/:id/status
         API->>DB: Validar Medico asignado y actualizar estado
@@ -42,9 +47,9 @@ sequenceDiagram
 
     Medico->>UI: Registrar consulta
     UI->>API: POST /appointments/:id/consultation
-    API->>DB: Validar sesion, Medico asignado y Cita ACEPTADA
+        API->>DB: Validar sesion, Medico asignado y Cita ACEPTADA
     alt Autorizado
-        API->>DB: Crear Consulta y Recetas opcionales
+        API->>DB: Validar signos vitales obligatorios, crear Consulta y Recetas opcionales
         API->>DB: Marcar Cita COMPLETADA y registrar Auditoria
         DB-->>API: Consulta guardada
         API-->>UI: 201 Consulta creada
