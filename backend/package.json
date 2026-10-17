@@ -12,8 +12,11 @@
     "dev": "npm run build && node --env-file=.env --watch dist/index.js",
     "start": "node --env-file=.env dist/index.js",
     "migrate": "node scripts/migrate.mjs",
-    "seed": "node scripts/seed.mjs",
+    "seed": "prisma db seed",
     "test": "vitest run"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "devDependencies": {
     "@types/connect-pg-simple": "^7.0.3",
@@ -24,6 +27,7 @@
     "@types/pg": "^8.23.1",
     "@types/supertest": "^7.2.1",
     "supertest": "^7.3.1",
+    "tsx": "^4.23.15",
     "typescript": "^5.0.0",
     "vitest": "^5.0.5"
   },
