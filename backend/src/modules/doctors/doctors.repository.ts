@@ -13,6 +13,13 @@ export class DoctorsRepository {
     return this.db.medico.findUnique({ where: { usuarioId } });
   }
 
+  findPublicById(id: string) {
+    return this.db.medico.findFirst({
+      where: { id, usuario: { activo: true }, especialidad: { activa: true } },
+      include: { usuario: true, especialidad: true },
+    });
+  }
+
   searchActive(especialidadId?: string) {
     return this.db.medico.findMany({
       where: {

@@ -16,4 +16,21 @@ export class PrescriptionsRepository {
   create(data: Prisma.RecetaUncheckedCreateInput) {
     return this.db.receta.create({ data });
   }
+
+  listForPatient(pacienteId: string) {
+    return this.db.receta.findMany({
+      where: { consulta: { cita: { pacienteId } } },
+      select: {
+        id: true,
+        medicamento: true,
+        dosis: true,
+        via: true,
+        frecuencia: true,
+        duracion: true,
+        indicaciones: true,
+        consulta: { select: { diagnostico: true } },
+      },
+      orderBy: { creadoEn: "desc" },
+    });
+  }
 }

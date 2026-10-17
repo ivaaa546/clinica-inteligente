@@ -17,6 +17,10 @@ export class PatientsRepository {
     return this.db.paciente.update({ where: { id }, data });
   }
 
+  create(data: Prisma.PacienteUncheckedCreateInput) {
+    return this.db.paciente.create({ data });
+  }
+
   findRecord(id: string) {
     return this.db.paciente.findUnique({
       where: { id },

@@ -34,6 +34,17 @@ export class AppointmentsRepository {
     });
   }
 
+  listAll(estado?: EstadoCita) {
+    return this.db.cita.findMany({
+      where: estado ? { estado } : undefined,
+      orderBy: { inicio: "asc" },
+    });
+  }
+
+  existsDoctorPatientRelationship(medicoId: string, pacienteId: string) {
+    return this.db.cita.findFirst({ where: { medicoId, pacienteId }, select: { id: true } });
+  }
+
   create(data: Prisma.CitaUncheckedCreateInput) {
     return this.db.cita.create({ data });
   }

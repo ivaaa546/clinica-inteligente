@@ -20,6 +20,12 @@ export class AvailabilityRepository {
     });
   }
 
+  findOverlap(medicoId: string, inicio: Date, fin: Date) {
+    return this.db.disponibilidad.findFirst({
+      where: { medicoId, activa: true, inicio: { lt: fin }, fin: { gt: inicio } },
+    });
+  }
+
   create(data: Prisma.DisponibilidadUncheckedCreateInput) {
     return this.db.disponibilidad.create({ data });
   }
