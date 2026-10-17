@@ -13,5 +13,10 @@ export const errorMiddleware: ErrorRequestHandler = (
   _next,
 ) => {
   console.error(error);
-  response.status(500).json({ error: "Error interno del servidor", code: "INTERNAL_ERROR" });
+  const isJsonSyntaxError = error instanceof SyntaxError && "body" in error;
+  const status = isJsonSyntaxError ? 400 : 500;
+  const code = isJsonSyntaxError ? "INVALID_JSON" : "INTERNAL_ERROR";
+  const message = isJsonSyntaxError ? "JSON invalido" : "Error interno del servidor";
+
+  response.status(status).json({ error: message, code });
 };

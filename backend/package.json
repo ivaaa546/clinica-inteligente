@@ -7,19 +7,21 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "prisma generate && tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "dev": "npm run build && node --env-file=.env --watch dist/index.js",
     "start": "node --env-file=.env dist/index.js",
     "migrate": "node scripts/migrate.mjs",
     "seed": "node scripts/seed.mjs",
-    "test": "node --test"
+    "test": "vitest run"
   },
   "devDependencies": {
     "@types/connect-pg-simple": "^7.0.3",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/express-session": "^1.19.0",
     "@types/node": "^22.0.0",
+    "@types/pg": "^8.23.1",
     "@types/supertest": "^7.2.1",
     "supertest": "^7.3.1",
     "typescript": "^5.0.0",
@@ -29,9 +31,11 @@
     "@prisma/client": "^5.22.0",
     "argon2": "^0.45.1",
     "connect-pg-simple": "^10.0.0",
+    "cors": "^2.8.6",
     "express": "^4.22.3",
     "express-session": "^1.19.0",
     "helmet": "^8.3.0",
+    "pg": "^8.23.1",
     "prisma": "^5.22.0",
     "zod": "^3.25.76"
   }

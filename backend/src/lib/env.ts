@@ -9,6 +9,7 @@ const envSchema = z.object({
     .string({ required_error: "SESSION_SECRET es obligatoria" })
     .min(32, "SESSION_SECRET debe tener al menos 32 caracteres"),
   PORT: z.coerce.number().int().positive().default(3000),
+  CORS_ORIGINS: z.string().default("http://localhost:5173"),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   ARGON2_TIME_COST: z.coerce.number().int().positive().default(3),
   ARGON2_MEMORY_COST: z.coerce.number().int().positive().default(65536),
@@ -38,6 +39,9 @@ export const env = {
   databaseUrl: parsedEnv.data.DATABASE_URL,
   sessionSecret: parsedEnv.data.SESSION_SECRET,
   port: parsedEnv.data.PORT,
+  corsOrigins: parsedEnv.data.CORS_ORIGINS.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
   nodeEnv: parsedEnv.data.NODE_ENV,
   argon2: {
     timeCost: parsedEnv.data.ARGON2_TIME_COST,
