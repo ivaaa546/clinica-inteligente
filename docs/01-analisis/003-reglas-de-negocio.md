@@ -1,6 +1,5 @@
 # 001.3 - Reglas de Negocio
 
-
 - **RN-001 - Roles obligatorios:** Todo usuario tiene exactamente un rol: Paciente, Medico o Administrador.
 - **RN-002 - Registro de cuentas:** Solo los Pacientes se registran publicamente; el Administrador crea cuentas de Medicos.
 - **RN-003 - Especialidad del medico:** Todo Medico requiere una especialidad para aparecer en busquedas.
@@ -10,15 +9,23 @@
 - **RN-007 - Estados de cita:** Una cita puede estar pendiente, aceptada, rechazada, cancelada, reprogramada o completada.
 - **RN-008 - Aprobacion medica:** Solo el Medico asignado acepta o rechaza su cita.
 - **RN-009 - Cancelacion y reprogramacion:** Paciente, Medico y Administrador pueden cancelar o reprogramar una cita antes de su fecha/hora, respetando permisos y disponibilidad.
-- **RN-010 - Registro clinico restringido:** Solo el Medico de una cita aceptada registra su consulta, diagnostico, notas y recetas.
+- **RN-010 - Registro clinico restringido:** Solo el Medico de una cita aceptada registra su consulta, signos vitales, antecedentes, diagnostico y recetas.
 - **RN-011 - Acceso a expediente:** Un Medico solo ve expedientes de Pacientes asociados a sus propias citas.
-- **RN-012 - Visibilidad de notas:** Las notas clinicas son exclusivas del Medico. El Paciente puede ver sus diagnosticos y recetas, no las notas.
-- **RN-013 - Administrador sin edicion clinica:** El Administrador no crea, edita ni elimina diagnosticos, notas o recetas.
+- **RN-012 - Visibilidad de datos clinicos:** Los registros de signos vitales, antecedentes y examen físico son exclusivos del Medico. El Paciente puede ver sus diagnosticos y recetas.
+- **RN-013 - Administrador sin edicion clinica:** El Administrador no crea, edita ni elimina diagnosticos, registros clinicos estructurados o recetas.
 - **RN-014 - Historial clinico:** Toda consulta registrada queda asociada al expediente del Paciente.
 - **RN-015 - Receta asociada a consulta:** Toda receta pertenece a una consulta registrada.
 - **RN-016 - Metricas administrativas:** Se muestran total de pacientes, total de medicos, citas por estado y consultas completadas.
 - **RN-017 - Trazabilidad:** Las acciones sensibles sobre citas, usuarios y datos clinicos deben atribuirse al usuario que las realizo.
-- **RN-018 - Datos obligatorios:** Paciente, Medico, Cita, Consulta y Receta deben contener los datos obligatorios definidos en DR-006 y DR-007 antes de registrarse.
+- **RN-018 - Datos obligatorios:** Paciente, Medico, Cita, Consulta y Receta deben contener los datos obligatorios definidos antes de registrarse (incluyendo tipo de ficha y signos vitales en la Consulta).
 - **RN-019 - Receta simple:** Las recetas del MVP no tienen firma digital ni validez legal y deben incluir medicamento, dosis, via, frecuencia, duracion e indicaciones.
 - **RN-020 - Auditoria interna:** Los eventos sensibles se registran internamente y no se exponen al Administrador en el MVP.
 - **RN-021 - Retencion clinica:** Los datos clinicos no se eliminan. Al desactivar una cuenta se conservan sus citas, consultas y recetas para preservar el historial.
+- **RN-022 - Asignación de Ficha Clínica:** El sistema debe permitir al Médico elegir o sugerir la ficha clínica adecuada basándose en la edad y sexo del paciente (ej. Neonato si tiene < 28 días; Ficha Prenatal solo para mujeres).
+- **RN-023 - Zona horaria:** Toda fecha y hora se almacena con zona horaria en UTC y se presenta en la zona horaria configurada para la clinica.
+- **RN-024 - Transiciones de cita:** `PENDIENTE` puede pasar a `ACEPTADA`, `RECHAZADA`, `CANCELADA` o `REPROGRAMADA`; `ACEPTADA` puede pasar a `CANCELADA`, `REPROGRAMADA` o `COMPLETADA`. Los demas estados son terminales.
+- **RN-025 - Reserva atomica:** La creacion o reprogramacion de una cita se realiza en una transaccion y no puede existir mas de una cita activa (`PENDIENTE` o `ACEPTADA`) para un mismo bloque de disponibilidad.
+- **RN-026 - Signos vitales minimos:** Para cerrar una Consulta se requieren peso, talla, temperatura, presion arterial, frecuencia cardiaca y frecuencia respiratoria. Los requisitos adicionales por ficha se definiran antes de incorporarse al MVP.
+- **RN-027 - Actualizacion de antecedentes:** Solo el Medico relacionado con una cita del Paciente puede actualizar antecedentes. Toda actualizacion genera un evento de auditoria atribuible; el Administrador no puede leer ni editar esos datos.
+- **RN-028 - Sexo registrado y ficha clinica:** El sexo registrado admite `M`, `F` o `NO_ESPECIFICADO` y no decide por si solo la ficha clinica. El Medico selecciona la ficha aplicable segun la informacion clinica disponible.
+- **RN-029 - Preconsulta:** El Paciente completa o actualiza la preconsulta de su Cita antes de que exista una Consulta. Incluye datos basicos, motivo y antecedentes iniciales; despues queda solo para lectura autorizada.

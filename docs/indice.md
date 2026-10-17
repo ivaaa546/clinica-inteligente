@@ -13,3 +13,4 @@ La especificacion se divide en los siguientes documentos para seguir el orden de
 8. [Diagrama de clases](02-diseno/003-diagrama-clases.md)
 9. [Diagrama de actividades](02-diseno/004-diagrama-actividades.md)
 10. [Diagramas de secuencia](02-diseno/005-diagramas-secuencia.md)
+11. [Plan tecnico](003-plan-tecnico.md)

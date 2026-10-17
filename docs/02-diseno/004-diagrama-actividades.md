@@ -15,7 +15,8 @@ flowchart TD
     G -- No --> H[Marcar cita RECHAZADA]
     G -- Si --> I[Marcar cita ACEPTADA]
     H --> J[Paciente consulta estado]
-    I --> K{Se cancela o reprograma antes de la cita?}
+    I --> J[Paciente completa preconsulta antes de la atencion]
+    J --> K{Se cancela o reprograma antes de la cita?}
     K -- Si --> L[Cancelar o marcar REPROGRAMADA]
     L --> M{Hay nuevo horario disponible?}
     M -- Si --> E
@@ -29,7 +30,7 @@ flowchart TD
 flowchart TD
     A[Medico abre una cita] --> B{La cita es ACEPTADA y pertenece al Medico?}
     B -- No --> C[Denegar registro de consulta]
-    B -- Si --> D[Registrar diagnostico y notas clinicas]
+    B -- Si --> D[Consultar preconsulta y registrar diagnostico y notas clinicas]
     D --> E{Requiere receta?}
     E -- Si --> F[Registrar una o mas recetas simples]
     E -- No --> G[Guardar consulta]
@@ -45,3 +46,4 @@ flowchart TD
 - Solo el Medico asignado puede gestionar una Cita o registrar su Consulta.
 - La cancelacion y reprogramacion solo ocurren antes de la fecha/hora de la Cita.
 - Una Consulta solo se registra para una Cita aceptada y puede no tener Recetas.
+- La preconsulta solo puede modificarse por el Paciente antes de registrar la Consulta.

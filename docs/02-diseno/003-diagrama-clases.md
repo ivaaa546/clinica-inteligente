@@ -87,6 +87,13 @@ classDiagram
         +completar()
     }
 
+    class Preconsulta {
+        +UUID id
+        +string motivoConsulta
+        +string antecedentesInicialesJSON
+        +actualizarPorPaciente()
+    }
+
     class Consulta {
         +UUID id
         +TipoFicha tipoFicha
@@ -154,6 +161,7 @@ classDiagram
         <<enumeration>>
         M
         F
+        NO_ESPECIFICADO
     }
 
     Usuario "1" --> "0..1" Paciente : tiene perfil
@@ -167,6 +175,7 @@ classDiagram
     Paciente "1" --> "0..*" Cita : solicita
     Medico "1" --> "0..*" Cita : atiende
     Disponibilidad "1" --> "0..1" Cita : se reserva en
+    Cita "1" --> "0..1" Preconsulta : recopila
     Cita "1" --> "0..1" Consulta : genera
     Consulta "1" --> "0..1" SignosVitales : registra
     Consulta "1" --> "0..*" Receta : incluye

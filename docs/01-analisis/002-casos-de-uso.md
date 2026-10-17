@@ -1,6 +1,5 @@
 # 001.2 - Casos de Uso
 
-
 ## CU-001 - Buscar medico por especialidad y consultar disponibilidad
 
 - **Actor:** Paciente
@@ -29,12 +28,12 @@
 - **Flujo principal:** El Medico consulta sus citas pendientes y las acepta o rechaza. Antes de la fecha/hora puede cancelarlas o reprogramarlas a horarios disponibles; el sistema actualiza el estado visible para el Paciente.
 - **Alternativos:** No se puede gestionar una cita ya finalizada ni reprogramarla a un horario ocupado.
 
-## CU-005 - Registrar consulta, diagnostico, notas y receta
+## CU-005 - Registrar consulta estructurada, diagnostico y receta
 
 - **Actor:** Medico
 - **Prioridad:** Must
-- **Flujo principal:** El Medico accede a una cita aceptada propia, registra la consulta, diagnostico y notas clinicas, y agrega una o mas recetas simples si corresponde. Cada receta incluye medicamento, dosis, via, frecuencia, duracion e indicaciones. El sistema incorpora la consulta al expediente del Paciente.
-- **Alternativos:** Se deniega el acceso si la cita no esta aceptada o no pertenece al Medico. La consulta puede cerrarse sin receta.
+- **Flujo principal:** El Médico accede a una cita aceptada propia, selecciona el tipo de ficha clínica correspondiente (Adulto, Prenatal o Neonato), registra signos vitales, actualiza antecedentes, documenta el motivo de consulta, enfermedad actual y evaluación de problemas. Finalmente, establece el diagnóstico y agrega una o más recetas simples si corresponde. El sistema incorpora la consulta estructurada al expediente del Paciente.
+- **Alternativos:** Se deniega el acceso si la cita no esta aceptada o no pertenece al Medico. La consulta puede cerrarse sin receta. El sistema valida que se llenen los campos obligatorios según el tipo de ficha.
 
 ## CU-006 - Gestionar usuarios, especialidades y citas
 
@@ -57,12 +56,20 @@
 - **Flujo principal:** La persona ingresa los datos requeridos y el sistema crea una cuenta con rol Paciente.
 - **Alternativos:** El sistema rechaza intentos de registro publico como Medico o Administrador, y datos incompletos o invalidos.
 
+## CU-009 - Completar preconsulta
+
+- **Actor:** Paciente
+- **Prioridad:** Must
+- **Flujo principal:** Despues de solicitar una cita propia y antes de la atencion medica, el Paciente registra o actualiza sus datos basicos, motivo de consulta y antecedentes iniciales. El Medico asignado consulta esta informacion al registrar la Consulta.
+- **Alternativos:** El sistema impide crear o editar una preconsulta para una cita ajena, completada, cancelada o posterior a la atencion medica.
+
 ## Casos limite
 
 - Dos Pacientes intentan solicitar el mismo horario al mismo tiempo.
 - Un actor intenta cancelar o reprogramar una cita en o despues de su fecha/hora.
 - Un Medico intenta registrar disponibilidad solapada o alterar un horario con cita activa.
 - Un Medico intenta registrar una consulta para una cita no aceptada o acceder a un expediente sin relacion.
-- Un Paciente intenta ver notas clinicas.
+- Un Paciente intenta ver registros clinicos detallados de la consulta.
 - Un Administrador intenta modificar datos clinicos o eliminar una especialidad en uso.
 - Un usuario autenticado intenta acceder a una funcion de otro rol.
+- Un Paciente intenta modificar una preconsulta despues de que el Medico haya registrado la Consulta.

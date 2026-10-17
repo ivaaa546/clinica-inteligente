@@ -18,7 +18,7 @@ Representa una cuenta autenticable del sistema.
 | nombre | Obligatorio. |
 | apellidos | Obligatorio. |
 | correo | Obligatorio y unico. |
-| contrasena_hash | Obligatorio. Nunca se almacena la contrasena en texto plano. |
+| contrasena_hash | Obligatorio. Contiene exclusivamente un hash Argon2id; nunca se almacena la contrasena en texto plano. |
 | telefono | Obligatorio. |
 | rol | Obligatorio: `PACIENTE`, `MEDICO` o `ADMINISTRADOR`. |
 | activo | Obligatorio; permite desactivar la cuenta sin borrar su historial. |
@@ -36,7 +36,7 @@ Contiene los datos demográficos y de contacto de un Usuario con rol `PACIENTE`.
 | id | Identificador unico. |
 | usuario_id | Obligatorio, unico y referencia a Usuario. |
 | fecha_nacimiento | Obligatorio. |
-| sexo | Obligatorio: `M` o `F`. |
+| sexo | Obligatorio: `M`, `F` o `NO_ESPECIFICADO`. Es un dato clinico-administrativo; no determina por si solo la ficha clinica. |
 | direccion | Opcional; lugar de residencia. |
 | ocupacion | Opcional; profesion u oficio. |
 | poblacion_migrante | Obligatorio; valor por defecto `false`. |
@@ -100,59 +100,76 @@ Contiene los datos profesionales de un Usuario con rol `MEDICO`.
 | usuario_id | Obligatorio, unico y referencia a Usuario. |
 | especialidad_id | Obligatorio y referencia a Especialidad activa. |
 | numero_profesional | Obligatorio y unico. |
-| creado_en | Obligatorio[cite: 8]. |
-| actualizado_en | Obligatorio[cite: 8]. |
+| creado_en | Obligatorio. |
+| actualizado_en | Obligatorio. |
 
 ### Disponibilidad
 
-Representa un bloque futuro que un Medico publica para recibir citas[cite: 8].
+Representa un bloque futuro que un Medico publica para recibir citas.
 
 | Atributo | Regla |
 |---|---|
-| id | Identificador unico[cite: 8]. |
-| medico_id | Obligatorio y referencia a Medico[cite: 8]. |
-| inicio | Obligatorio[cite: 8]. |
-| fin | Obligatorio; debe ser exactamente 30 minutos despues de `inicio`[cite: 8]. |
-| activa | Obligatorio[cite: 8]. |
-| creado_en | Obligatorio[cite: 8]. |
-| actualizado_en | Obligatorio[cite: 8]. |
+| id | Identificador unico. |
+| medico_id | Obligatorio y referencia a Medico. |
+| inicio | Obligatorio; instante con zona horaria almacenado en UTC. |
+| fin | Obligatorio; debe ser exactamente 30 minutos despues de `inicio`. |
+| activa | Obligatorio. |
+| creado_en | Obligatorio. |
+| actualizado_en | Obligatorio. |
 
 ### Cita
 
-Registra la solicitud y el ciclo de vida de una atencion entre un Paciente y un Medico[cite: 8].
+Registra la solicitud y el ciclo de vida de una atencion entre un Paciente y un Medico.
 
 | Atributo | Regla |
 |---|---|
-| id | Identificador unico[cite: 8]. |
-| paciente_id | Obligatorio y referencia a Paciente[cite: 8]. |
-| medico_id | Obligatorio y referencia a Medico[cite: 8]. |
-| disponibilidad_id | Obligatorio y referencia al bloque de Disponibilidad reservado[cite: 8]. |
-| inicio | Obligatorio; copia el inicio de la Disponibilidad al reservar para preservar el historial[cite: 8]. |
-| fin | Obligatorio; copia el fin de la Disponibilidad al reservar[cite: 8]. |
-| estado | Obligatorio: `PENDIENTE`, `ACEPTADA`, `RECHAZADA`, `CANCELADA`, `REPROGRAMADA` o `COMPLETADA`[cite: 8]. |
-| cita_origen_id | Opcional; referencia a la Cita reprogramada[cite: 8]. |
-| creado_en | Obligatorio[cite: 8]. |
-| actualizado_en | Obligatorio[cite: 8]. |
+| id | Identificador unico. |
+| paciente_id | Obligatorio y referencia a Paciente. |
+| medico_id | Obligatorio y referencia a Medico. |
+| disponibilidad_id | Obligatorio y referencia al bloque de Disponibilidad reservado. |
+| inicio | Obligatorio; copia el inicio de la Disponibilidad al reservar, con zona horaria en UTC. |
+| fin | Obligatorio; copia el fin de la Disponibilidad al reservar, con zona horaria en UTC. |
+| estado | Obligatorio: `PENDIENTE`, `ACEPTADA`, `RECHAZADA`, `CANCELADA`, `REPROGRAMADA` o `COMPLETADA`. |
+| cita_origen_id | Opcional; referencia a la Cita reprogramada. |
+| creado_en | Obligatorio. |
+| actualizado_en | Obligatorio. |
 
-Al reprogramar una Cita se conserva la original con estado `REPROGRAMADA` y se crea una nueva Cita que referencia a la anterior mediante `cita_origen_id`[cite: 8]. Esto preserva la trazabilidad del historial[cite: 8].
+Al reprogramar una Cita se conserva la original con estado `REPROGRAMADA` y se crea una nueva Cita `PENDIENTE` que referencia a la anterior mediante `cita_origen_id`. Esto preserva la trazabilidad del historial. La base de datos garantiza que haya como maximo una cita activa (`PENDIENTE` o `ACEPTADA`) por `disponibilidad_id`.
+
+Las transiciones validas son: `PENDIENTE` a `ACEPTADA`, `RECHAZADA`, `CANCELADA` o `REPROGRAMADA`; y `ACEPTADA` a `CANCELADA`, `REPROGRAMADA` o `COMPLETADA`. Los demas estados son terminales.
+
+### Preconsulta
+
+Representa la informacion previa que el Paciente completa para una Cita antes de la atencion medica.
+
+| Atributo | Regla |
+|---|---|
+| id | Identificador unico. |
+| cita_id | Obligatorio, unico y referencia a Cita. |
+| motivo_consulta | Obligatorio. |
+| antecedentes_iniciales | Opcional; formato JSONB con la informacion declarada por el Paciente. |
+| creado_en | Obligatorio. |
+| actualizado_en | Obligatorio. |
+
+El Paciente puede crear o actualizar la Preconsulta de su propia Cita hasta que exista una Consulta. El Medico asignado puede leerla; no puede editarla en nombre del Paciente.
 
 ### Consulta
 
-Representa el registro clinico generado al finalizar una Cita aceptada[cite: 8]. Adaptado para soportar múltiples formatos de fichas clínicas.
+Representa el registro clinico generado al finalizar una Cita aceptada. Adaptado para soportar multiples formatos de fichas clinicas.
 
 | Atributo | Regla |
 |---|---|
-| id | Identificador unico[cite: 8]. |
-| cita_id | Obligatorio, unico y referencia a Cita[cite: 8]. |
+| id | Identificador unico. |
+| cita_id | Obligatorio, unico y referencia a Cita. |
 | tipo_ficha | Obligatorio: `ADULTO`, `PRENATAL` o `NEONATO`. |
 | motivo_consulta | Obligatorio. |
 | historia_actual | Opcional; historia de la enfermedad actual. |
 | evaluacion_clinica | Opcional; formato JSONB para almacenar checks de problemas a investigar y signos de peligro. |
-| diagnostico | Obligatorio[cite: 8]. |
+| diagnostico | Obligatorio. |
 | observaciones | Opcional. Solo son visibles para el Medico asociado a la Cita. |
-| fecha_consulta | Obligatorio[cite: 8]. |
-| creado_en | Obligatorio[cite: 8]. |
-| actualizado_en | Obligatorio[cite: 8]. |
+| fecha_consulta | Obligatorio; instante con zona horaria almacenado en UTC. |
+| creado_en | Obligatorio. |
+| actualizado_en | Obligatorio. |
 
 ### Signos_Vitales
 
@@ -162,49 +179,49 @@ Captura las métricas físicas en el momento de la consulta.
 |---|---|
 | id | Identificador unico. |
 | consulta_id | Obligatorio, unico y referencia a Consulta. |
-| peso_lb | Opcional; decimal. |
-| talla_cm | Opcional; decimal. |
-| temperatura | Opcional; decimal en °C. |
-| presion_arterial | Opcional; formato cadena (ej. "120/80"). |
-| frec_cardiaca | Opcional; entero (latidos por minuto). |
-| frec_respiratoria | Opcional; entero (respiraciones por minuto). |
+| peso_lb | Obligatorio para cerrar la Consulta; decimal. |
+| talla_cm | Obligatorio para cerrar la Consulta; decimal. |
+| temperatura | Obligatorio para cerrar la Consulta; decimal en C. |
+| presion_arterial | Obligatorio para cerrar la Consulta; formato cadena (ej. "120/80"). |
+| frec_cardiaca | Obligatorio para cerrar la Consulta; entero (latidos por minuto). |
+| frec_respiratoria | Obligatorio para cerrar la Consulta; entero (respiraciones por minuto). |
 | creado_en | Obligatorio. |
 | actualizado_en | Obligatorio. |
 
 ### Receta
 
-Representa una indicacion medica simple asociada a una Consulta[cite: 8].
+Representa una indicacion medica simple asociada a una Consulta.
 
 | Atributo | Regla |
 |---|---|
-| id | Identificador unico[cite: 8]. |
-| consulta_id | Obligatorio y referencia a Consulta[cite: 8]. |
-| medicamento | Obligatorio[cite: 8]. |
-| dosis | Obligatorio[cite: 8]. |
-| via | Obligatorio[cite: 8]. |
-| frecuencia | Obligatorio[cite: 8]. |
-| duracion | Obligatorio[cite: 8]. |
-| indicaciones | Obligatorio[cite: 8]. |
-| creado_en | Obligatorio[cite: 8]. |
-| actualizado_en | Obligatorio[cite: 8]. |
+| id | Identificador unico. |
+| consulta_id | Obligatorio y referencia a Consulta. |
+| medicamento | Obligatorio. |
+| dosis | Obligatorio. |
+| via | Obligatorio. |
+| frecuencia | Obligatorio. |
+| duracion | Obligatorio. |
+| indicaciones | Obligatorio. |
+| creado_en | Obligatorio. |
+| actualizado_en | Obligatorio. |
 
-Una Consulta puede no tener recetas o tener varias[cite: 8]. La Receta no contiene firma digital ni pretende tener validez legal en el MVP[cite: 8].
+Una Consulta puede no tener recetas o tener varias. La Receta no contiene firma digital ni pretende tener validez legal en el MVP.
 
 ### Auditoria
 
-Registra eventos sensibles para trazabilidad interna[cite: 8].
+Registra eventos sensibles para trazabilidad interna.
 
 | Atributo | Regla |
 |---|---|
-| id | Identificador unico[cite: 8]. |
-| usuario_id | Obligatorio y referencia al Usuario que ejecuta la accion[cite: 8]. |
-| accion | Obligatorio; por ejemplo, `CITA_ACEPTADA` o `CONSULTA_CREADA`[cite: 8]. |
-| entidad | Obligatorio; tipo de entidad afectada[cite: 8]. |
-| entidad_id | Obligatorio; identificador de la entidad afectada[cite: 8]. |
-| ocurrido_en | Obligatorio[cite: 8]. |
-| detalle | Opcional; no debe incluir contrasenas ni contenido clinico innecesario[cite: 8]. |
+| id | Identificador unico. |
+| usuario_id | Obligatorio y referencia al Usuario que ejecuta la accion. |
+| accion | Obligatorio; por ejemplo, `CITA_ACEPTADA` o `CONSULTA_CREADA`. |
+| entidad | Obligatorio; tipo de entidad afectada. |
+| entidad_id | Obligatorio; identificador de la entidad afectada. |
+| ocurrido_en | Obligatorio; instante con zona horaria almacenado en UTC. |
+| detalle | Opcional; no debe incluir contrasenas ni contenido clinico innecesario. |
 
-La Auditoria es interna y no se muestra en el panel del Administrador del MVP[cite: 8].
+La Auditoria es interna y no se muestra en el panel del Administrador del MVP.
 
 ## Relaciones y cardinalidades
 
@@ -218,8 +235,9 @@ erDiagram
     PACIENTE ||--o| ANTECEDENTES_GENERALES : posee
     PACIENTE ||--o| ANTECEDENTES_GINECO : posee_si_aplica
     MEDICO ||--o{ CITA : atiende
-    DISPONIBILIDAD ||--o| CITA : se_reserva_en
+    DISPONIBILIDAD ||--o{ CITA : historial_de_reservas
     CITA ||--o| CONSULTA : genera
+    CITA ||--o| PRECONSULTA : recopila
     CONSULTA ||--o| SIGNOS_VITALES : registra
     CONSULTA ||--o{ RECETA : incluye
     CITA o|--o{ CITA : reprograma

@@ -2,3 +2,6 @@
 .env
 .env.local
 .env.*.local
+backend/.env.test
+backend/node_modules/
+backend/dist/

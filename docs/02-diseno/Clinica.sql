@@ -3,7 +3,7 @@
 
 -- 1. CREACIÓN DE ENUMS, los tipos de datos 
 CREATE TYPE rol_usuario AS ENUM ('PACIENTE', 'MEDICO', 'ADMINISTRADOR');
-CREATE TYPE sexo_paciente AS ENUM ('M', 'F');
+CREATE TYPE sexo_paciente AS ENUM ('M', 'F', 'NO_ESPECIFICADO');
 CREATE TYPE tipo_ficha_clinica AS ENUM ('ADULTO', 'PRENATAL', 'NEONATO');
 CREATE TYPE estado_cita AS ENUM ('PENDIENTE', 'ACEPTADA', 'RECHAZADA', 'CANCELADA', 'REPROGRAMADA', 'COMPLETADA');
 
@@ -19,8 +19,8 @@ CREATE TABLE usuario (
     telefono VARCHAR(20) NOT NULL,
     rol rol_usuario NOT NULL,
     activo BOOLEAN DEFAULT TRUE NOT NULL,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE paciente (
@@ -32,8 +32,8 @@ CREATE TABLE paciente (
     ocupacion VARCHAR(150),
     poblacion_migrante BOOLEAN DEFAULT FALSE NOT NULL,
     nombre_responsable VARCHAR(200),
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE antecedentes_generales (
@@ -44,8 +44,8 @@ CREATE TABLE antecedentes_generales (
     familiares JSONB,
     habitos JSONB,
     alergias TEXT NOT NULL,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE antecedentes_gineco_obstetricos (
@@ -58,16 +58,16 @@ CREATE TABLE antecedentes_gineco_obstetricos (
     abortos INT DEFAULT 0 NOT NULL,
     hijos_vivos INT DEFAULT 0 NOT NULL,
     planificacion VARCHAR(150),
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE especialidad (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     nombre VARCHAR(100) UNIQUE NOT NULL,
     activa BOOLEAN DEFAULT TRUE NOT NULL,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE medico (
@@ -75,19 +75,20 @@ CREATE TABLE medico (
     usuario_id UUID UNIQUE NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
     especialidad_id UUID NOT NULL REFERENCES especialidad(id),
     numero_profesional VARCHAR(50) UNIQUE NOT NULL,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE disponibilidad (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     medico_id UUID NOT NULL REFERENCES medico(id) ON DELETE CASCADE,
-    inicio TIMESTAMP NOT NULL,
-    fin TIMESTAMP NOT NULL,
+    inicio TIMESTAMPTZ NOT NULL,
+    fin TIMESTAMPTZ NOT NULL,
     activa BOOLEAN DEFAULT TRUE NOT NULL,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT uq_disponibilidad_medico_inicio UNIQUE (medico_id, inicio)
+    creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT uq_disponibilidad_medico_inicio UNIQUE (medico_id, inicio),
+    CONSTRAINT ck_disponibilidad_duracion CHECK (fin = inicio + INTERVAL '30 minutes')
 );
 
 CREATE TABLE cita (
@@ -95,12 +96,12 @@ CREATE TABLE cita (
     paciente_id UUID NOT NULL REFERENCES paciente(id),
     medico_id UUID NOT NULL REFERENCES medico(id),
     disponibilidad_id UUID NOT NULL REFERENCES disponibilidad(id),
-    inicio TIMESTAMP NOT NULL,
-    fin TIMESTAMP NOT NULL,
+    inicio TIMESTAMPTZ NOT NULL,
+    fin TIMESTAMPTZ NOT NULL,
     estado estado_cita NOT NULL,
     cita_origen_id UUID REFERENCES cita(id),
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE consulta (
@@ -112,22 +113,22 @@ CREATE TABLE consulta (
     evaluacion_clinica JSONB,
     diagnostico TEXT NOT NULL,
     observaciones TEXT,
-    fecha_consulta TIMESTAMP NOT NULL,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    fecha_consulta TIMESTAMPTZ NOT NULL,
+    creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE signos_vitales (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     consulta_id UUID UNIQUE NOT NULL REFERENCES consulta(id) ON DELETE CASCADE,
-    peso_lb DECIMAL(5,2),
-    talla_cm DECIMAL(5,2),
-    temperatura DECIMAL(4,2),
-    presion_arterial VARCHAR(20),
-    frec_cardiaca INT,
-    frec_respiratoria INT,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    peso_lb DECIMAL(5,2) NOT NULL,
+    talla_cm DECIMAL(5,2) NOT NULL,
+    temperatura DECIMAL(4,2) NOT NULL,
+    presion_arterial VARCHAR(20) NOT NULL,
+    frec_cardiaca INT NOT NULL,
+    frec_respiratoria INT NOT NULL,
+    creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE receta (
@@ -139,8 +140,17 @@ CREATE TABLE receta (
     frecuencia VARCHAR(100) NOT NULL,
     duracion VARCHAR(50) NOT NULL,
     indicaciones TEXT NOT NULL,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE preconsulta (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    cita_id UUID UNIQUE NOT NULL REFERENCES cita(id),
+    motivo_consulta TEXT NOT NULL,
+    antecedentes_iniciales JSONB,
+    creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE auditoria (
@@ -149,7 +159,7 @@ CREATE TABLE auditoria (
     accion VARCHAR(100) NOT NULL,
     entidad VARCHAR(50) NOT NULL,
     entidad_id UUID NOT NULL,
-    ocurrido_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    ocurrido_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     detalle TEXT
 );
 
@@ -160,6 +170,9 @@ CREATE TABLE auditoria (
 CREATE INDEX idx_medico_especialidad ON medico(especialidad_id);
 CREATE INDEX idx_cita_medico_inicio_estado ON cita(medico_id, inicio, estado);
 CREATE INDEX idx_cita_paciente_inicio ON cita(paciente_id, inicio);
+CREATE UNIQUE INDEX uq_cita_activa_por_disponibilidad
+    ON cita(disponibilidad_id)
+    WHERE estado IN ('PENDIENTE', 'ACEPTADA');
 CREATE INDEX idx_receta_consulta ON receta(consulta_id);
 CREATE INDEX idx_auditoria_usuario_fecha ON auditoria(usuario_id, ocurrido_en);
 
@@ -184,3 +197,4 @@ CREATE TRIGGER trg_cita_actualizado BEFORE UPDATE ON cita FOR EACH ROW EXECUTE F
 CREATE TRIGGER trg_consulta_actualizado BEFORE UPDATE ON consulta FOR EACH ROW EXECUTE FUNCTION actualizar_timestamp();
 CREATE TRIGGER trg_signos_actualizado BEFORE UPDATE ON signos_vitales FOR EACH ROW EXECUTE FUNCTION actualizar_timestamp();
 CREATE TRIGGER trg_receta_actualizado BEFORE UPDATE ON receta FOR EACH ROW EXECUTE FUNCTION actualizar_timestamp();
+CREATE TRIGGER trg_preconsulta_actualizado BEFORE UPDATE ON preconsulta FOR EACH ROW EXECUTE FUNCTION actualizar_timestamp();
