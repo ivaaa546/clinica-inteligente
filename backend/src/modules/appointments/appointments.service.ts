@@ -74,6 +74,10 @@ export class AppointmentsService {
     return new AppointmentsRepository(this.db).findById(id);
   }
 
+  getForActor(actor: { userId: string; role: RolUsuario }, id: string) {
+    return this.authorizeActorAppointment(actor, id);
+  }
+
   async accept(doctorUserId: string, appointmentId: string) {
     const appointment = await this.authorizeDoctorAppointment(doctorUserId, appointmentId);
     this.assertState(appointment.estado, ["PENDIENTE"]);

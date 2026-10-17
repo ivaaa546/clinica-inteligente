@@ -11,7 +11,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "dev": "npm run build && node --env-file=.env --watch dist/index.js",
     "start": "node --env-file=.env dist/index.js",
-    "migrate": "node scripts/migrate.mjs",
+    "migrate": "prisma migrate deploy",
     "seed": "prisma db seed",
     "test": "vitest run"
   },

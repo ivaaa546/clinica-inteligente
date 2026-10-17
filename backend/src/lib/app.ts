@@ -3,9 +3,12 @@ import helmet from "helmet";
 import { corsMiddleware } from "../middleware/cors.middleware.js";
 import { errorMiddleware, notFoundMiddleware } from "../middleware/error.middleware.js";
 import { healthRouter } from "../modules/health/health.routes.js";
+import { apiRouter } from "../routes/api.routes.js";
+import { prisma } from "./prisma.js";
 import { sessionMiddleware } from "./session.js";
 
 export const app = express();
+app.locals.prisma = prisma;
 
 // La aplicacion queda separada del listener para poder probarla sin abrir un puerto.
 app.disable("x-powered-by");
@@ -13,6 +16,7 @@ app.use(helmet());
 app.use(corsMiddleware);
 app.use(express.json({ limit: "1mb" }));
 app.use(sessionMiddleware);
+app.use("/api/v1", apiRouter);
 app.use("/health", healthRouter);
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
