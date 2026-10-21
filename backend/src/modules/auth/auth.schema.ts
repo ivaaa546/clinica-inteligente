@@ -11,7 +11,7 @@ export const registerSchema = z.object({
   direccion: z.string().optional(),
   ocupacion: z.string().optional(),
   poblacionMigrante: z.boolean().optional(),
-});
+}).strict();
 
 export const loginSchema = z.object({
   correo: z.string().email(),

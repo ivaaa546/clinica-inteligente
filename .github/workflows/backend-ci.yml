@@ -1,0 +1,50 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: clinica
+          POSTGRES_PASSWORD: clinica_test
+          POSTGRES_DB: clinica_inteligente_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U clinica -d clinica_inteligente_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://clinica:clinica_test@localhost:5432/clinica_inteligente_test?schema=public
+      TEST_DATABASE_URL: postgresql://clinica:clinica_test@localhost:5432/clinica_inteligente_test?schema=public
+      SESSION_SECRET: test-session-secret-with-at-least-32-chars
+      NODE_ENV: test
+      CLINIC_TIMEZONE: America/Tegucigalpa
+      CORS_ORIGINS: http://localhost:5173
+      ARGON2_TIME_COST: 1
+      ARGON2_MEMORY_COST: 16384
+      ARGON2_PARALLELISM: 1
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm run migrate
+      - run: npm test
