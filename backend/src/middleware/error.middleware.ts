@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler, RequestHandler } from "express";
+import { ZodError } from "zod";
 
 // Mantiene una respuesta uniforme para rutas inexistentes.
 export const notFoundMiddleware: RequestHandler = (_request, response) => {
@@ -14,9 +15,10 @@ export const errorMiddleware: ErrorRequestHandler = (
 ) => {
   console.error(error);
   const isJsonSyntaxError = error instanceof SyntaxError && "body" in error;
-  const status = isJsonSyntaxError ? 400 : 500;
-  const code = isJsonSyntaxError ? "INVALID_JSON" : "INTERNAL_ERROR";
-  const message = isJsonSyntaxError ? "JSON invalido" : "Error interno del servidor";
+  const isValidationError = error instanceof ZodError;
+  const status = isJsonSyntaxError || isValidationError ? 400 : 500;
+  const code = isJsonSyntaxError ? "INVALID_JSON" : isValidationError ? "VALIDATION_ERROR" : "INTERNAL_ERROR";
+  const message = isJsonSyntaxError ? "JSON invalido" : isValidationError ? "Datos invalidos" : "Error interno del servidor";
 
   response.status(status).json({ error: message, code });
 };
