@@ -62,7 +62,7 @@ export default function InicioPaciente() {
             <p>Puedes cancelar o reprogramar esta cita antes del inicio.</p>
           </div>
 
-          <Link to="/paciente/citas" className="ini-detail">Ver detalle</Link>
+          <Link to="/paciente/citas/C-1042/reprogramar" className="ini-detail">Ver detalle</Link>
         </article>
 
         <div className="ini-shortcuts">
