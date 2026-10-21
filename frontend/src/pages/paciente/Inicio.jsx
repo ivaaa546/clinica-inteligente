@@ -33,7 +33,7 @@ export default function InicioPaciente() {
           <h1>Hola, {PACIENTE.nombre}</h1>
           <p>Aquí puedes solicitar una nueva cita, revisar tus próximas consultas y acceder a tus diagnósticos y recetas.</p>
         </div>
-        <Link to="/paciente/solicitar" className="ini-cta">
+        <Link to="/paciente/citas/solicitar" className="ini-cta">
           <Plus size={18} /> Solicitar cita
         </Link>
       </div>
