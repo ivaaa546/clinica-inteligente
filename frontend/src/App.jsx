@@ -7,7 +7,10 @@ import PacienteLayout from './layouts/PacienteLayout'
 import InicioPaciente from './pages/paciente/Inicio'
 import SolicitarCita from './pages/paciente/SolicitarCita'
 import Diagnosticos from './pages/paciente/Diagnosticos'
+import Recetas from './pages/paciente/Recetas'
 import ReprogramarCita from './pages/paciente/ReprogramarCita'
+import Cuenta from './pages/paciente/Cuenta'
+import CambiarPassword from './pages/paciente/CambiarPassword'
 
 export default function App() {
   return (
@@ -24,12 +27,13 @@ export default function App() {
           <Route index element={<InicioPaciente />} />
           <Route path="citas/solicitar" element={<SolicitarCita />} />
           <Route path="citas/:id/reprogramar" element={<ReprogramarCita />} />
-          {/* Historial y recetas comparten pantalla (17 del Figma) */}
           <Route path="historial" element={<Diagnosticos />} />
-          <Route path="recetas" element={<Diagnosticos />} />
+          <Route path="recetas" element={<Recetas />} />
+          <Route path="cuenta" element={<Cuenta />} />
+          <Route path="cambiar-password" element={<CambiarPassword />} />
           {/* Próximas pantallas:
           <Route path="citas" element={<MisCitas />} />
-          <Route path="cambiar-password" element={<CambiarPassword />} /> */}
+          */}
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  Plus, HeartHandshake, Sprout, Mail, Eye, EyeOff, CalendarDays, ArrowRight,
-} from 'lucide-react'
+import { Plus, HeartHandshake, Sprout, Mail, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import PhoneInput from '../components/PhoneInput'
 import './Login.css'      // reutiliza cabecera, panel verde y campos
 import './Registro.css'
 
@@ -81,7 +80,7 @@ export default function Registro() {
     <div className="login">
       <header className="login__header">
         <Link to="/" className="brand">
-          <span className="brand__emblem"><Plus size={22} color="#fff" /></span>
+          <span className="brand__emblem"><Plus size={20} color="#fff" /></span>
           <span className="brand__text">
             <strong>TilinesMédicos</strong>
             <small>PLATAFORMA MÉDICA</small>
@@ -117,48 +116,47 @@ export default function Registro() {
           <div className="form-panel__intro">
             <p className="eyebrow">BIENVENIDO A TILINESMÉDICOS</p>
             <h2>Empieza a cuidar de ti</h2>
-            <p>Crea tu cuenta de paciente en TilinesMédicos.</p>
+            <p>Crea tu cuenta de paciente en TilinesMédicos. Los campos con * son obligatorios.</p>
           </div>
-
-          <p className="required-note">Todos los campos marcados con * son obligatorios.</p>
 
           <form className="registro" onSubmit={handleSubmit}>
             <fieldset className="group">
+              <legend>Datos personales</legend>
+              <div className="grid3">
+                {texto('nombre', 'Nombre *', { input: { placeholder: 'Tu nombre' } })}
+                {texto('apellidos', 'Apellidos *', { input: { placeholder: 'Tus apellidos' } })}
+                <Campo label="Teléfono *">
+                  <span className="field__input">
+                    <PhoneInput value={datos.telefono} onChange={cambiar} required />
+                  </span>
+                </Campo>
+
+                {texto('nacimiento', 'Fecha de nacimiento *', { input: { type: 'date' } })}
+                {lista('sexo', 'Sexo *', ['Masculino', 'Femenino'])}
+                {lista('migrante', 'Población migrante *', ['Sí', 'No'])}
+
+                {texto('direccion', 'Dirección *', { input: { placeholder: 'Calle, zona, municipio' } })}
+                {texto('ocupacion', 'Ocupación *', { input: { placeholder: 'Tu ocupación' } })}
+                {texto('responsable', 'Responsable (opcional)', {
+                  opcional: true,
+                  input: { placeholder: 'Nombre del responsable' },
+                })}
+              </div>
+            </fieldset>
+
+            <fieldset className="group">
               <legend>Datos de cuenta</legend>
-              {texto('email', 'Correo electrónico *', {
-                input: { type: 'email', placeholder: 'correo@ejemplo.com' },
-                icono: <Mail size={18} color="#4f6e5b" />,
-              })}
-              <div className="row">
+              <div className="grid3">
+                {texto('email', 'Correo electrónico *', {
+                  input: { type: 'email', placeholder: 'correo@ejemplo.com' },
+                  icono: <Mail size={18} color="#4f6e5b" />,
+                })}
                 {clave('password', 'Contraseña *')}
                 {clave('confirmar', 'Confirmar contraseña *')}
               </div>
               <p className={`hint ${error ? 'hint--error' : ''}`}>
                 {error || 'Usa al menos 8 caracteres. Ambas contraseñas deben coincidir.'}
               </p>
-            </fieldset>
-
-            <fieldset className="group">
-              <legend>Datos personales</legend>
-              {texto('nombre', 'Nombre *', { input: { placeholder: 'Tu nombre' } })}
-              {texto('apellidos', 'Apellidos *', { input: { placeholder: 'Tus apellidos' } })}
-              <div className="row">
-                {texto('telefono', 'Teléfono *', { input: { type: 'tel', placeholder: '+502 0000 0000' } })}
-                {texto('nacimiento', 'Fecha de nacimiento *', {
-                  input: { type: 'date' },
-                  icono: <CalendarDays size={18} color="#4f6e5b" />,
-                })}
-              </div>
-              <div className="row">
-                {lista('sexo', 'Sexo *', ['Masculino', 'Femenino'])}
-                {lista('migrante', 'Población migrante *', ['Sí', 'No'])}
-              </div>
-              {texto('direccion', 'Dirección *', { input: { placeholder: 'Calle, zona, municipio' } })}
-              {texto('ocupacion', 'Ocupación *', { input: { placeholder: 'Tu ocupación' } })}
-              {texto('responsable', 'Nombre responsable (opcional)', {
-                opcional: true,
-                input: { placeholder: 'Nombre del responsable' },
-              })}
             </fieldset>
 
             <button type="submit" className="btn-primary">

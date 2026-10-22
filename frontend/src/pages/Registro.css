@@ -1,38 +1,48 @@
 /* Extiende los estilos de Login.css */
-.form-panel--registro { padding: 56px 96px 46px; }
-.form-panel--registro > * { max-width: 100%; }
+.form-panel--registro { padding: 24px clamp(32px, 5vw, 80px); gap: 14px; }
+/* El registro empieza arriba (no centrado) para que se lea de corrido */
+.form-panel--registro > :first-child { margin-top: 0; }
+.form-panel--registro > :last-child { margin-bottom: 0; }
+.form-panel--registro .form-panel__intro { gap: 6px; }
+.form-panel--registro .form-panel__intro h2 { font-size: 26px; }
+.form-panel--registro .form-panel__intro p:last-child { font-size: 14px; }
 
-.required-note { margin: 0; font-size: 13px; color: var(--color-muted-2); }
-
-.registro { display: flex; flex-direction: column; gap: 22px; }
+.registro { display: flex; flex-direction: column; gap: 14px; }
 
 .group {
-  margin: 0; min-width: 0; padding: 20px; border-radius: 12px;
+  margin: 0; min-width: 0; padding: 16px; border-radius: 12px;
   background: #f8fcf9; border: 1px solid var(--color-border);
-  display: flex; flex-direction: column; gap: 16px;
+  display: flex; flex-direction: column; gap: 12px;
 }
 .group legend {
   float: left; width: 100%; padding: 0; margin: 0 0 -4px;
-  font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--color-primary);
+  font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--color-primary);
 }
 .group legend + * { clear: both; }
 
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+/* 3 campos por fila; cada celda puede encogerse para que nada se salga de la tarjeta */
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 16px; }
+.grid3 > * { min-width: 0; }
+.group .field__input { min-width: 0; }
+
 .hint { margin: 0; font-size: 12px; color: var(--color-muted-2); }
 .hint--error { color: #b3261e; font-weight: 700; }
 
 .field__input select {
   flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
-  font: inherit; font-size: 15px; color: var(--color-text); padding: 14px 0; cursor: pointer;
+  font: inherit; font-size: 15px; color: var(--color-text); padding: 12px 0; cursor: pointer;
 }
 .field__input input[type='date'] { cursor: pointer; }
 
 .back-login { margin: 0; font-size: 14px; color: var(--color-muted-2); }
 .back-login a { margin-left: 4px; font-weight: 700; color: var(--color-primary); }
 
+@media (max-width: 1180px) {
+  .grid3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 960px) {
-  .form-panel--registro { padding: 40px 24px; }
+  .form-panel--registro { padding: 28px 24px; }
 }
 @media (max-width: 560px) {
-  .row { grid-template-columns: 1fr; }
+  .grid3 { grid-template-columns: 1fr; }
 }
