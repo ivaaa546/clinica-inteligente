@@ -1,0 +1,38 @@
+/* Extiende los estilos de Login.css */
+.form-panel--registro { padding: 56px 96px 46px; }
+.form-panel--registro > * { max-width: 100%; }
+
+.required-note { margin: 0; font-size: 13px; color: var(--color-muted-2); }
+
+.registro { display: flex; flex-direction: column; gap: 22px; }
+
+.group {
+  margin: 0; min-width: 0; padding: 20px; border-radius: 12px;
+  background: #f8fcf9; border: 1px solid var(--color-border);
+  display: flex; flex-direction: column; gap: 16px;
+}
+.group legend {
+  float: left; width: 100%; padding: 0; margin: 0 0 -4px;
+  font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--color-primary);
+}
+.group legend + * { clear: both; }
+
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.hint { margin: 0; font-size: 12px; color: var(--color-muted-2); }
+.hint--error { color: #b3261e; font-weight: 700; }
+
+.field__input select {
+  flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
+  font: inherit; font-size: 15px; color: var(--color-text); padding: 14px 0; cursor: pointer;
+}
+.field__input input[type='date'] { cursor: pointer; }
+
+.back-login { margin: 0; font-size: 14px; color: var(--color-muted-2); }
+.back-login a { margin-left: 4px; font-weight: 700; color: var(--color-primary); }
+
+@media (max-width: 960px) {
+  .form-panel--registro { padding: 40px 24px; }
+}
+@media (max-width: 560px) {
+  .row { grid-template-columns: 1fr; }
+}
