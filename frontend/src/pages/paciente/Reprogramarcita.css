@@ -10,6 +10,9 @@
 .rep-notice { padding: 14px; border-radius: 8px; background: var(--color-bg); display: flex; gap: 10px; align-items: flex-start; }
 .rep-notice p { margin: 0; flex: 1; font-size: 13px; line-height: 1.4; color: var(--color-primary-dark); }
 .rep-notice--side { margin: 0; }
+.rep-success { padding: 14px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-soft); color: var(--color-primary-dark); }
+.rep-success strong { font-size: 14px; }
+.rep-success p { margin: 6px 0 0; font-size: 13px; line-height: 1.4; }
 
 .rep-main { display: flex; gap: 24px; align-items: flex-start; }
 .rep-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
@@ -57,12 +60,13 @@
 
 .rep-field { display: flex; flex-direction: column; gap: 6px; }
 .rep-field > span { font-size: 13px; font-weight: 700; color: #617366; }
-.rep-field input, .rep-field select, .rep-static {
+.rep-field input, .rep-field select, .rep-field textarea, .rep-static {
   height: 46px; padding: 0 14px; border-radius: 10px; background: #fff; border: 1px solid var(--color-border);
   font: inherit; font-size: 14px; font-weight: 700; color: var(--color-text); display: flex; align-items: center;
 }
-.rep-field input, .rep-field select { width: 100%; outline: 0; }
-.rep-field input:focus, .rep-field select:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(22, 113, 62, .15); }
+.rep-field input, .rep-field select, .rep-field textarea { width: 100%; outline: 0; }
+.rep-field textarea { height: auto; min-height: 82px; padding-top: 12px; resize: vertical; font: inherit; font-size: 14px; color: var(--color-text); }
+.rep-field input:focus, .rep-field select:focus, .rep-field textarea:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(22, 113, 62, .15); }
 .rep-field select { cursor: pointer; }
 .rep-static { background: var(--color-input-bg); }
 

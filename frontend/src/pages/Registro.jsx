@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { registerPatient } from '../api/auth.js'
 import {
   Plus, HeartHandshake, Sprout, Mail, Eye, EyeOff, CalendarDays, ArrowRight,
 } from 'lucide-react'
@@ -22,19 +23,37 @@ function Campo({ label, children }) {
 }
 
 export default function Registro() {
+  const navigate = useNavigate()
   const [datos, setDatos] = useState(INICIAL)
   const [ver, setVer] = useState({ password: false, confirmar: false })
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const cambiar = (e) => setDatos({ ...datos, [e.target.name]: e.target.value })
   const alternar = (campo) => setVer({ ...ver, [campo]: !ver[campo] })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    if (isSubmitting) return
     if (datos.password.length < 8) return setError('La contraseña debe tener al menos 8 caracteres.')
     if (datos.password !== datos.confirmar) return setError('Las contraseñas no coinciden.')
+
     setError('')
-    // TODO: conectar con la API (services/auth.js)
+    setIsSubmitting(true)
+
+    try {
+      await registerPatient(datos)
+      navigate('/login', {
+        replace: true,
+        state: { registrationSuccess: 'Registro realizado. Ya podés iniciar sesión.' },
+      })
+    } catch (requestError) {
+      setError(requestError?.isNetworkError
+        ? 'No fue posible conectar con el servicio. Verificá tu conexión e intentá nuevamente.'
+        : 'No pudimos completar el registro. Revisá los datos e intentá nuevamente.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const texto = (name, label, props = {}) => (
@@ -160,8 +179,8 @@ export default function Registro() {
               })}
             </fieldset>
 
-            <button type="submit" className="btn-primary">
-              <ArrowRight size={18} /> Crear cuenta de paciente
+            <button type="submit" className="btn-primary" disabled={isSubmitting}>
+              <ArrowRight size={18} /> {isSubmitting ? 'Creando cuenta…' : 'Crear cuenta de paciente'}
             </button>
           </form>
 

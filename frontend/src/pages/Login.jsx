@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../auth/useAuth.js'
 import {
   Plus, HeartHandshake, Sprout, Calendar, FileText, Pill,
   Mail, Eye, EyeOff, ArrowRight, UserPlus,
@@ -13,14 +14,33 @@ const BENEFICIOS = [
 ]
 
 export default function Login() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [verPassword, setVerPassword] = useState(false)
   const [recordar, setRecordar] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: conectar con la API (services/auth.js)
+    if (isSubmitting) return
+
+    setErrorMessage('')
+    setIsSubmitting(true)
+
+    try {
+      await login({ email, password })
+      navigate('/paciente', { replace: true })
+    } catch (error) {
+      setErrorMessage(error?.isNetworkError
+        ? 'No fue posible conectar con el servicio. Verificá tu conexión e intentá nuevamente.'
+        : 'No pudimos iniciar sesión con esos datos. Revisá tu correo y contraseña e intentá nuevamente.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -81,6 +101,10 @@ export default function Login() {
 
           <hr className="divider" />
 
+          {location.state?.registrationSuccess && (
+            <p className="form-success" role="status">{location.state.registrationSuccess}</p>
+          )}
+
           <form className="form" onSubmit={handleSubmit}>
             <label className="field">
               <span className="field__label">Correo electrónico</span>
@@ -125,8 +149,12 @@ export default function Login() {
               <Link to="/recuperar" className="link-strong">¿Olvidaste tu contraseña?</Link>
             </div>
 
-            <button type="submit" className="btn-primary">
-              <ArrowRight size={18} /> Iniciar sesión
+            {errorMessage && (
+              <p className="form-error" role="alert">{errorMessage}</p>
+            )}
+
+            <button type="submit" className="btn-primary" disabled={isSubmitting}>
+              <ArrowRight size={18} /> {isSubmitting ? 'Iniciando sesión…' : 'Iniciar sesión'}
             </button>
           </form>
 

@@ -37,10 +37,6 @@ const DATOS_RECETA = [
 ]
 
 function Receta({ receta }) {
-  // TODO: conectar abrir / descargar con la API (PDF de la receta)
-  const abrir = () => console.log('Abrir receta')
-  const descargar = () => console.log('Descargar receta')
-
   return (
     <div className="dx-receta">
       <div className="dx-receta__head">
@@ -63,9 +59,15 @@ function Receta({ receta }) {
       </div>
 
       <div className="dx-actions">
-        <button type="button" onClick={abrir}><FileText size={18} /> Abrir receta</button>
-        <button type="button" onClick={() => window.print()}><Printer size={18} /> Imprimir</button>
-        <button type="button" onClick={descargar}><Download size={18} /> Descargar</button>
+        <button type="button" disabled title="La visualización de recetas no está disponible todavía">
+          <FileText size={18} /> Abrir receta (no disponible)
+        </button>
+        <button type="button" onClick={() => window.print()}>
+          <Printer size={18} /> Imprimir vista
+        </button>
+        <button type="button" disabled title="La descarga PDF no está disponible todavía">
+          <Download size={18} /> Descargar PDF (no disponible)
+        </button>
       </div>
     </div>
   )

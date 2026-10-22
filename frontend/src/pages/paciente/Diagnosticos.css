@@ -63,6 +63,8 @@ small.dx-muted { font-size: 12px; }
   display: inline-flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 700; color: var(--color-primary);
 }
 .dx-actions button:hover { background: var(--color-bg); border-color: var(--color-primary); }
+.dx-actions button:disabled { cursor: not-allowed; opacity: .55; }
+.dx-actions button:disabled:hover { background: #fff; border-color: var(--color-border); }
 
 @media print {
   .pac__header, .pac__nav, .dx-side, .dx-actions, .dx-notice { display: none !important; }

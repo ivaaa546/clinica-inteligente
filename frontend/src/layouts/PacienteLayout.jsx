@@ -73,7 +73,9 @@ export default function PacienteLayout() {
 
             <div className="pac__account-links">
               <NavLink to="/paciente/cuenta"><User size={16} /> Mi cuenta</NavLink>
-              <NavLink to="/paciente/cambiar-password"><Lock size={16} /> Cambiar contraseña</NavLink>
+              <span className="pac__account-link-disabled" aria-disabled="true">
+                <Lock size={16} /> Cambiar contraseña (no disponible)
+              </span>
             </div>
 
             <hr />

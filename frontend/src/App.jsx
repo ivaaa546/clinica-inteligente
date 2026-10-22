@@ -5,6 +5,7 @@ import Registro from './pages/Registro'
 import Recuperar from './pages/Recuperar'
 import PacienteLayout from './layouts/PacienteLayout'
 import InicioPaciente from './pages/paciente/Inicio'
+import MisCitas from './pages/paciente/MisCitas.jsx'
 import SolicitarCita from './pages/paciente/SolicitarCita'
 import Diagnosticos from './pages/paciente/Diagnosticos'
 import ReprogramarCita from './pages/paciente/Reprogramarcita'
@@ -24,6 +25,7 @@ export default function App() {
         <Route element={<ProtectedRoute role="PACIENTE" />}>
           <Route path="/paciente" element={<PacienteLayout />}>
             <Route index element={<InicioPaciente />} />
+            <Route path="citas" element={<MisCitas />} />
           <Route path="citas/solicitar" element={<SolicitarCita />} />
           <Route path="citas/:id/reprogramar" element={<ReprogramarCita />} />
           {/* Historial y recetas comparten pantalla (17 del Figma) */}

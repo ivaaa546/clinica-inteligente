@@ -24,6 +24,9 @@
 
 .recuperar__form { display: flex; flex-direction: column; gap: 28px; }
 .recuperar .field__input { min-height: 48px; background: #f8fbf8; }
+.recuperar__unavailable { display: flex; gap: 12px; align-items: flex-start; padding: 16px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-bg); color: var(--color-primary-dark); }
+.recuperar__unavailable strong { display: block; font-size: 14px; }
+.recuperar__unavailable p { margin: 6px 0 0; font-size: 13px; line-height: 1.5; color: var(--color-muted); }
 
 .btn-solid-green {
   height: 46px; border-radius: 10px; border: 1px solid var(--color-primary);
