@@ -35,7 +35,6 @@ export default function Registro() {
     if (datos.password !== datos.confirmar) return setError('Las contraseñas no coinciden.')
     setError('')
     // TODO: conectar con la API (services/auth.js)
-    console.log(datos)
   }
 
   const texto = (name, label, props = {}) => (

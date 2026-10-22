@@ -59,6 +59,7 @@
   display: flex; align-items: center; gap: 12px;
 }
 .pac__logout:hover { color: var(--color-primary); }
+.pac__logout:disabled { cursor: wait; opacity: .65; }
 
 /* Contenido */
 .pac__content { flex: 1; min-width: 0; padding: 34px 40px 32px; display: flex; flex-direction: column; gap: 28px; }

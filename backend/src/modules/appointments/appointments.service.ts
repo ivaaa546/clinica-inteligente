@@ -74,8 +74,49 @@ export class AppointmentsService {
     return new AppointmentsRepository(this.db).findById(id);
   }
 
-  getForActor(actor: { userId: string; role: RolUsuario }, id: string) {
-    return this.authorizeActorAppointment(actor, id);
+  async getForActor(actor: { userId: string; role: RolUsuario }, id: string) {
+    const appointment = await this.authorizeActorAppointment(actor, id);
+
+    // La autorización de relación se resuelve antes de proyectar. Cada rol recibe
+    // únicamente los datos necesarios, en vez de depender de que el cliente oculte campos.
+    if (actor.role === RolUsuario.PACIENTE) {
+      return {
+        id: appointment.id,
+        medicoId: appointment.medicoId,
+        disponibilidadId: appointment.disponibilidadId,
+        inicio: appointment.inicio,
+        fin: appointment.fin,
+        estado: appointment.estado,
+        citaOrigenId: appointment.citaOrigenId,
+        creadoEn: appointment.creadoEn,
+        actualizadoEn: appointment.actualizadoEn,
+        preconsulta: appointment.preconsulta && {
+          id: appointment.preconsulta.id,
+          citaId: appointment.preconsulta.citaId,
+          motivoConsulta: appointment.preconsulta.motivoConsulta,
+          antecedentesIniciales: appointment.preconsulta.antecedentesIniciales,
+        },
+        consulta: appointment.consulta && { diagnostico: appointment.consulta.diagnostico },
+      };
+    }
+
+    if (actor.role === RolUsuario.ADMINISTRADOR) {
+      return {
+        id: appointment.id,
+        pacienteId: appointment.pacienteId,
+        medicoId: appointment.medicoId,
+        disponibilidadId: appointment.disponibilidadId,
+        inicio: appointment.inicio,
+        fin: appointment.fin,
+        estado: appointment.estado,
+        citaOrigenId: appointment.citaOrigenId,
+        creadoEn: appointment.creadoEn,
+        actualizadoEn: appointment.actualizadoEn,
+      };
+    }
+
+    // El médico ya fue autorizado por relación y conserva la vista clínica prevista.
+    return appointment;
   }
 
   async accept(doctorUserId: string, appointmentId: string) {

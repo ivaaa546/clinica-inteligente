@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Info } from 'lucide-react'
-import './ReprogramarCita.css'
+import './Reprogramarcita.css'
 
 // TODO: reemplazar por la cita real de la API (GET /citas/:id)
 const CITA = {

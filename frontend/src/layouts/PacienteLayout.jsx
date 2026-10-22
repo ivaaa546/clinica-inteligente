@@ -1,9 +1,9 @@
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, NavLink, Outlet } from 'react-router-dom'
 import { Plus, ChevronDown, House, CalendarDays, ClipboardList, FileText, User, Lock, LogOut } from 'lucide-react'
+import ApiError from '../components/ApiError.jsx'
+import { useAuth } from '../auth/useAuth.js'
 import './PacienteLayout.css'
-
-// TODO: reemplazar por el usuario real que devuelva la API
-const USUARIO = { nombre: 'Tilin Insano' }
 
 const SECCIONES = [
   { to: '/paciente', label: 'Inicio', icon: House, end: true },
@@ -16,11 +16,22 @@ const iniciales = (nombre) =>
   nombre.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase()
 
 export default function PacienteLayout() {
-  const navigate = useNavigate()
+  const { user, logout } = useAuth()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [logoutError, setLogoutError] = useState(null)
+  const nombre = user?.nombre || 'Paciente'
 
-  const cerrarSesion = () => {
-    // TODO: limpiar token / sesión
-    navigate('/login')
+  const cerrarSesion = async () => {
+    setLogoutError(null)
+    setIsLoggingOut(true)
+
+    try {
+      await logout()
+    } catch (error) {
+      setLogoutError(error)
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   return (
@@ -37,8 +48,8 @@ export default function PacienteLayout() {
         <div className="pac__account">
           <span className="pac__space">Espacio del paciente</span>
           <span className="pac__sep" />
-          <span className="pac__avatar">{iniciales(USUARIO.nombre)}</span>
-          <span className="pac__name">{USUARIO.nombre}</span>
+          <span className="pac__avatar">{iniciales(nombre)}</span>
+          <span className="pac__name">{nombre}</span>
           <ChevronDown size={16} color="#4f6e5b" />
         </div>
       </header>
@@ -66,13 +77,14 @@ export default function PacienteLayout() {
             </div>
 
             <hr />
-            <button type="button" className="pac__logout" onClick={cerrarSesion}>
-              <LogOut size={18} /> Cerrar sesión
+            <button type="button" className="pac__logout" onClick={cerrarSesion} disabled={isLoggingOut}>
+              <LogOut size={18} /> {isLoggingOut ? 'Cerrando sesión…' : 'Cerrar sesión'}
             </button>
           </div>
         </aside>
 
         <main className="pac__content">
+          {logoutError && <ApiError error={logoutError} title="No se pudo cerrar la sesión" />}
           <Outlet />
         </main>
       </div>

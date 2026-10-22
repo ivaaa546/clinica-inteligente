@@ -21,7 +21,6 @@ export default function Login() {
   const handleSubmit = (e) => {
     e.preventDefault()
     // TODO: conectar con la API (services/auth.js)
-    console.log({ email, password, recordar })
   }
 
   return (
