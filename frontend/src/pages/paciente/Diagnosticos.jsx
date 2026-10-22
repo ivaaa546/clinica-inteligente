@@ -1,47 +1,26 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Info, FileText, Printer, Download } from 'lucide-react'
+import { listOwnPrescriptions } from '../../api/prescriptions.js'
+import ApiError from '../../components/ApiError.jsx'
+import EmptyState from '../../components/EmptyState.jsx'
+import LoadingState from '../../components/LoadingState.jsx'
+import { useAuth } from '../../auth/useAuth.js'
 import './Diagnosticos.css'
 
-// TODO: reemplazar por datos reales de la API (services/consultas.js)
-const PACIENTE = {
-  id: 'P-0024',
-  nombre: 'Tilin Insano',
-  email: 'correo@ejemplo.com',
-  telefono: '+502 0000 0000',
-}
-
-const REGISTROS = [
-  {
-    id: 'CO-1042', cita: 'C-1042', fecha: '19 oct 2026', hora: '10:30–11:00',
-    medico: 'Dra. Elena Torres', especialidad: 'Medicina general', estado: 'Completada',
-    diagnostico: 'Cefalea tensional recurrente',
-    receta: {
-      estado: 'Emitida', medicamento: 'Medicamento A', dosis: '1 unidad', via: 'Oral',
-      frecuencia: 'Cada 24 horas', duracion: '3 días', indicaciones: 'Seguir la pauta indicada por el médico',
-    },
-  },
-  {
-    id: 'CO-0938', cita: 'C-0938', fecha: '17 sep 2026', hora: '09:00–09:30',
-    medico: 'Dra. Elena Torres', especialidad: 'Medicina general', estado: 'Completada',
-    diagnostico: 'Revisión general',
-    receta: {
-      estado: 'Emitida', medicamento: 'Medicamento A', dosis: '1 unidad', via: 'Oral',
-      frecuencia: 'Cada 24 horas', duracion: '3 días', indicaciones: 'Seguir la pauta indicada por el médico',
-    },
-  },
-]
-
 const DATOS_RECETA = [
-  ['DOSIS', 'dosis'], ['VÍA', 'via'], ['FRECUENCIA', 'frecuencia'],
-  ['DURACIÓN', 'duracion'], ['INDICACIONES', 'indicaciones'],
+  ['DOSIS', 'dosis'],
+  ['VÍA', 'via'],
+  ['FRECUENCIA', 'frecuencia'],
+  ['DURACIÓN', 'duracion'],
+  ['INDICACIONES', 'indicaciones'],
 ]
 
 function Receta({ receta }) {
   return (
     <div className="dx-receta">
       <div className="dx-receta__head">
-        <strong>Receta asociada</strong>
-        <span className="dx-pill dx-pill--soft">{receta.estado}</span>
+        <strong>Receta</strong>
+        <span className="dx-pill dx-pill--soft">Receta simple</span>
       </div>
 
       <div className="dx-data">
@@ -50,10 +29,10 @@ function Receta({ receta }) {
       </div>
 
       <div className="dx-list-data">
-        {DATOS_RECETA.map(([titulo, clave]) => (
-          <div className="dx-data" key={clave}>
-            <span className="dx-label">{titulo}</span>
-            <p>{receta[clave]}</p>
+        {DATOS_RECETA.map(([title, key]) => (
+          <div className="dx-data" key={key}>
+            <span className="dx-label">{title}</span>
+            <p>{receta[key]}</p>
           </div>
         ))}
       </div>
@@ -74,90 +53,103 @@ function Receta({ receta }) {
 }
 
 export default function Diagnosticos() {
-  const [seleccion, setSeleccion] = useState(REGISTROS[0].id)
-  const actual = REGISTROS.find((r) => r.id === seleccion)
+  const { user } = useAuth()
+  const [prescriptions, setPrescriptions] = useState([])
+  const [selectedId, setSelectedId] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    let active = true
+    listOwnPrescriptions()
+      .then((items) => {
+        if (!active) return
+        const values = Array.isArray(items) ? items : []
+        setPrescriptions(values)
+        setSelectedId(values[0]?.id || null)
+      })
+      .catch((requestError) => active && setError(requestError))
+      .finally(() => active && setLoading(false))
+
+    return () => { active = false }
+  }, [])
+
+  const selected = prescriptions.find((prescription) => prescription.id === selectedId) || prescriptions[0]
 
   return (
     <>
       <div className="dx-head">
         <div>
           <h1>Mis diagnósticos y recetas</h1>
-          <p>
-            Historial de diagnósticos y recetas emitidas por tus médicos · {PACIENTE.nombre} ·{' '}
-            {PACIENTE.email} · {PACIENTE.telefono}
-          </p>
+          <p>Diagnósticos y recetas propias disponibles en tu cuenta{user?.nombre ? ` · ${user.nombre}` : ''}.</p>
         </div>
-        <span className="dx-pill">{REGISTROS.length} registros</span>
+        {!loading && !error && <span className="dx-pill">{prescriptions.length} {prescriptions.length === 1 ? 'receta' : 'recetas'}</span>}
       </div>
 
       <div className="dx-notice">
         <Info size={16} color="#0e5733" />
         <p>
-          Receta simple · Sin firma digital ni validez legal. Solo se muestran diagnósticos y
-          recetas emitidas para este paciente.
+          Solo se muestran los datos seguros disponibles para pacientes. Las recetas son simples,
+          sin firma digital ni validez legal. Esta pantalla no representa un historial clínico completo.
         </p>
       </div>
 
-      <div className="dx-main">
-        <section className="dx-panel">
-          <h2>Historial de diagnósticos y recetas</h2>
+      {loading && <LoadingState message="Cargando tus recetas…" />}
+      {error && <ApiError error={error} onRetry={() => window.location.reload()} />}
+      {!loading && !error && prescriptions.length === 0 && (
+        <EmptyState title="No tienes recetas disponibles" message="Las recetas aparecerán aquí cuando un médico las registre en una consulta." />
+      )}
 
-          {REGISTROS.map((r) => (
-            <article
-              key={r.id}
-              className={`dx-registro ${r.id === seleccion ? 'is-selected' : ''}`}
-              onClick={() => setSeleccion(r.id)}
-            >
-              <div className="dx-registro__head">
-                <div>
-                  <strong>{r.medico}</strong>
-                  <small>{r.especialidad}</small>
+      {!loading && !error && selected && (
+        <div className="dx-main">
+          <section className="dx-panel">
+            <h2>Recetas disponibles</h2>
+
+            {prescriptions.map((prescription) => (
+              <article
+                key={prescription.id}
+                className={`dx-registro ${prescription.id === selected.id ? 'is-selected' : ''}`}
+                onClick={() => setSelectedId(prescription.id)}
+              >
+                <div className="dx-registro__head">
+                  <div>
+                    <strong>{prescription.medicamento}</strong>
+                    <small>Receta propia</small>
+                  </div>
                 </div>
-                <span className="dx-pill">{r.estado}</span>
-              </div>
 
-              <div className="dx-meta">
-                <strong>{r.fecha} · {r.hora}</strong>
-                <span>Consulta {r.id} / {r.cita}</span>
-              </div>
+                <div className="dx-data">
+                  <span className="dx-label">DIAGNÓSTICO</span>
+                  <p className="dx-strong">{prescription.consulta?.diagnostico || 'No disponible en esta proyección'}</p>
+                </div>
 
+                <Receta receta={prescription} />
+              </article>
+            ))}
+          </section>
+
+          <aside className="dx-side">
+            <div className="dx-panel">
+              <h2>Datos disponibles</h2>
+              <span className="dx-pill">Receta simple</span>
+              <p className="dx-strong">{selected.medicamento}</p>
+              <p className="dx-muted">Diagnóstico: {selected.consulta?.diagnostico || 'No disponible'}</p>
               <hr />
+              <small className="dx-muted">PACIENTE</small>
+              <p className="dx-strong">{user?.nombre || 'Mi cuenta'}</p>
+            </div>
 
-              <div className="dx-data">
-                <span className="dx-label">DIAGNÓSTICO</span>
-                <p className="dx-strong">{r.diagnostico}</p>
-              </div>
-
-              {r.receta && <Receta receta={r.receta} />}
-            </article>
-          ))}
-        </section>
-
-        <aside className="dx-side">
-          <div className="dx-panel">
-            <h2>Datos de la consulta</h2>
-            <span className="dx-pill">{actual.estado}</span>
-            <p className="dx-strong">{actual.fecha} · {actual.hora}</p>
-            <p className="dx-muted">Consulta {actual.id} · Cita {actual.cita}</p>
-            <hr />
-            <small className="dx-muted">PACIENTE · {PACIENTE.id}</small>
-            <p className="dx-strong">{PACIENTE.nombre}</p>
-            <small className="dx-muted">PROFESIONAL</small>
-            <p className="dx-strong">{actual.medico}</p>
-            <p className="dx-muted">{actual.especialidad}</p>
-          </div>
-
-          <div className="dx-panel">
-            <FileText size={24} color="#16713e" />
-            <h2>Tu receta estará disponible al finalizar</h2>
-            <p className="dx-muted">
-              Cuando tu médico cierre la consulta, podrás revisar tu receta e indicaciones en tu
-              cuenta, en Mis recetas.
-            </p>
-            <span className="dx-pill dx-pill--soft">Pendiente de finalizar</span>
-          </div>
-        </aside>
-      </div>
+            <div className="dx-panel">
+              <FileText size={24} color="#16713e" />
+              <h2>Información limitada por seguridad</h2>
+              <p className="dx-muted">
+                El endpoint de pacientes no incluye fechas, profesional, estado de emisión ni PDF.
+                No se muestran datos inventados para completar esos campos.
+              </p>
+            </div>
+          </aside>
+        </div>
+      )}
     </>
   )
 }

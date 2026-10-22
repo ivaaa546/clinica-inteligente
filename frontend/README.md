@@ -72,3 +72,5 @@ npm run lint
 ```
 
 Estos comandos no requieren publicar la aplicación ni modificar la base de datos.
+
+Para reproducir la verificación completa, consultar [`VERIFICACION.md`](./VERIFICACION.md), que incluye la suite aislada del backend, resultados por tarea, cobertura de navegador, CI y límites funcionales.

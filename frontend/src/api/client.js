@@ -1,7 +1,8 @@
 const LOCAL_API_URL = 'http://localhost:3000/api/v1'
+const viteEnv = import.meta.env || {}
 let unauthorizedHandler
 
-export const API_BASE_URL = (import.meta.env.VITE_API_URL || LOCAL_API_URL).replace(/\/$/, '')
+export const API_BASE_URL = (viteEnv.VITE_API_URL || LOCAL_API_URL).replace(/\/$/, '')
 
 export class ApiError extends Error {
   constructor(message, { status = null, code = null, isNetworkError = false, cause } = {}) {
