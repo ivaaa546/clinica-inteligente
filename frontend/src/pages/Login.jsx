@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Plus, HeartHandshake, Sprout, Calendar, FileText, Pill,
   Mail, Eye, EyeOff, ArrowRight, UserPlus,
 } from 'lucide-react'
+import { iniciarSesion } from '../services/authService'
 import './Login.css'
 
 const BENEFICIOS = [
@@ -17,11 +18,23 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [verPassword, setVerPassword] = useState(false)
   const [recordar, setRecordar] = useState(false)
+  const [error, setError] = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const navigate = useNavigate()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: conectar con la API (services/auth.js)
-    console.log({ email, password, recordar })
+    setError('')
+    setEnviando(true)
+    try {
+      const sesion = await iniciarSesion({ email, password, recordar })
+      // TODO: redirigir según sesion.rol (PACIENTE -> /paciente, MEDICO -> /medico, ADMINISTRADOR -> /admin)
+      navigate(sesion.rol === 'PACIENTE' ? '/paciente' : '/')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setEnviando(false)
+    }
   }
 
   return (
@@ -126,8 +139,10 @@ export default function Login() {
               <Link to="/recuperar" className="link-strong">¿Olvidaste tu contraseña?</Link>
             </div>
 
-            <button type="submit" className="btn-primary">
-              <ArrowRight size={18} /> Iniciar sesión
+            {error && <p className="form__error" role="alert">{error}</p>}
+
+            <button type="submit" className="btn-primary" disabled={enviando}>
+              <ArrowRight size={18} /> {enviando ? 'Ingresando...' : 'Iniciar sesión'}
             </button>
           </form>
 

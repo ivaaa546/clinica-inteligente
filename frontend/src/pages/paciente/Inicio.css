@@ -101,3 +101,16 @@
   .ini-next__info { flex-direction: column; align-items: flex-start; }
   .ini-panel__head { flex-direction: column; align-items: flex-start; }
 }
+
+/* ---- Conexión con servicios / modalidad ---- */
+.ini-error { margin: 0; padding: 10px 14px; border-radius: 8px; background: #fde8e6; font-size: 13px; font-weight: 700; color: #b3261e; }
+.ini-next--empty { align-items: center; justify-content: center; text-align: center; min-height: 190px; }
+.ini-next--empty strong { font-size: 18px; color: var(--color-text); }
+.ini-next--empty p { margin: 0; font-size: 14px; color: var(--color-muted); }
+.ini-all { font-size: 14px; font-weight: 700; color: var(--color-primary); }
+.ini-empty { margin: 0; padding: 16px 0; font-size: 14px; color: var(--color-muted-2); }
+.ini-row { grid-template-columns: 176px 1fr 160px 190px; }
+.ini-state { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.ini-actions { display: flex; align-items: center; gap: 16px; }
+a.ini-action { text-decoration: none; }
+.ini-next__details .modalidad { margin-top: 2px; }

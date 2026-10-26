@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Info, FileText } from 'lucide-react'
+import EstadoCita from '../../components/EstadoCita'
 import { CONSULTAS, PACIENTE } from './datosEjemplo'
 import './Diagnosticos.css'
 
@@ -10,9 +11,9 @@ export default function Diagnosticos() {
   const actual = CONSULTAS.find((c) => c.id === seleccion)
 
   // La receta completa (y su impresión) vive en el módulo de recetas
-  const abrirReceta = (e, idReceta) => {
+  const abrirReceta = (e, idConsulta) => {
     e.stopPropagation()
-    navigate('/paciente/recetas', { state: { abrir: idReceta } })
+    navigate('/paciente/recetas', { state: { abrir: idConsulta } })
   }
 
   return (
@@ -50,7 +51,7 @@ export default function Diagnosticos() {
                   <strong>{c.medico.nombre}</strong>
                   <small>{c.medico.especialidad}</small>
                 </div>
-                <span className="dx-pill">{c.estado}</span>
+                <EstadoCita estado={c.estado} />
               </div>
 
               <div className="dx-meta">
@@ -65,13 +66,16 @@ export default function Diagnosticos() {
                 <p className="dx-strong">{c.diagnostico}</p>
               </div>
 
-              {c.receta && (
+              {c.recetas.length > 0 && (
                 <div className="dx-mini">
                   <div>
                     <span className="dx-label">RECETA ASOCIADA</span>
-                    <p>{c.receta.medicamento} · {c.receta.dosis} · {c.receta.frecuencia}</p>
+                    <p>
+                      {c.recetas[0].medicamento} · {c.recetas[0].dosis} · {c.recetas[0].frecuencia}
+                      {c.recetas.length > 1 && ` · +${c.recetas.length - 1} más`}
+                    </p>
                   </div>
-                  <button type="button" onClick={(e) => abrirReceta(e, c.receta.id)}>
+                  <button type="button" onClick={(e) => abrirReceta(e, c.id)}>
                     <FileText size={17} /> Abrir receta
                   </button>
                 </div>
@@ -83,7 +87,7 @@ export default function Diagnosticos() {
         <aside className="dx-side">
           <div className="dx-panel">
             <h2>Datos de la consulta</h2>
-            <span className="dx-pill">{actual.estado}</span>
+            <EstadoCita estado={actual.estado} />
             <p className="dx-strong">{actual.fecha} · {actual.hora}</p>
             <p className="dx-muted">Consulta {actual.id} · Cita {actual.cita}</p>
             <hr />

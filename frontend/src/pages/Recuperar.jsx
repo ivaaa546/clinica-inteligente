@@ -1,18 +1,28 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus, LockKeyhole, Mail, Info } from 'lucide-react'
+import { recuperarPassword } from '../services/authService'
 import './Login.css'       // reutiliza cabecera, panel verde y campos
 import './Recuperar.css'
 
 export default function Recuperar() {
   const [email, setEmail] = useState('')
   const [enviado, setEnviado] = useState(false)
+  const [enviando, setEnviando] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: conectar con la API (services/auth.js)
-    console.log({ email })
-    setEnviado(true) // siempre el mismo mensaje, exista o no el correo
+    setError('')
+    setEnviando(true)
+    try {
+      await recuperarPassword(email)
+      setEnviado(true) // siempre el mismo mensaje, exista o no el correo
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setEnviando(false)
+    }
   }
 
   return (
@@ -65,8 +75,10 @@ export default function Recuperar() {
               </span>
             </label>
 
-            <button type="submit" className="btn-solid-green">
-              <Mail size={18} /> Enviar enlace de recuperación
+            {error && <p className="form__error" role="alert">{error}</p>}
+
+            <button type="submit" className="btn-solid-green" disabled={enviando}>
+              <Mail size={18} /> {enviando ? 'Enviando...' : 'Enviar enlace de recuperación'}
             </button>
           </form>
 

@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Plus, HeartHandshake, Sprout, Mail, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import PhoneInput from '../components/PhoneInput'
+import { registrar } from '../services/authService'
 import './Login.css'      // reutiliza cabecera, panel verde y campos
 import './Registro.css'
 
@@ -24,17 +25,26 @@ export default function Registro() {
   const [datos, setDatos] = useState(INICIAL)
   const [ver, setVer] = useState({ password: false, confirmar: false })
   const [error, setError] = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const navigate = useNavigate()
 
   const cambiar = (e) => setDatos({ ...datos, [e.target.name]: e.target.value })
   const alternar = (campo) => setVer({ ...ver, [campo]: !ver[campo] })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (datos.password.length < 8) return setError('La contraseña debe tener al menos 8 caracteres.')
     if (datos.password !== datos.confirmar) return setError('Las contraseñas no coinciden.')
     setError('')
-    // TODO: conectar con la API (services/auth.js)
-    console.log(datos)
+    setEnviando(true)
+    try {
+      await registrar(datos)
+      navigate('/login')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setEnviando(false)
+    }
   }
 
   const texto = (name, label, props = {}) => (
@@ -123,7 +133,7 @@ export default function Registro() {
             <fieldset className="group">
               <legend>Datos personales</legend>
               <div className="grid3">
-                {texto('nombre', 'Nombre *', { input: { placeholder: 'Tu nombre' } })}
+                {texto('nombre', 'Nombres *', { input: { placeholder: 'Tus nombres' } })}
                 {texto('apellidos', 'Apellidos *', { input: { placeholder: 'Tus apellidos' } })}
                 <Campo label="Teléfono *">
                   <span className="field__input">
@@ -159,8 +169,8 @@ export default function Registro() {
               </p>
             </fieldset>
 
-            <button type="submit" className="btn-primary">
-              <ArrowRight size={18} /> Crear cuenta de paciente
+            <button type="submit" className="btn-primary" disabled={enviando}>
+              <ArrowRight size={18} /> {enviando ? 'Creando cuenta...' : 'Crear cuenta de paciente'}
             </button>
           </form>
 

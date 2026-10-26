@@ -1,0 +1,10 @@
+.estado {
+  display: inline-block; padding: 6px 11px; border-radius: 100px; white-space: nowrap;
+  font-size: 12px; font-weight: 700; line-height: 1.2;
+}
+.estado--pendiente { background: #f5ebcd; color: #856526; }
+.estado--aceptada { background: var(--color-accent); color: var(--color-primary-dark); }
+.estado--completada { background: #eff7eb; color: var(--color-muted); }
+.estado--rechazada { background: #fde8e6; color: #b3261e; }
+.estado--cancelada { background: #eceeec; color: #5d6b63; }
+.estado--reprogramada { background: #e4eefb; color: #2b5a96; }

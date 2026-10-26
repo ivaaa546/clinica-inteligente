@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import {
   Plus, Menu, ChevronDown, House, CalendarDays, ClipboardList, FileText, User, Lock, LogOut,
 } from 'lucide-react'
+import { cerrarSesion as cerrarSesionApi } from '../services/authService'
 import './PacienteLayout.css'
 
 // TODO: reemplazar por el usuario real que devuelva la API
@@ -55,10 +56,9 @@ export default function PacienteLayout() {
     }
   }, [abierto])
 
-  const cerrarSesion = () => {
+  const cerrarSesion = async () => {
     setAbierto(false)
-    // TODO: limpiar token / sesión
-    navigate('/login')
+    try { await cerrarSesionApi() } finally { navigate('/login') }
   }
 
   return (

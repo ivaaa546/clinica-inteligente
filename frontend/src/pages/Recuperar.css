@@ -39,3 +39,4 @@
 .recuperar__tip { margin: 0; font-size: 13px; color: var(--color-muted); }
 
 @media (max-height: 700px) { .lock { display: none; } }
+

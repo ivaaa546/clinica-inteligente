@@ -1,3 +1,3 @@
 .phone-flag { flex-shrink: 0; width: 24px; height: 18px; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px rgba(0, 0, 0, .1); }
 .phone-flag--emoji { width: auto; height: auto; font-size: 18px; line-height: 1; box-shadow: none; }
-.phone-icon { flex-shrink: 0; }
+.phone-code { flex-shrink: 0; font-size: 15px; font-weight: 700; color: var(--color-text); }

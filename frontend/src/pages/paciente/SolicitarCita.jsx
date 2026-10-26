@@ -1,63 +1,74 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Search, ChevronDown, CalendarDays, ArrowRight, Info } from 'lucide-react'
+import { Search, ChevronDown, CalendarDays, ArrowRight, Info, MapPin, Video } from 'lucide-react'
+import ModalidadTag from '../../components/ModalidadTag'
+import { PACIENTE } from './datosEjemplo'
+import { bloquesLibres, listarMedicos, solicitarCita } from '../../services/citasService'
+import { diaLargo, formatearFecha, hoyISO, proximoDiaHabil } from '../../lib/fechas'
 import './SolicitarCita.css'
 
-// TODO: reemplazar por datos reales de la API (services/medicos.js)
-const PACIENTE = { nombre: 'Tilin Insano', email: 'correo@ejemplo.com' }
-
-const MEDICOS = [
-  { id: 1, nombre: 'Dra. Elena Torres', iniciales: 'ET', especialidad: 'Medicina general' },
-  { id: 2, nombre: 'Dr. Pablo Ríos', iniciales: 'PR', especialidad: 'Medicina general' },
+const MODALIDADES = [
+  { id: 'PRESENCIAL', titulo: 'Presencial', texto: 'Acudes a la clínica a la hora de tu cita.', icon: MapPin },
+  { id: 'VIDEOLLAMADA', titulo: 'Videollamada', texto: 'Te atienden por video desde donde estés.', icon: Video },
 ]
-
-const BLOQUES = ['09:00–09:30', '10:00–10:30', '10:30–11:00', '11:30–12:00']
-
-const hoy = () => {
-  const d = new Date()
-  const mes = String(d.getMonth() + 1).padStart(2, '0')
-  const dia = String(d.getDate()).padStart(2, '0')
-  return `${d.getFullYear()}-${mes}-${dia}`
-}
-
-const aFecha = (iso) => new Date(`${iso}T00:00:00`)
-const capitalizar = (t) => t.charAt(0).toUpperCase() + t.slice(1)
 
 export default function SolicitarCita() {
   const navigate = useNavigate()
+  const [medicos, setMedicos] = useState([])
   const [busqueda, setBusqueda] = useState('')
-  const [especialidad, setEspecialidad] = useState('Medicina general')
-  const [medicoId, setMedicoId] = useState(1)
-  const [fecha, setFecha] = useState(hoy())
+  const [especialidad, setEspecialidad] = useState('')
+  const [medicoId, setMedicoId] = useState(null)
+  const [fecha, setFecha] = useState(proximoDiaHabil())
+  const [bloques, setBloques] = useState([])
   const [bloque, setBloque] = useState('')
+  const [cargandoBloques, setCargandoBloques] = useState(false)
+  const [modalidad, setModalidad] = useState('PRESENCIAL')
+  const [enviando, setEnviando] = useState(false)
+  const [error, setError] = useState('')
 
-  const especialidades = useMemo(() => [...new Set(MEDICOS.map((m) => m.especialidad))], [])
+  // Médicos activos
+  useEffect(() => {
+    listarMedicos()
+      .then((lista) => { setMedicos(lista); setMedicoId(lista[0]?.id ?? null) })
+      .catch((e) => setError(e.message))
+  }, [])
 
-  const medicos = useMemo(() => {
+  // Bloques libres del médico en la fecha elegida
+  useEffect(() => {
+    if (!medicoId || !fecha) return
+    let vigente = true
+    setCargandoBloques(true)
+    setBloque('')
+    bloquesLibres(medicoId, fecha)
+      .then((b) => vigente && setBloques(b))
+      .catch((e) => vigente && setError(e.message))
+      .finally(() => vigente && setCargandoBloques(false))
+    return () => { vigente = false }
+  }, [medicoId, fecha])
+
+  const especialidades = useMemo(() => [...new Set(medicos.map((m) => m.especialidad))], [medicos])
+
+  const filtrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase()
-    return MEDICOS.filter(
-      (m) =>
-        (!especialidad || m.especialidad === especialidad) &&
-        (!q || `${m.nombre} ${m.especialidad}`.toLowerCase().includes(q)),
+    return medicos.filter(
+      (m) => (!especialidad || m.especialidad === especialidad) && (!q || `${m.nombre} ${m.especialidad}`.toLowerCase().includes(q)),
     )
-  }, [busqueda, especialidad])
+  }, [medicos, busqueda, especialidad])
 
-  const medico = MEDICOS.find((m) => m.id === medicoId)
-
-  const diaLargo = fecha
-    ? capitalizar(aFecha(fecha).toLocaleDateString('es-GT', { weekday: 'long', day: 'numeric', month: 'long' }))
-    : ''
-  const diaCorto = fecha
-    ? aFecha(fecha).toLocaleDateString('es-GT', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/\./g, '')
-    : ''
-
+  const medico = medicos.find((m) => m.id === medicoId)
   const completo = Boolean(medico && fecha && bloque)
 
-  const enviar = () => {
-    if (!completo) return
-    // TODO: conectar con la API (services/citas.js)
-    console.log({ medicoId, fecha, bloque })
-    navigate('/paciente')
+  const enviar = async () => {
+    if (!completo || enviando) return
+    setEnviando(true)
+    setError('')
+    try {
+      const nueva = await solicitarCita({ medicoId, fecha, bloque, modalidad })
+      navigate(`/paciente/citas/${nueva.codigo}`)
+    } catch (e) {
+      setError(e.message)
+      setEnviando(false)
+    }
   }
 
   return (
@@ -65,10 +76,12 @@ export default function SolicitarCita() {
       <div className="sol-head">
         <h1>Solicitar cita</h1>
         <p>
-          Busca médico activo por especialidad, selecciona día y bloque disponible de 30 min.
-          La solicitud queda pendiente hasta que el médico la acepte o rechace.
+          Elige médico, modalidad, día y bloque disponible de 30 min. La solicitud queda pendiente
+          hasta que el médico la acepte o rechace.
         </p>
       </div>
+
+      {error && <p className="sol-error" role="alert">{error}</p>}
 
       <div className="sol-grid">
         <section className="sol-panel">
@@ -78,12 +91,7 @@ export default function SolicitarCita() {
             <label className="sol-field">
               <span>Buscar médico activo</span>
               <span className="sol-input">
-                <input
-                  type="text"
-                  placeholder="Buscar por nombre o especialidad"
-                  value={busqueda}
-                  onChange={(e) => setBusqueda(e.target.value)}
-                />
+                <input type="text" placeholder="Buscar por nombre o especialidad" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
                 <Search size={18} color="#4f6e5b" />
               </span>
             </label>
@@ -101,8 +109,8 @@ export default function SolicitarCita() {
           </div>
 
           <div className="sol-doctors" role="radiogroup" aria-label="Médico">
-            {medicos.length === 0 && <p className="sol-empty">No hay médicos que coincidan con tu búsqueda.</p>}
-            {medicos.map((m) => {
+            {filtrados.length === 0 && <p className="sol-empty">No hay médicos que coincidan con tu búsqueda.</p>}
+            {filtrados.map((m) => {
               const activo = m.id === medicoId
               return (
                 <button
@@ -126,28 +134,47 @@ export default function SolicitarCita() {
 
           <hr />
 
+          <div className="sol-modes-wrap">
+            <span className="sol-slots__title">¿Cómo quieres tu cita?</span>
+            <div className="sol-modes" role="radiogroup" aria-label="Modalidad de la cita">
+              {MODALIDADES.map(({ id, titulo, texto, icon: Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={modalidad === id}
+                  className={`sol-mode ${modalidad === id ? 'is-selected' : ''}`}
+                  onClick={() => setModalidad(id)}
+                >
+                  <Icon size={22} color="#16713e" />
+                  <span><strong>{titulo}</strong><small>{texto}</small></span>
+                  <span className="sol-radio" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <hr />
+
           <div className="sol-schedule">
             <div className="sol-date">
               <label className="sol-field">
                 <span>Fecha</span>
                 <span className="sol-input">
-                  <input type="date" min={hoy()} value={fecha} onChange={(e) => { setFecha(e.target.value); setBloque('') }} />
+                  <input type="date" min={hoyISO()} value={fecha} onChange={(e) => setFecha(e.target.value)} />
                   <CalendarDays size={18} color="#4f6e5b" />
                 </span>
               </label>
-              <small>{diaLargo}</small>
+              <small>{fecha ? diaLargo(fecha) : ''}</small>
             </div>
 
             <div className="sol-slots">
               <span className="sol-slots__title">Bloques disponibles (30 min)</span>
               <div className="sol-slots__list">
-                {BLOQUES.map((b) => (
-                  <button
-                    key={b}
-                    type="button"
-                    className={`sol-slot ${bloque === b ? 'is-selected' : ''}`}
-                    onClick={() => setBloque(b)}
-                  >
+                {cargandoBloques && <small>Buscando horarios...</small>}
+                {!cargandoBloques && bloques.length === 0 && <small>No hay bloques libres ese día. Prueba con otra fecha.</small>}
+                {bloques.map((b) => (
+                  <button key={b} type="button" className={`sol-slot ${bloque === b ? 'is-selected' : ''}`} onClick={() => setBloque(b)}>
                     {b}
                   </button>
                 ))}
@@ -155,8 +182,6 @@ export default function SolicitarCita() {
               <small>Solo se muestran bloques libres de 30 min.</small>
             </div>
           </div>
-
-          <hr />
         </section>
 
         <aside className="sol-side">
@@ -168,25 +193,26 @@ export default function SolicitarCita() {
               <div><dt>Paciente</dt><dd>{PACIENTE.nombre}</dd></div>
               <div><dt>Profesional</dt><dd>{medico ? medico.nombre : '—'}</dd></div>
               <div><dt>Especialidad</dt><dd>{medico ? medico.especialidad : '—'}</dd></div>
-              <div><dt>Fecha y hora</dt><dd>{diaCorto && bloque ? `${diaCorto} · ${bloque}` : 'Selecciona un bloque'}</dd></div>
+              <div><dt>Modalidad</dt><dd><ModalidadTag modalidad={modalidad} /></dd></div>
+              <div><dt>Fecha y hora</dt><dd>{fecha && bloque ? `${formatearFecha(fecha)} · ${bloque}` : 'Selecciona un bloque'}</dd></div>
               <div><dt>Correo electrónico</dt><dd className="is-plain">{PACIENTE.email}</dd></div>
             </dl>
 
             <hr />
-            <button type="button" className="sol-submit" disabled={!completo} onClick={enviar}>
-              <ArrowRight size={18} /> Solicitar cita
+            <button type="button" className="sol-submit" disabled={!completo || enviando} onClick={enviar}>
+              <ArrowRight size={18} /> {enviando ? 'Enviando...' : 'Solicitar cita'}
             </button>
           </div>
 
           <div className="sol-info">
             <Info size={17} color="#4f6e5b" />
             <p>
-              La solicitud queda pendiente hasta que el médico la acepte o rechace. Si el horario
-              ya está ocupado, el sistema mostrará una alternativa disponible.
+              La solicitud queda pendiente hasta que el médico la acepte o rechace.
+              {modalidad === 'VIDEOLLAMADA' && ' Si es por videollamada, podrás entrar a la sala desde el detalle de la cita una vez aceptada.'}
             </p>
           </div>
 
-          <Link to="/paciente" className="sol-back">← Volver a mis solicitudes</Link>
+          <Link to="/paciente/citas" className="sol-back">← Volver a mis citas</Link>
         </aside>
       </div>
     </>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Info, Check } from 'lucide-react'
+import { cambiarPassword } from '../../services/perfilService'
 import './Cuenta.css'
 
 const VACIO = { actual: '', nueva: '', confirmar: '' }
@@ -11,18 +12,25 @@ export default function CambiarPassword() {
   const [ver, setVer] = useState({ actual: false, nueva: false, confirmar: false })
   const [error, setError] = useState('')
   const [listo, setListo] = useState(false)
+  const [enviando, setEnviando] = useState(false)
 
   const cambiar = (e) => { setClave({ ...clave, [e.target.name]: e.target.value }); setListo(false) }
 
-  const guardar = (e) => {
+  const guardar = async (e) => {
     e.preventDefault()
     if (clave.nueva.length < 8) return setError('La nueva contraseña debe tener al menos 8 caracteres.')
     if (clave.nueva !== clave.confirmar) return setError('La nueva contraseña y su confirmación no coinciden.')
     setError('')
-    // TODO: conectar con la API (POST /auth/cambiar-password)
-    console.log('Cambiar contraseña')
-    setClave(VACIO)
-    setListo(true)
+    setEnviando(true)
+    try {
+      await cambiarPassword({ actual: clave.actual, nueva: clave.nueva })
+      setClave(VACIO)
+      setListo(true)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setEnviando(false)
+    }
   }
 
   const campo = (name, label) => (
@@ -75,7 +83,9 @@ export default function CambiarPassword() {
 
         <div className="cta-actions__btns cta-actions__btns--end">
           <button type="button" className="cta-btn cta-btn--ghost" onClick={() => navigate('/paciente')}>Cancelar</button>
-          <button type="submit" className="cta-btn cta-btn--primary"><Check size={18} /> Actualizar contraseña</button>
+          <button type="submit" className="cta-btn cta-btn--primary" disabled={enviando}>
+            <Check size={18} /> {enviando ? 'Actualizando...' : 'Actualizar contraseña'}
+          </button>
         </div>
       </section>
     </form>

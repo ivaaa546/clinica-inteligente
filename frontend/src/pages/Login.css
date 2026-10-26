@@ -131,3 +131,6 @@
   .welcome { display: none; }
   .form-panel { overflow: visible; padding: 32px 24px; }
 }
+
+.form__error { margin: 0; padding: 10px 12px; border-radius: 8px; background: #fde8e6; font-size: 13px; font-weight: 700; color: #b3261e; }
+.btn-primary:disabled, .btn-solid-green:disabled { opacity: .6; cursor: not-allowed; filter: none; }

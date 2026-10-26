@@ -50,33 +50,35 @@
 }
 .rx-sheet h3 { margin: 0; font-size: 15px; text-decoration: underline; color: #111; }
 .rx-sheet__head { display: flex; align-items: center; gap: 24px; }
-.rx-sheet__logo {
-  width: 64px; height: 64px; border-radius: 14px; background: var(--color-primary); flex-shrink: 0;
-  display: grid; place-items: center;
-}
+.rx-sheet__logo { width: 112px; height: 112px; flex-shrink: 0; object-fit: contain; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .rx-sheet__head > div { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 3px; }
 .rx-sheet__head strong { font-size: 18px; }
 .rx-sheet__head span { font-size: 14px; }
 .rx-sheet__head small { font-size: 13px; color: #444; }
 
-.rx-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 24px; }
+.rx-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 24px; }
 .rx-line { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px; border-bottom: 1px solid #bbb; min-width: 0; }
 .rx-line--wide { grid-column: 1 / -1; }
 .rx-line span { font-size: 12px; color: #555; }
 .rx-line strong { font-size: 15px; font-weight: 700; overflow-wrap: anywhere; }
 .rx-body { display: flex; flex-direction: column; gap: 14px; }
-.rx-med { margin: 0; font-size: 20px; font-weight: 700; }
+.rx-med { display: flex; flex-direction: column; gap: 10px; }
+.rx-med + .rx-med { padding-top: 14px; border-top: 1px dashed #bbb; }
+.rx-med__name { margin: 0; font-size: 19px; font-weight: 700; }
+.rx-med__name span { color: var(--color-primary); }
 
-.rx-sheet__foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-top: 8px; }
+.rx-sheet__foot { display: flex; align-items: flex-end; justify-content: flex-end; gap: 24px; margin-top: 12px; }
 .rx-sheet__foot p { margin: 4px 0 0; font-size: 14px; }
-.rx-sign { width: 220px; padding-top: 38px; border-bottom: 0; }
-.rx-sign span { display: block; padding-top: 6px; border-top: 1px solid #111; text-align: center; font-size: 14px; font-weight: 700; text-decoration: underline; }
+.rx-sign { width: 240px; min-height: 78px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+.rx-sign img { height: 74px; width: auto; max-width: 100%; object-fit: contain; margin-bottom: -12px; position: relative; z-index: 1; }
+.rx-sign span { align-self: stretch; display: block; padding-top: 6px; border-top: 1px solid #111; text-align: center; font-size: 14px; font-weight: 700; text-decoration: underline; }
 .rx-legal { margin: 0; text-align: center; font-size: 11px; color: #777; }
 
 @media (max-width: 700px) {
   .rx-sheet { padding: 22px 18px; }
+  .rx-sheet__logo { width: 80px; height: 80px; }
   .rx-grid { grid-template-columns: 1fr 1fr; }
-  .rx-sheet__foot { flex-direction: column; align-items: stretch; }
+  .rx-sheet__foot { justify-content: center; }
   .rx-sign { width: 100%; }
 }
 

@@ -83,3 +83,13 @@
   .cta-actions { flex-direction: column; align-items: stretch; }
   .cta-profile { flex-wrap: wrap; }
 }
+
+/* ---- Campos bloqueados / modo edición ---- */
+.cta-loading { margin: 0; padding: 40px 0; text-align: center; font-size: 15px; color: var(--color-muted); }
+.cta-lock { border: 0; margin: 0; padding: 0; min-width: 0; }
+.cta-lock:disabled .cta-field input,
+.cta-lock:disabled .cta-field select { background: #f1f5f2; color: var(--color-muted); cursor: not-allowed; }
+.cta-lock:disabled .cta-pass { background: #f1f5f2; }
+.cta-lock:disabled .cta-pass input { color: var(--color-muted); cursor: not-allowed; }
+.cta-btn:disabled { opacity: .6; cursor: not-allowed; }
+.cta-error { color: #b3261e; }

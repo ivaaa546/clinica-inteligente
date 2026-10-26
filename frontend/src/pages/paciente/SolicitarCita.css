@@ -103,3 +103,19 @@
   .sol-row, .sol-doctors, .sol-schedule { flex-direction: column; }
   .sol-date { width: 100%; }
 }
+
+/* ---- Modalidad y errores ---- */
+.sol-error { margin: 0; padding: 10px 14px; border-radius: 8px; background: #fde8e6; font-size: 13px; font-weight: 700; color: #b3261e; }
+.sol-modes-wrap { display: flex; flex-direction: column; gap: 10px; }
+.sol-modes { display: flex; gap: 14px; }
+.sol-mode {
+  flex: 1; min-width: 0; padding: 14px 16px; border-radius: 8px; text-align: left; background: #fff; border: 1px solid var(--color-border);
+  display: flex; align-items: center; gap: 12px;
+}
+.sol-mode > span:nth-child(2) { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.sol-mode strong { font-size: 15px; color: var(--color-text); }
+.sol-mode small { font-size: 12px; line-height: 1.35; color: var(--color-muted); }
+.sol-mode:hover { border-color: var(--color-primary); }
+.sol-mode.is-selected { background: var(--color-accent); border: 2px solid var(--color-primary); padding: 13px 15px; }
+.sol-mode.is-selected .sol-radio { background: var(--color-primary); box-shadow: inset 0 0 0 3px var(--color-accent); }
+@media (max-width: 640px) { .sol-modes { flex-direction: column; } }
