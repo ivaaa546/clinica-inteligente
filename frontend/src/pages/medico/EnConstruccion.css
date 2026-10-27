@@ -1,0 +1,6 @@
+.obra h1 { margin: 0 0 6px; font-size: 26px; line-height: 1.3; color: var(--color-text); }
+.obra p { margin: 0; font-size: 15px; color: var(--color-muted); }
+.obra__aviso {
+  margin-top: 20px; padding: 14px 16px; border-radius: 12px; font-size: 14px;
+  background: var(--color-accent); color: var(--color-primary-dark);
+}
