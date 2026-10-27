@@ -26,4 +26,8 @@ export class ConsultationsRepository {
   createVitalSigns(data: Prisma.SignosVitalesUncheckedCreateInput) {
     return this.db.signosVitales.create({ data });
   }
+
+  findVitalSignsByConsultation(consultaId: string) {
+    return this.db.signosVitales.findUnique({ where: { consultaId } });
+  }
 }

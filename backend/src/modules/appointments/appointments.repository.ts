@@ -53,6 +53,10 @@ export class AppointmentsRepository {
     return this.db.cita.update({ where: { id }, data: { estado } });
   }
 
+  markVideoRevoked(id: string, videoRevocadaEn: Date) {
+    return this.db.cita.update({ where: { id }, data: { videoRevocadaEn } });
+  }
+
   createRescheduled(data: Prisma.CitaUncheckedCreateInput) {
     return this.db.cita.create({ data });
   }

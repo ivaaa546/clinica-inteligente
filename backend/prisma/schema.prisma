@@ -34,6 +34,31 @@ enum EstadoCita {
   COMPLETADA
 }
 
+enum ModalidadAtencion {
+  PRESENCIAL
+  VIRTUAL
+}
+
+enum EstadoSignoVital {
+  MEDIDO
+  AUTORREPORTADO
+  NO_MEDIDO
+}
+
+enum CausaRevocacionVideo {
+  CITA_RECHAZADA
+  CITA_CANCELADA
+  CITA_REPROGRAMADA
+  CITA_COMPLETADA
+  FIN_VENTANA
+}
+
+enum EstadoTareaRevocacionVideo {
+  PENDIENTE
+  EN_PROCESO
+  COMPLETADA
+}
+
 model Usuario {
   id             String      @id @default(uuid()) @db.Uuid
   nombre         String      @db.VarChar(100)
@@ -115,30 +140,32 @@ model Especialidad {
 }
 
 model Medico {
-  id                String           @id @default(uuid()) @db.Uuid
-  usuarioId         String           @unique @map("usuario_id") @db.Uuid
-  especialidadId    String           @map("especialidad_id") @db.Uuid
-  numeroProfesional String           @unique @map("numero_profesional") @db.VarChar(50)
-  creadoEn          DateTime         @default(now()) @map("creado_en") @db.Timestamptz(6)
-  actualizadoEn     DateTime         @updatedAt @map("actualizado_en") @db.Timestamptz(6)
-  usuario           Usuario          @relation(fields: [usuarioId], references: [id])
-  especialidad      Especialidad     @relation(fields: [especialidadId], references: [id])
-  disponibilidades  Disponibilidad[]
-  citas             Cita[]           @relation("CitasMedico")
+  id                          String           @id @default(uuid()) @db.Uuid
+  usuarioId                   String           @unique @map("usuario_id") @db.Uuid
+  especialidadId              String           @map("especialidad_id") @db.Uuid
+  numeroProfesional           String           @unique @map("numero_profesional") @db.VarChar(50)
+  direccionAtencionPresencial String?          @map("direccion_atencion_presencial") @db.VarChar(255)
+  creadoEn                    DateTime         @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn               DateTime         @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+  usuario                     Usuario          @relation(fields: [usuarioId], references: [id])
+  especialidad                Especialidad     @relation(fields: [especialidadId], references: [id])
+  disponibilidades            Disponibilidad[]
+  citas                       Cita[]           @relation("CitasMedico")
 
   @@index([especialidadId])
   @@map("medico")
 }
 
 model Disponibilidad {
-  id            String   @id @default(uuid()) @db.Uuid
-  medicoId      String   @map("medico_id") @db.Uuid
-  inicio        DateTime @db.Timestamptz(6)
-  fin           DateTime @db.Timestamptz(6)
-  activa        Boolean  @default(true)
-  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
-  actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
-  medico        Medico   @relation(fields: [medicoId], references: [id])
+  id            String              @id @default(uuid()) @db.Uuid
+  medicoId      String              @map("medico_id") @db.Uuid
+  inicio        DateTime            @db.Timestamptz(6)
+  fin           DateTime            @db.Timestamptz(6)
+  activa        Boolean             @default(true)
+  modalidades   ModalidadAtencion[] @default([PRESENCIAL])
+  creadoEn      DateTime            @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn DateTime            @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+  medico        Medico              @relation(fields: [medicoId], references: [id])
   citas         Cita[]
 
   @@unique([medicoId, inicio])
@@ -146,23 +173,29 @@ model Disponibilidad {
 }
 
 model Cita {
-  id               String         @id @default(uuid()) @db.Uuid
-  pacienteId       String         @map("paciente_id") @db.Uuid
-  medicoId         String         @map("medico_id") @db.Uuid
-  disponibilidadId String         @map("disponibilidad_id") @db.Uuid
-  inicio           DateTime       @db.Timestamptz(6)
-  fin              DateTime       @db.Timestamptz(6)
-  estado           EstadoCita
-  citaOrigenId     String?        @map("cita_origen_id") @db.Uuid
-  creadoEn         DateTime       @default(now()) @map("creado_en") @db.Timestamptz(6)
-  actualizadoEn    DateTime       @updatedAt @map("actualizado_en") @db.Timestamptz(6)
-  paciente         Paciente       @relation("CitasPaciente", fields: [pacienteId], references: [id])
-  medico           Medico         @relation("CitasMedico", fields: [medicoId], references: [id])
-  disponibilidad   Disponibilidad @relation(fields: [disponibilidadId], references: [id])
-  citaOrigen       Cita?          @relation("Reprogramacion", fields: [citaOrigenId], references: [id])
-  reprogramaciones Cita[]         @relation("Reprogramacion")
-  preconsulta      Preconsulta?
-  consulta         Consulta?
+  id                          String                 @id @default(uuid()) @db.Uuid
+  pacienteId                  String                 @map("paciente_id") @db.Uuid
+  medicoId                    String                 @map("medico_id") @db.Uuid
+  disponibilidadId            String                 @map("disponibilidad_id") @db.Uuid
+  inicio                      DateTime               @db.Timestamptz(6)
+  fin                         DateTime               @db.Timestamptz(6)
+  estado                      EstadoCita
+  modalidad                   ModalidadAtencion      @default(PRESENCIAL)
+  direccionAtencionPresencial String?                @map("direccion_atencion_presencial") @db.VarChar(255)
+  direccionPresencialEsLegado Boolean                @default(false) @map("direccion_presencial_es_legado")
+  salaVideoId                 String?                @unique @map("sala_video_id") @db.VarChar(100)
+  videoRevocadaEn             DateTime?              @map("video_revocada_en") @db.Timestamptz(6)
+  citaOrigenId                String?                @map("cita_origen_id") @db.Uuid
+  creadoEn                    DateTime               @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn               DateTime               @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+  paciente                    Paciente               @relation("CitasPaciente", fields: [pacienteId], references: [id])
+  medico                      Medico                 @relation("CitasMedico", fields: [medicoId], references: [id])
+  disponibilidad              Disponibilidad         @relation(fields: [disponibilidadId], references: [id])
+  citaOrigen                  Cita?                  @relation("Reprogramacion", fields: [citaOrigenId], references: [id])
+  reprogramaciones            Cita[]                 @relation("Reprogramacion")
+  preconsulta                 Preconsulta?
+  consulta                    Consulta?
+  tareasRevocacionVideo       TareaRevocacionVideo[]
 
   @@index([medicoId, inicio, estado])
   @@index([pacienteId, inicio])
@@ -200,18 +233,41 @@ model Consulta {
   @@map("consulta")
 }
 
+model TareaRevocacionVideo {
+  id               String                     @id @default(uuid()) @db.Uuid
+  citaId           String                     @map("cita_id") @db.Uuid
+  causa            CausaRevocacionVideo
+  estado           EstadoTareaRevocacionVideo @default(PENDIENTE)
+  intentos         Int                        @default(0)
+  proximoIntentoEn DateTime                   @default(now()) @map("proximo_intento_en") @db.Timestamptz(6)
+  completadaEn     DateTime?                  @map("completada_en") @db.Timestamptz(6)
+  creadoEn         DateTime                   @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn    DateTime                   @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+  cita             Cita                       @relation(fields: [citaId], references: [id])
+
+  @@index([estado, proximoIntentoEn])
+  @@index([citaId, causa, estado])
+  @@map("tarea_revocacion_video")
+}
+
 model SignosVitales {
-  id               String   @id @default(uuid()) @db.Uuid
-  consultaId       String   @unique @map("consulta_id") @db.Uuid
-  pesoLb           Decimal  @map("peso_lb") @db.Decimal(5, 2)
-  tallaCm          Decimal  @map("talla_cm") @db.Decimal(5, 2)
-  temperatura      Decimal  @db.Decimal(4, 2)
-  presionArterial  String   @map("presion_arterial") @db.VarChar(20)
-  frecCardiaca     Int      @map("frec_cardiaca")
-  frecRespiratoria Int      @map("frec_respiratoria")
-  creadoEn         DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
-  actualizadoEn    DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
-  consulta         Consulta @relation(fields: [consultaId], references: [id])
+  id                     String           @id @default(uuid()) @db.Uuid
+  consultaId             String           @unique @map("consulta_id") @db.Uuid
+  pesoLb                 Decimal?         @map("peso_lb") @db.Decimal(5, 2)
+  pesoLbEstado           EstadoSignoVital @default(NO_MEDIDO) @map("peso_lb_estado")
+  tallaCm                Decimal?         @map("talla_cm") @db.Decimal(5, 2)
+  tallaCmEstado          EstadoSignoVital @default(NO_MEDIDO) @map("talla_cm_estado")
+  temperatura            Decimal?         @db.Decimal(4, 2)
+  temperaturaEstado      EstadoSignoVital @default(NO_MEDIDO) @map("temperatura_estado")
+  presionArterial        String?          @map("presion_arterial") @db.VarChar(20)
+  presionArterialEstado  EstadoSignoVital @default(NO_MEDIDO) @map("presion_arterial_estado")
+  frecCardiaca           Int?             @map("frec_cardiaca")
+  frecCardiacaEstado     EstadoSignoVital @default(NO_MEDIDO) @map("frec_cardiaca_estado")
+  frecRespiratoria       Int?             @map("frec_respiratoria")
+  frecRespiratoriaEstado EstadoSignoVital @default(NO_MEDIDO) @map("frec_respiratoria_estado")
+  creadoEn               DateTime         @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn          DateTime         @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+  consulta               Consulta         @relation(fields: [consultaId], references: [id])
 
   @@map("signos_vitales")
 }
