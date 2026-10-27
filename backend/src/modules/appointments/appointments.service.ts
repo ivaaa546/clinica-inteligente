@@ -1,14 +1,21 @@
-import { EstadoCita, Prisma, PrismaClient, RolUsuario } from "@prisma/client";
+import { randomUUID } from "node:crypto";
+import { EstadoCita, ModalidadAtencion, Prisma, PrismaClient, RolUsuario } from "@prisma/client";
 import { AuditService } from "../audit/audit.service.js";
 import { AvailabilityRepository } from "../availability/availability.repository.js";
 import { DoctorsRepository } from "../doctors/doctors.repository.js";
 import { PatientsRepository } from "../patients/patients.repository.js";
+import { VideoRevocationRepository } from "../video-calls/video-revocation.repository.js";
 import { AppointmentsRepository } from "./appointments.repository.js";
 
 export class AppointmentsService {
   constructor(private readonly db: PrismaClient) {}
 
-  async request(patientUserId: string, medicoId: string, disponibilidadId: string) {
+  async request(
+    patientUserId: string,
+    medicoId: string,
+    disponibilidadId: string,
+    modalidad: ModalidadAtencion = ModalidadAtencion.PRESENCIAL,
+  ) {
     try {
       return await this.db.$transaction(async (transaction) => {
         const patients = new PatientsRepository(transaction);
@@ -24,7 +31,12 @@ export class AppointmentsService {
         if (await appointments.findActiveByAvailability(disponibilidadId)) {
           throw new Error("El bloque de disponibilidad ya esta reservado");
         }
+        if (!block.modalidades.includes(modalidad)) {
+          throw new Error("La modalidad no esta habilitada para este bloque");
+        }
 
+        const doctor = await new DoctorsRepository(transaction).findById(medicoId);
+        const direccionAtencionPresencial = this.attendanceAddress(modalidad, doctor?.direccionAtencionPresencial);
         const appointment = await appointments.create({
           pacienteId: patient.id,
           medicoId,
@@ -32,6 +44,10 @@ export class AppointmentsService {
           inicio: block.inicio,
           fin: block.fin,
           estado: "PENDIENTE",
+          modalidad,
+          direccionAtencionPresencial,
+          direccionPresencialEsLegado: false,
+          salaVideoId: modalidad === ModalidadAtencion.VIRTUAL ? this.videoRoomId() : null,
         });
 
         // La auditoria usa el mismo cliente transaccional que la reserva.
@@ -40,7 +56,14 @@ export class AppointmentsService {
           accion: "CITA_SOLICITADA",
           entidad: "Cita",
           entidadId: appointment.id,
-          detalle: { estado: "PENDIENTE" },
+          detalle: { estado: "PENDIENTE", modalidad },
+        });
+        await new AuditService(transaction).record({
+          usuarioId: patientUserId,
+          accion: "MODALIDAD_CITA_SELECCIONADA",
+          entidad: "Cita",
+          entidadId: appointment.id,
+          detalle: { modalidad },
         });
 
         return appointment;
@@ -87,6 +110,10 @@ export class AppointmentsService {
         inicio: appointment.inicio,
         fin: appointment.fin,
         estado: appointment.estado,
+        modalidad: appointment.modalidad,
+        ...(appointment.modalidad === ModalidadAtencion.PRESENCIAL
+          ? { direccionAtencionPresencial: appointment.direccionAtencionPresencial }
+          : {}),
         citaOrigenId: appointment.citaOrigenId,
         creadoEn: appointment.creadoEn,
         actualizadoEn: appointment.actualizadoEn,
@@ -109,14 +136,21 @@ export class AppointmentsService {
         inicio: appointment.inicio,
         fin: appointment.fin,
         estado: appointment.estado,
+        modalidad: appointment.modalidad,
         citaOrigenId: appointment.citaOrigenId,
         creadoEn: appointment.creadoEn,
         actualizadoEn: appointment.actualizadoEn,
       };
     }
 
-    // El médico ya fue autorizado por relación y conserva la vista clínica prevista.
-    return appointment;
+    // El médico conserva la vista clínica prevista, sin identificadores operativos de sala.
+    const { salaVideoId: _salaVideoId, videoRevocadaEn: _videoRevocadaEn, ...doctorView } = appointment;
+    return {
+      ...doctorView,
+      ...(appointment.modalidad === ModalidadAtencion.PRESENCIAL
+        ? { direccionAtencionPresencial: appointment.direccionAtencionPresencial }
+        : { direccionAtencionPresencial: undefined }),
+    };
   }
 
   async accept(doctorUserId: string, appointmentId: string) {
@@ -144,6 +178,7 @@ export class AppointmentsService {
     actor: { userId: string; role: RolUsuario },
     appointmentId: string,
     newAvailabilityId: string,
+    modalidad: ModalidadAtencion = ModalidadAtencion.PRESENCIAL,
   ) {
     const appointment = await this.authorizeActorAppointment(actor, appointmentId);
     this.assertState(appointment.estado, ["PENDIENTE", "ACEPTADA"]);
@@ -163,8 +198,14 @@ export class AppointmentsService {
         if (await appointments.findActiveByAvailability(newAvailabilityId)) {
           throw new Error("El nuevo bloque ya esta reservado");
         }
+        if (!availability.modalidades.includes(modalidad)) {
+          throw new Error("La modalidad no esta habilitada para el nuevo bloque");
+        }
 
-        await appointments.updateState(appointmentId, "REPROGRAMADA");
+        const doctor = await new DoctorsRepository(transaction).findById(appointment.medicoId);
+        const direccionAtencionPresencial = this.attendanceAddress(modalidad, doctor?.direccionAtencionPresencial);
+        const rescheduled = await appointments.updateState(appointmentId, "REPROGRAMADA");
+        await this.invalidateVirtualAccess(transaction, rescheduled, "CITA_REPROGRAMADA");
         const replacement = await appointments.createRescheduled({
           pacienteId: appointment.pacienteId,
           medicoId: appointment.medicoId,
@@ -173,6 +214,10 @@ export class AppointmentsService {
           fin: availability.fin,
           estado: "PENDIENTE",
           citaOrigenId: appointment.id,
+          modalidad,
+          direccionAtencionPresencial,
+          direccionPresencialEsLegado: false,
+          salaVideoId: modalidad === ModalidadAtencion.VIRTUAL ? this.videoRoomId() : null,
         });
 
         // La cita anterior y la nueva quedan trazadas dentro de una sola transaccion.
@@ -181,7 +226,14 @@ export class AppointmentsService {
           accion: "CITA_REPROGRAMADA",
           entidad: "Cita",
           entidadId: appointment.id,
-          detalle: { nuevaCitaId: replacement.id },
+          detalle: { nuevaCitaId: replacement.id, modalidad },
+        });
+        await new AuditService(transaction).record({
+          usuarioId: actor.userId,
+          accion: "MODALIDAD_CITA_SELECCIONADA",
+          entidad: "Cita",
+          entidadId: replacement.id,
+          detalle: { modalidad },
         });
 
         return replacement;
@@ -192,6 +244,18 @@ export class AppointmentsService {
       }
       throw error;
     }
+  }
+
+  private attendanceAddress(modalidad: ModalidadAtencion, direccion: string | null | undefined) {
+    if (modalidad === ModalidadAtencion.VIRTUAL) return null;
+    if (!direccion?.trim()) {
+      throw new Error("El medico no tiene una direccion presencial configurada");
+    }
+    return direccion;
+  }
+
+  private videoRoomId() {
+    return `video-room_${randomUUID()}`;
   }
 
   private async authorizeDoctorAppointment(userId: string, appointmentId: string) {
@@ -228,6 +292,14 @@ export class AppointmentsService {
   private changeState(userId: string, appointmentId: string, state: EstadoCita, action: string) {
     return this.db.$transaction(async (transaction) => {
       const appointment = await new AppointmentsRepository(transaction).updateState(appointmentId, state);
+      const causeByState = {
+        RECHAZADA: "CITA_RECHAZADA",
+        CANCELADA: "CITA_CANCELADA",
+      } as const;
+      const cause = causeByState[state as keyof typeof causeByState];
+      if (cause) {
+        await this.invalidateVirtualAccess(transaction, appointment, cause);
+      }
       await new AuditService(transaction).record({
         usuarioId: userId,
         accion: action,
@@ -237,6 +309,19 @@ export class AppointmentsService {
       });
       return appointment;
     });
+  }
+
+  private async invalidateVirtualAccess(
+    transaction: Prisma.TransactionClient,
+    appointment: { id: string; modalidad: ModalidadAtencion },
+    cause: "CITA_RECHAZADA" | "CITA_CANCELADA" | "CITA_REPROGRAMADA" | "CITA_COMPLETADA",
+  ) {
+    if (appointment.modalidad !== ModalidadAtencion.VIRTUAL) return;
+
+    const now = new Date();
+    const appointments = new AppointmentsRepository(transaction);
+    await appointments.markVideoRevoked(appointment.id, now);
+    await new VideoRevocationRepository(transaction).enqueue(appointment.id, cause, now);
   }
 
   private assertState(current: EstadoCita, allowed: EstadoCita[]) {
