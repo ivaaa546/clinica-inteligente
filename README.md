@@ -9,3 +9,5 @@ La especificacion esta en borrador y requiere aprobacion explicita antes de gene
 ## Documentacion
 
 El indice completo esta en [docs/indice.md](docs/indice.md). Incluye alcance, casos de uso, reglas de negocio, requisitos, criterios de aceptacion, modelo de datos, arquitectura y diagramas.
+
+Para configurar, migrar y operar las modalidades presencial/virtual y LiveKit Cloud, consultar [backend/VIDEO_LIVEKIT.md](backend/VIDEO_LIVEKIT.md).

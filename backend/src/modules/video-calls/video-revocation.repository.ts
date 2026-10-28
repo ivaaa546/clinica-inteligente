@@ -25,7 +25,10 @@ export class VideoRevocationRepository {
       ON CONFLICT ("cita_id", "causa")
         WHERE "estado" IN ('PENDIENTE', 'EN_PROCESO')
       DO UPDATE SET "actualizado_en" = "tarea_revocacion_video"."actualizado_en"
-      RETURNING *
+      RETURNING
+        "id", "cita_id" AS "citaId", "causa", "estado", "intentos",
+        "proximo_intento_en" AS "proximoIntentoEn", "completada_en" AS "completadaEn",
+        "creado_en" AS "creadoEn", "actualizado_en" AS "actualizadoEn"
     `);
 
     return tasks[0];
@@ -50,7 +53,10 @@ export class VideoRevocationRepository {
         "actualizado_en" = ${now}
       FROM siguiente
       WHERE tarea."id" = siguiente."id"
-      RETURNING tarea.*
+      RETURNING
+        tarea."id", tarea."cita_id" AS "citaId", tarea."causa", tarea."estado", tarea."intentos",
+        tarea."proximo_intento_en" AS "proximoIntentoEn", tarea."completada_en" AS "completadaEn",
+        tarea."creado_en" AS "creadoEn", tarea."actualizado_en" AS "actualizadoEn"
     `);
 
     return tasks[0] ?? null;
