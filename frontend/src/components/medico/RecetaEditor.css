@@ -1,0 +1,6 @@
+.re { display: flex; flex-direction: column; gap: 14px; }
+.re__estado { margin: 0; }
+.re__fila { margin: 0; padding: 14px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-bg); display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.re__fila legend { padding: 0 6px; font-size: 12px; font-weight: 700; color: var(--color-muted); }
+.re__par { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.re .md-campo__error { margin: 0; }

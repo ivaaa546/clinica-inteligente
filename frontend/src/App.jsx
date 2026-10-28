@@ -14,7 +14,12 @@ import Recetas from './pages/paciente/Recetas'
 import Cuenta from './pages/paciente/Cuenta'
 import CambiarPassword from './pages/paciente/CambiarPassword'
 import MedicoLayout from './layouts/MedicoLayout'
-import EnConstruccion from './pages/medico/EnConstruccion'
+import AgendaMedico from './pages/medico/Agenda'
+import MisPacientes from './pages/medico/MisPacientes'
+import ExpedienteMedico from './pages/medico/Expediente'
+import RegistrarConsulta from './pages/medico/RegistrarConsulta'
+import ConsultaCompletada from './pages/medico/ConsultaCompletada'
+import VideollamadaMedico from './pages/medico/Videollamada'
 
 export default function App() {
   return (
@@ -42,11 +47,17 @@ export default function App() {
           <Route path="cambiar-password" element={<CambiarPassword />} />
         </Route>
 
+        {/* Videollamada del médico: pantalla completa, sin el menú del layout (igual que la del paciente) */}
+        <Route path="/medico/citas/:codigo/llamada" element={<VideollamadaMedico />} />
+
         {/* Área del médico: el layout envuelve a todas sus pantallas */}
         <Route path="/medico" element={<MedicoLayout />}>
           <Route index element={<Navigate to="agenda" replace />} />
-          <Route path="agenda" element={<EnConstruccion titulo="Tu agenda, con calma" descripcion="Gestiona tus citas y los bloques que ofreces a tus pacientes." />} />
-          <Route path="pacientes" element={<EnConstruccion titulo="Mis pacientes" descripcion="Las personas que acompañas, con su historia a mano." />} />
+          <Route path="agenda" element={<AgendaMedico />} />
+          <Route path="pacientes" element={<MisPacientes />} />
+          <Route path="pacientes/:pacienteId" element={<ExpedienteMedico />} />
+          <Route path="consulta/:citaCodigo" element={<RegistrarConsulta />} />
+          <Route path="consultas/:consultaId" element={<ConsultaCompletada />} />
         </Route>
       </Routes>
     </BrowserRouter>

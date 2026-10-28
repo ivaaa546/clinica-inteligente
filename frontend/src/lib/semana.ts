@@ -65,3 +65,6 @@ export const edadDesde = (nacimiento: FechaISO, hoy: Date = new Date()): number 
   if (!cumplio) edad -= 1
   return edad
 }
+
+/** Clave de una celda de la cuadrícula: día + hora de inicio ('2026-10-19|10:30') */
+export const slotKey = (fecha: FechaISO, inicio: Hora) => `${fecha}|${inicio}`
