@@ -102,7 +102,7 @@ describe.skipIf(!enabled)("administracion integrada", () => {
         disponibilidadId: availabilityId,
         inicio: availability.inicio,
         fin: availability.fin,
-        estado: "COMPLETADA",
+        estado: "COMPLETADA", modalidad: "PRESENCIAL", direccionAtencionPresencial: "Direccion de prueba",
       },
     });
     appointmentId = appointment.id;
@@ -189,7 +189,7 @@ describe.skipIf(!enabled)("administracion integrada", () => {
     );
     expect(response.body.appointmentsByState).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ estado: "COMPLETADA", _count: { _all: expect.any(Number) } }),
+        expect.objectContaining({ estado: "COMPLETADA", modalidad: "PRESENCIAL", direccionAtencionPresencial: "Direccion de prueba", _count: { _all: expect.any(Number) } }),
       ]),
     );
     expect(JSON.stringify(response.body)).not.toContain("diagnostico");

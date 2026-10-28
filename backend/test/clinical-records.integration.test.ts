@@ -88,7 +88,7 @@ describe.skipIf(!enabled)("preconsulta, antecedentes y recetas integrados", () =
         disponibilidadId: availabilityId,
         inicio: availability.inicio,
         fin: availability.fin,
-        estado: "ACEPTADA",
+        estado: "ACEPTADA", modalidad: "PRESENCIAL", direccionAtencionPresencial: "Direccion de prueba",
       },
     });
     appointmentId = appointment.id;

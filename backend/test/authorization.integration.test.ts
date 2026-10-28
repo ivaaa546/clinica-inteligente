@@ -46,7 +46,7 @@ describe.skipIf(!enabled)("autorizacion clinica integrada", () => {
     otherPatientId = (await prisma.paciente.create({ data: { usuarioId: otherPatientUser.id, fechaNacimiento: new Date("1992-01-01"), sexo: "F" } })).id;
     const availability = await prisma.disponibilidad.create({ data: { medicoId: doctor.id, inicio: new Date(Date.now() + 86_400_000), fin: new Date(Date.now() + 86_400_000 + 1_800_000) } });
     availabilityId = availability.id;
-    const appointment = await prisma.cita.create({ data: { pacienteId: patient.id, medicoId: doctor.id, disponibilidadId: availability.id, inicio: availability.inicio, fin: availability.fin, estado: "ACEPTADA" } });
+    const appointment = await prisma.cita.create({ data: { pacienteId: patient.id, medicoId: doctor.id, disponibilidadId: availability.id, inicio: availability.inicio, fin: availability.fin, estado: "ACEPTADA", modalidad: "PRESENCIAL", direccionAtencionPresencial: "Direccion de prueba" } });
     appointmentId = appointment.id;
     await prisma.preconsulta.create({ data: { citaId: appointment.id, motivoConsulta: "Control", antecedentesIniciales: { declarado: true } } });
     const consultation = await prisma.consulta.create({ data: { citaId: appointment.id, tipoFicha: "ADULTO", motivoConsulta: "Control", historiaActual: "Dolor ocasional", diagnostico: "Estable", observaciones: "Seguimiento habitual", fechaConsulta: new Date(), evaluacionClinica: { problemas_activos: [], signos_peligro: [] } } });
@@ -95,7 +95,7 @@ describe.skipIf(!enabled)("autorizacion clinica integrada", () => {
 
     const ownResponse = await patientAgent.get(`/api/v1/appointments/${appointmentId}`);
     expect(ownResponse.status).toBe(200);
-    expect(ownResponse.body).toMatchObject({ id: appointmentId, estado: "ACEPTADA" });
+    expect(ownResponse.body).toMatchObject({ id: appointmentId, estado: "ACEPTADA", modalidad: "PRESENCIAL", direccionAtencionPresencial: "Direccion de prueba" });
     expect(ownResponse.body.consulta).toEqual({ diagnostico: "Estable" });
     expect(ownResponse.body).not.toHaveProperty("paciente");
     expect(ownResponse.body).not.toHaveProperty("medico");

@@ -110,7 +110,7 @@ describe.skipIf(!enabled)("cierre de consulta integrado", () => {
           disponibilidadId: disponibilidad.id,
           inicio: disponibilidad.inicio,
           fin: disponibilidad.fin,
-          estado: "ACEPTADA",
+          estado: "ACEPTADA", modalidad: "PRESENCIAL", direccionAtencionPresencial: "Direccion de prueba",
         },
       });
       appointmentIds.push(cita.id);

@@ -33,6 +33,7 @@ describe.skipIf(!enabled)("ciclo de citas integrado", () => {
 
   afterAll(async () => {
     await prisma.auditoria.deleteMany({ where: { usuarioId: { in: [patientUserId, doctorUserId] } } });
+    await prisma.tareaRevocacionVideo.deleteMany({ where: { cita: { medicoId: doctorId } } });
     await prisma.cita.deleteMany({ where: { medicoId: doctorId } });
     await prisma.disponibilidad.deleteMany({ where: { medicoId: doctorId } });
     await prisma.medico.deleteMany({ where: { id: doctorId } });
@@ -43,7 +44,7 @@ describe.skipIf(!enabled)("ciclo de citas integrado", () => {
   });
 
   const createAvailability = async (doctorAgent: request.SuperAgentTest, minutesFromNow: number) => {
-    const response = await doctorAgent.post("/api/v1/availability").send({ inicio: new Date(Date.now() + minutesFromNow * 60_000).toISOString() });
+    const response = await doctorAgent.post("/api/v1/availability").send({ inicio: new Date(Date.now() + minutesFromNow * 60_000).toISOString(), modalidades: ["VIRTUAL"] });
     expect(response.status).toBe(201);
     availabilityIds.push(response.body.id);
     return response.body.id as string;
@@ -56,7 +57,7 @@ describe.skipIf(!enabled)("ciclo de citas integrado", () => {
     await patientAgent.post("/api/v1/auth/login").send({ correo: patientEmail, contrasena: password });
     const availabilityId = await createAvailability(doctorAgent, 60);
 
-    const requestResponse = await patientAgent.post("/api/v1/appointments").send({ medicoId: doctorId, disponibilidadId: availabilityId });
+    const requestResponse = await patientAgent.post("/api/v1/appointments").send({ medicoId: doctorId, disponibilidadId: availabilityId, modalidad: "VIRTUAL" });
     expect(requestResponse.status).toBe(201);
     appointmentIds.push(requestResponse.body.id);
     expect(requestResponse.body.estado).toBe("PENDIENTE");
@@ -72,7 +73,7 @@ describe.skipIf(!enabled)("ciclo de citas integrado", () => {
     await doctorAgent.post("/api/v1/auth/login").send({ correo: doctorEmail, contrasena: password });
     await patientAgent.post("/api/v1/auth/login").send({ correo: patientEmail, contrasena: password });
     const availabilityId = await createAvailability(doctorAgent, 120);
-    const created = await patientAgent.post("/api/v1/appointments").send({ medicoId: doctorId, disponibilidadId: availabilityId });
+    const created = await patientAgent.post("/api/v1/appointments").send({ medicoId: doctorId, disponibilidadId: availabilityId, modalidad: "VIRTUAL" });
     appointmentIds.push(created.body.id);
     expect((await doctorAgent.patch(`/api/v1/appointments/${created.body.id}/reject`)).body.estado).toBe("RECHAZADA");
     expect((await doctorAgent.patch(`/api/v1/appointments/${created.body.id}/accept`)).status).not.toBe(200);
@@ -85,14 +86,14 @@ describe.skipIf(!enabled)("ciclo de citas integrado", () => {
     await patientAgent.post("/api/v1/auth/login").send({ correo: patientEmail, contrasena: password });
     const firstBlock = await createAvailability(doctorAgent, 180);
     const secondBlock = await createAvailability(doctorAgent, 240);
-    const created = await patientAgent.post("/api/v1/appointments").send({ medicoId: doctorId, disponibilidadId: firstBlock });
+    const created = await patientAgent.post("/api/v1/appointments").send({ medicoId: doctorId, disponibilidadId: firstBlock, modalidad: "VIRTUAL" });
     appointmentIds.push(created.body.id);
-    const rescheduled = await patientAgent.patch(`/api/v1/appointments/${created.body.id}/reschedule`).send({ nuevaDisponibilidadId: secondBlock });
+    const rescheduled = await patientAgent.patch(`/api/v1/appointments/${created.body.id}/reschedule`).send({ nuevaDisponibilidadId: secondBlock, modalidad: "VIRTUAL" });
     appointmentIds.push(rescheduled.body.id);
     expect(rescheduled.body.estado).toBe("PENDIENTE");
     expect((await prisma.cita.findUniqueOrThrow({ where: { id: created.body.id } })).estado).toBe("REPROGRAMADA");
     expect((await patientAgent.patch(`/api/v1/appointments/${rescheduled.body.id}/cancel`)).body.estado).toBe("CANCELADA");
-    expect((await patientAgent.patch(`/api/v1/appointments/${rescheduled.body.id}/reschedule`).send({ nuevaDisponibilidadId: firstBlock })).status).not.toBe(200);
+    expect((await patientAgent.patch(`/api/v1/appointments/${rescheduled.body.id}/reschedule`).send({ nuevaDisponibilidadId: firstBlock, modalidad: "VIRTUAL" })).status).not.toBe(200);
   });
 
   it("permite una sola reserva ante solicitudes concurrentes", async () => {
@@ -105,8 +106,8 @@ describe.skipIf(!enabled)("ciclo de citas integrado", () => {
     const availabilityId = await createAvailability(doctorAgent, 300);
 
     const responses = await Promise.all([
-      firstPatientAgent.post("/api/v1/appointments").send({ medicoId: doctorId, disponibilidadId: availabilityId }),
-      secondPatientAgent.post("/api/v1/appointments").send({ medicoId: doctorId, disponibilidadId: availabilityId }),
+      firstPatientAgent.post("/api/v1/appointments").send({ medicoId: doctorId, disponibilidadId: availabilityId, modalidad: "VIRTUAL" }),
+      secondPatientAgent.post("/api/v1/appointments").send({ medicoId: doctorId, disponibilidadId: availabilityId, modalidad: "VIRTUAL" }),
     ]);
 
     expect(responses.filter((response) => response.status === 201)).toHaveLength(1);
