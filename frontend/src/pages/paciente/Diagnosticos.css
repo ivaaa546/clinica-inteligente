@@ -1,5 +1,5 @@
 .dx-head { display: flex; align-items: center; gap: 24px; justify-content: space-between; }
-.dx-head h1 { margin: 0 0 7px; font-size: 30px; line-height: 1.4; color: var(--color-text); }
+.dx-head h1 { margin: 0 0 6px; font-size: 26px; line-height: 1.4; color: var(--color-text); }
 .dx-head p { margin: 0; font-size: 15px; line-height: 1.4; color: var(--color-muted); }
 
 .dx-pill {
@@ -13,11 +13,11 @@
 
 .dx-main { display: flex; gap: 24px; align-items: flex-start; }
 .dx-main > .dx-panel { flex: 1; min-width: 0; }
-.dx-side { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; gap: 20px; position: sticky; top: 24px; }
+.dx-side { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; position: sticky; top: 0; }
 
 .dx-panel {
-  padding: 24px; border-radius: 16px; background: #fff; border: 1px solid var(--color-border);
-  display: flex; flex-direction: column; gap: 18px;
+  padding: 20px; border-radius: 16px; background: #fff; border: 1px solid var(--color-border);
+  display: flex; flex-direction: column; gap: 14px;
 }
 .dx-panel h2 { margin: 0; font-size: 20px; line-height: 1.4; color: var(--color-text); }
 .dx-panel hr, .dx-registro hr { width: 100%; height: 1px; border: 0; margin: 0; background: var(--color-border); }
@@ -29,8 +29,8 @@ small.dx-muted { font-size: 12px; }
 
 /* Registros */
 .dx-registro {
-  padding: 18px; border-radius: 14px; background: var(--color-bg); border: 1px solid var(--color-border);
-  display: flex; flex-direction: column; gap: 14px; cursor: pointer; transition: border-color .15s, box-shadow .15s;
+  padding: 16px; border-radius: 14px; background: var(--color-bg); border: 1px solid var(--color-border);
+  display: flex; flex-direction: column; gap: 12px; cursor: pointer; transition: border-color .15s, box-shadow .15s;
 }
 .dx-registro:hover { border-color: var(--color-primary); }
 .dx-registro.is-selected { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(22, 113, 62, .15); }
@@ -77,3 +77,17 @@ small.dx-muted { font-size: 12px; }
 @media (max-width: 640px) {
   .dx-head { flex-direction: column; align-items: flex-start; }
 }
+
+/* Receta resumida dentro del historial */
+.dx-mini {
+  padding: 12px 14px; border-radius: 10px; background: #fff; border: 1px solid var(--color-border);
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; cursor: default;
+}
+.dx-mini > div { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.dx-mini p { margin: 0; font-size: 14px; color: var(--color-text); }
+.dx-mini button {
+  height: 40px; padding: 0 14px; border-radius: 10px; flex-shrink: 0; background: #fff; border: 1px solid var(--color-border);
+  display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: var(--color-primary);
+}
+.dx-mini button:hover { background: var(--color-bg); border-color: var(--color-primary); }
+@media (max-width: 640px) { .dx-mini { flex-direction: column; align-items: flex-start; } }

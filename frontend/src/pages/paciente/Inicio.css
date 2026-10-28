@@ -1,6 +1,6 @@
 /* Encabezado */
 .ini-head { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-.ini-head h1 { margin: 0 0 9px; font-size: 30px; color: var(--color-text); }
+.ini-head h1 { margin: 0 0 9px; font-size: 26px; color: var(--color-text); }
 .ini-head p { margin: 0; font-size: 15px; color: var(--color-muted); }
 .ini-cta {
   height: 46px; padding: 0 20px; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 700;
@@ -14,9 +14,9 @@
 .ini-summary { display: flex; gap: 24px; align-items: flex-start; }
 
 .ini-next {
-  flex: 1; min-width: 0; padding: 30px; border-radius: 16px; border: 1px solid var(--color-border);
+  flex: 1; min-width: 0; padding: 22px; border-radius: 16px; border: 1px solid var(--color-border);
   background: linear-gradient(to right, #e8f4eb, var(--color-bg));
-  display: flex; flex-direction: column; gap: 22px;
+  display: flex; flex-direction: column; gap: 16px;
 }
 .ini-next__top { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 700; color: var(--color-primary); }
 .ini-next__info { display: flex; align-items: center; gap: 26px; }
@@ -42,10 +42,10 @@
 }
 .ini-detail:hover { filter: brightness(.97); }
 
-.ini-shortcuts { width: 326px; flex-shrink: 0; display: flex; flex-direction: column; gap: 18px; }
+.ini-shortcuts { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
 .ini-shortcut {
-  padding: 22px; border-radius: 16px; background: #fff; border: 1px solid var(--color-border);
-  display: flex; flex-direction: column; gap: 12px; transition: box-shadow .15s, border-color .15s;
+  padding: 18px; border-radius: 16px; background: #fff; border: 1px solid var(--color-border);
+  display: flex; flex-direction: column; gap: 10px; transition: box-shadow .15s, border-color .15s;
 }
 .ini-shortcut:hover { border-color: var(--color-primary); box-shadow: 0 6px 16px rgba(22, 113, 62, .1); }
 .ini-shortcut > div { display: flex; align-items: center; justify-content: space-between; }
@@ -63,8 +63,8 @@
 
 /* Tabla de citas */
 .ini-panel {
-  padding: 26px; border-radius: 16px; background: #fff; border: 1px solid var(--color-border);
-  display: flex; flex-direction: column; gap: 22px;
+  padding: 20px; border-radius: 16px; background: #fff; border: 1px solid var(--color-border);
+  display: flex; flex-direction: column; gap: 14px;
 }
 .ini-panel__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .ini-panel__head h2 { margin: 0; font-size: 21px; color: var(--color-text); }
@@ -72,11 +72,11 @@
 
 .ini-table { overflow-x: auto; }
 .ini-row {
-  min-width: 640px; padding: 16px 0; border-top: 1px solid var(--color-border);
+  min-width: 640px; padding: 12px 0; border-top: 1px solid var(--color-border);
   display: grid; grid-template-columns: 176px 1fr 142px 130px; gap: 20px; align-items: center;
 }
 .ini-row--head {
-  padding: 0 0 22px; border-top: 0; font-size: 11px; font-weight: 700; color: var(--color-muted-2);
+  padding: 0 0 12px; border-top: 0; font-size: 11px; font-weight: 700; color: var(--color-muted-2);
 }
 .ini-cell { display: flex; flex-direction: column; gap: 5px; }
 .ini-cell strong { font-size: 15px; color: var(--color-text); }
@@ -101,3 +101,16 @@
   .ini-next__info { flex-direction: column; align-items: flex-start; }
   .ini-panel__head { flex-direction: column; align-items: flex-start; }
 }
+
+/* ---- Conexión con servicios / modalidad ---- */
+.ini-error { margin: 0; padding: 10px 14px; border-radius: 8px; background: #fde8e6; font-size: 13px; font-weight: 700; color: #b3261e; }
+.ini-next--empty { align-items: center; justify-content: center; text-align: center; min-height: 190px; }
+.ini-next--empty strong { font-size: 18px; color: var(--color-text); }
+.ini-next--empty p { margin: 0; font-size: 14px; color: var(--color-muted); }
+.ini-all { font-size: 14px; font-weight: 700; color: var(--color-primary); }
+.ini-empty { margin: 0; padding: 16px 0; font-size: 14px; color: var(--color-muted-2); }
+.ini-row { grid-template-columns: 176px 1fr 160px 190px; }
+.ini-state { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.ini-actions { display: flex; align-items: center; gap: 16px; }
+a.ini-action { text-decoration: none; }
+.ini-next__details .modalidad { margin-top: 2px; }
