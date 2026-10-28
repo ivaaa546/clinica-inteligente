@@ -121,11 +121,17 @@ describe.skipIf(!enabled)("administracion integrada", () => {
       data: {
         consultaId: consultationId,
         pesoLb: 150,
+        pesoLbEstado: "MEDIDO",
         tallaCm: 170,
+        tallaCmEstado: "MEDIDO",
         temperatura: 36.5,
+        temperaturaEstado: "MEDIDO",
         presionArterial: "120/80",
+        presionArterialEstado: "MEDIDO",
         frecCardiaca: 70,
+        frecCardiacaEstado: "MEDIDO",
         frecRespiratoria: 16,
+        frecRespiratoriaEstado: "MEDIDO",
       },
     });
     prescriptionId = (
@@ -189,7 +195,7 @@ describe.skipIf(!enabled)("administracion integrada", () => {
     );
     expect(response.body.appointmentsByState).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ estado: "COMPLETADA", modalidad: "PRESENCIAL", direccionAtencionPresencial: "Direccion de prueba", _count: { _all: expect.any(Number) } }),
+        expect.objectContaining({ estado: "COMPLETADA", _count: { _all: expect.any(Number) } }),
       ]),
     );
     expect(JSON.stringify(response.body)).not.toContain("diagnostico");

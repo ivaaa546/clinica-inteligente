@@ -50,7 +50,7 @@ describe.skipIf(!enabled)("autorizacion clinica integrada", () => {
     appointmentId = appointment.id;
     await prisma.preconsulta.create({ data: { citaId: appointment.id, motivoConsulta: "Control", antecedentesIniciales: { declarado: true } } });
     const consultation = await prisma.consulta.create({ data: { citaId: appointment.id, tipoFicha: "ADULTO", motivoConsulta: "Control", historiaActual: "Dolor ocasional", diagnostico: "Estable", observaciones: "Seguimiento habitual", fechaConsulta: new Date(), evaluacionClinica: { problemas_activos: [], signos_peligro: [] } } });
-    await prisma.signosVitales.create({ data: { consultaId: consultation.id, pesoLb: 150, tallaCm: 170, temperatura: 36.5, presionArterial: "120/80", frecCardiaca: 70, frecRespiratoria: 16 } });
+    await prisma.signosVitales.create({ data: { consultaId: consultation.id, pesoLb: 150, pesoLbEstado: "MEDIDO", tallaCm: 170, tallaCmEstado: "MEDIDO", temperatura: 36.5, temperaturaEstado: "MEDIDO", presionArterial: "120/80", presionArterialEstado: "MEDIDO", frecCardiaca: 70, frecCardiacaEstado: "MEDIDO", frecRespiratoria: 16, frecRespiratoriaEstado: "MEDIDO" } });
     await prisma.receta.create({ data: { consultaId: consultation.id, medicamento: "Medicamento de prueba", dosis: "1", via: "oral", frecuencia: "diaria", duracion: "5 dias", indicaciones: "Prueba" } });
   });
 

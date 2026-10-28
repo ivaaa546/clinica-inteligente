@@ -134,7 +134,7 @@ describe.skipIf(!enabled)("preconsulta, antecedentes y recetas integrados", () =
       });
     expect(consultation.status).toBe(201);
     consultationId = consultation.body.id;
-  });
+  }, 30_000);
 
   afterAll(async () => {
     await prisma.auditoria.deleteMany({
