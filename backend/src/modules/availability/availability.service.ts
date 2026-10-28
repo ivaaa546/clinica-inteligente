@@ -12,6 +12,12 @@ export class AvailabilityService {
     return new AvailabilityRepository(this.db).listByDoctor(medicoId, from);
   }
 
+  async listForOwnDoctor(userId: string, from?: Date) {
+    const doctor = await new DoctorsRepository(this.db).findByUserId(userId);
+    if (!doctor) throw new Error("Perfil de medico no encontrado");
+    return this.listForDoctor(doctor.id, from);
+  }
+
   async publish(
     doctorUserId: string,
     inicio: Date,

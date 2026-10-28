@@ -5,6 +5,7 @@ import { z } from "zod";
 const updateDoctorSchema = z.object({
   numeroProfesional: z.string().min(1).optional(),
   especialidadId: z.string().uuid().optional(),
+  direccionAtencionPresencial: z.string().trim().min(1).max(255).nullable().optional(),
 });
 
 export const listDoctors: RequestHandler = async (request, response, next) => {

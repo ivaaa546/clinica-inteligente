@@ -41,6 +41,17 @@ export class AppointmentsRepository {
     });
   }
 
+  listExpiredAcceptedVirtual(now: Date) {
+    return this.db.cita.findMany({
+      where: {
+        modalidad: "VIRTUAL",
+        estado: "ACEPTADA",
+        fin: { lte: now },
+        videoRevocadaEn: null,
+      },
+    });
+  }
+
   existsDoctorPatientRelationship(medicoId: string, pacienteId: string) {
     return this.db.cita.findFirst({ where: { medicoId, pacienteId }, select: { id: true } });
   }
