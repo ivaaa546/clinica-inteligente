@@ -6,3 +6,10 @@ backend/.env.test
 backend/node_modules/
 backend/dist/
 .DS_Store
+
+# Package manager locks y workspaces no versionados
+pnpm-lock.yaml
+pnpm-workspace.yaml
+backend/pnpm-lock.yaml
+backend/pnpm-workspace.yaml
+frontend/pnpm-lock.yaml
