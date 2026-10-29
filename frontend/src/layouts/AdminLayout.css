@@ -1,0 +1,21 @@
+/* Ajustes del administrador sobre la estructura compartida `esp__*` */
+.adm__cuenta { font-weight: 700; color: var(--color-primary-dark); text-decoration: none; }
+.adm__cuenta:hover { text-decoration: underline; }
+.adm__quien { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25; }
+.adm__quien small { font-size: 11px; color: var(--color-muted-2); }
+
+/* Menú en tarjetas, como en el Figma */
+.adm .esp__link.adm__link { height: auto; min-height: 52px; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 12px; background: #fff; }
+.adm .esp__link.adm__link:hover { background: var(--color-bg); }
+.adm .esp__link.adm__link.active { background: var(--color-accent); border-color: #f0e3a3; }
+.adm__icono { width: 32px; height: 32px; flex: none; border-radius: 9px; background: var(--color-soft); display: grid; place-items: center; color: var(--color-primary-dark); }
+.adm__link.active .adm__icono { background: var(--color-primary); color: #fff; }
+.adm__texto { display: flex; flex-direction: column; min-width: 0; }
+.adm__texto strong { font-size: 14px; color: var(--color-text); }
+.adm__texto small { font-size: 11px; color: var(--color-muted-2); }
+
+.adm__pie { display: flex; flex-direction: column; gap: 10px; }
+.adm .esp__promo strong { display: flex; align-items: center; gap: 6px; }
+.adm .esp__promo p { margin: 0; font-size: 12px; line-height: 1.45; color: var(--color-muted); }
+.adm__enlace { padding: 4px 6px; border: 0; background: none; text-align: left; font: inherit; font-size: 14px; color: var(--color-muted); text-decoration: none; cursor: pointer; }
+.adm__enlace:hover { color: var(--color-primary); }

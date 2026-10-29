@@ -35,9 +35,9 @@
 
 /* Imprimir: solo la receta, sin menú ni paneles */
 @media print {
-  .pac__header, .pac__nav, .cc-no-imprimir { display: none !important; }
-  .pac__body { display: block !important; }
-  .pac__content { padding: 0 !important; overflow: visible !important; background: #fff !important; }
+  .esp__header, .esp__nav, .cc-no-imprimir { display: none !important; }
+  .esp__body { display: block !important; }
+  .esp__content { padding: 0 !important; overflow: visible !important; background: #fff !important; }
   .cc-layout { display: block; }
   .cc-receta { border: 0; box-shadow: none; padding: 0; }
 }

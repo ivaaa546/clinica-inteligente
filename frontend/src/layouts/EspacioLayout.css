@@ -1,0 +1,108 @@
+/* Estructura compartida de los espacios del personal (médico y administrador): cabecera, menú lateral, menú de usuario y menú colapsable.
+   Es independiente de PacienteLayout.css para que cambios en el portal del paciente no afecten estos espacios. */
+/* Estructura tipo "app": cabecera y menú siempre visibles; solo el contenido se desplaza */
+.esp {
+  height: 100vh; height: 100dvh; overflow: hidden;
+  display: flex; flex-direction: column; background: var(--color-bg);
+}
+
+/* Cabecera */
+.esp__header {
+  height: 72px; padding: 0 32px; flex-shrink: 0; position: relative; z-index: 20;
+  background: #fff; border-bottom: 1px solid var(--color-border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.esp__brand { display: flex; align-items: center; gap: 12px; }
+.esp__emblem { border: 0; padding: 0; cursor: pointer; transition: filter .15s; }
+.esp__emblem:hover { filter: brightness(1.12); }
+.esp__emblem {
+  width: 36px; height: 36px; border-radius: 11px; background: var(--color-primary);
+  display: grid; place-items: center; box-shadow: 0 4px 12px rgba(79, 110, 91, .3);
+}
+.esp__brand-text { display: flex; flex-direction: column; gap: 1px; }
+.esp__brand-text strong { font-size: 20px; line-height: 1.2; color: var(--color-text); }
+.esp__brand-text small { font-size: 10px; font-weight: 700; color: var(--color-primary); }
+
+.esp__account { position: relative; display: flex; align-items: center; gap: 14px; }
+.esp__space { font-size: 13px; color: var(--color-muted-2); }
+.esp__sep { width: 1px; height: 24px; background: var(--color-border); }
+
+.esp__user {
+  display: flex; align-items: center; gap: 12px; padding: 5px 8px 5px 5px;
+  border: 0; border-radius: 100px; background: none;
+}
+.esp__user:hover, .esp__user[aria-expanded='true'] { background: var(--color-bg); }
+.esp__user svg { transition: transform .15s; }
+.esp__user svg.is-open { transform: rotate(180deg); }
+.esp__avatar {
+  width: 34px; height: 34px; border-radius: 50%; background: var(--color-accent);
+  display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--color-primary);
+}
+.esp__name { font-size: 14px; font-weight: 700; color: var(--color-text); }
+
+/* Menú desplegable */
+.esp__menu {
+  position: absolute; top: calc(100% + 10px); right: 0; min-width: 224px; padding: 6px;
+  background: #fff; border: 1px solid var(--color-border); border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(31, 90, 61, .14); display: flex; flex-direction: column;
+}
+.esp__menu a, .esp__menu button {
+  height: 40px; padding: 0 12px; border: 0; border-radius: 8px; background: none; text-align: left;
+  display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--color-muted);
+}
+.esp__menu a:hover, .esp__menu button:hover { background: var(--color-bg); color: var(--color-primary); }
+.esp__menu a.active { background: var(--color-accent); color: var(--color-primary-dark); font-weight: 700; }
+.esp__menu hr { height: 1px; border: 0; margin: 6px 4px; background: var(--color-border); }
+
+/* Cuerpo */
+.esp__body { flex: 1; min-height: 0; display: flex; }
+
+/* Menú lateral (fijo) */
+.esp__nav {
+  transition: width .2s ease, padding .2s ease;
+  width: 216px; flex-shrink: 0; padding: 22px 16px; background: #fff; overflow-y: auto;
+  border-right: 1px solid var(--color-border);
+  display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
+}
+.esp__sections { display: flex; flex-direction: column; gap: 8px; }
+.esp__label { margin: 0 0 2px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-muted-2); }
+.esp__link {
+  height: 42px; padding: 0 12px; border-radius: 8px; font-size: 14px; color: var(--color-muted);
+  display: flex; align-items: center; gap: 11px;
+}
+.esp__link:hover { background: var(--color-bg); }
+.esp__link.active { background: var(--color-accent); font-weight: 700; color: var(--color-primary-dark); }
+
+.esp__promo { padding: 14px; border-radius: 14px; background: var(--color-bg); display: flex; flex-direction: column; gap: 6px; }
+.esp__promo strong { font-size: 14px; line-height: 1.3; color: var(--color-primary-dark); }
+.esp__promo p { margin: 0; font-size: 12px; line-height: 1.5; color: var(--color-muted-2); }
+
+/* Menú oculto: el contenido ocupa todo el ancho */
+.esp--collapsed .esp__nav { width: 0; padding-left: 0; padding-right: 0; border-right-width: 0; }
+.esp--collapsed .esp__nav > * { visibility: hidden; }
+
+/* Contenido (único elemento con scroll) */
+.esp__content {
+  flex: 1; min-width: 0; overflow-y: auto; padding: 24px 32px 28px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+/* Evita que los bloques se aplasten cuando hay mucho contenido */
+.esp__content > * { flex-shrink: 0; }
+
+@media (max-width: 960px) {
+  .esp { height: auto; min-height: 100vh; overflow: visible; }
+  .esp__header { position: sticky; top: 0; padding: 0 20px; }
+  .esp__space, .esp__sep, .esp__name { display: none; }
+  .esp__body { flex-direction: column; }
+  .esp__nav { width: 100%; padding: 12px 20px; border-right: 0; border-bottom: 1px solid var(--color-border); overflow: visible; }
+  .esp__sections { flex-direction: row; flex-wrap: wrap; }
+  .esp__label, .esp__promo { display: none; }
+  .esp--collapsed .esp__nav { display: none; }
+  .esp__content { overflow: visible; padding: 20px; }
+}
+
+@media print {
+  .esp, .esp__body, .esp__content { height: auto; overflow: visible; }
+  .esp__header, .esp__nav { display: none !important; }
+  .esp__content { padding: 0; }
+}
