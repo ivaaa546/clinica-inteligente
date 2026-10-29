@@ -18,6 +18,15 @@
 .cc-dato span { font-size: 12px; color: var(--color-muted); }
 .cc-diag { background: var(--color-soft); color: var(--color-text); }
 
+.cc-signos { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-bg); }
+.cc-signos h3, .cc-signos p { margin: 0; }
+.cc-signos h3 { font-size: 16px; color: var(--color-text); }
+.cc-signos p { margin-top: 3px; font-size: 12px; color: var(--color-muted); }
+.cc-signos__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.cc-signo { display: flex; flex-direction: column; gap: 4px; padding: 10px; border-radius: 8px; background: #fff; border: 1px solid var(--color-border); }
+.cc-signo small { font-size: 11px; color: var(--color-muted-2); }
+.cc-signo strong { font-size: 14px; color: var(--color-text); }
+
 .cc-medicamentos { border: 1px solid var(--color-border); border-radius: 12px; overflow: hidden; }
 .cc-medicamentos th { background: var(--color-accent); color: var(--color-primary-dark); font-weight: 700; }
 .cc-medicamentos td:first-child { width: 32%; }
@@ -32,6 +41,7 @@
 .cc-volver:hover { color: var(--color-primary-dark); }
 
 @media (max-width: 1100px) { .cc-layout { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .cc-signos__grid { grid-template-columns: 1fr; } }
 
 /* Imprimir: solo la receta, sin menú ni paneles */
 @media print {

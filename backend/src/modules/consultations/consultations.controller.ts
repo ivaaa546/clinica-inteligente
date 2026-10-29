@@ -9,6 +9,10 @@ export const createConsultation: RequestHandler = async (request, response, next
   } catch (error) { next(error); }
 };
 
+export const listOwnHistory: RequestHandler = async (request, response, next) => {
+  try { response.json(await new ConsultationsService(request.app.locals.prisma).listForPatient(request.auth!.userId)); } catch (error) { next(error); }
+};
+
 export const getConsultation: RequestHandler = async (request, response, next) => {
   try { response.json(await new ConsultationsService(request.app.locals.prisma).getById(request.auth!.userId, String(request.params.id))); } catch (error) { next(error); }
 };

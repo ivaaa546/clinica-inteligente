@@ -6,7 +6,7 @@ import { requestAppointmentSchema, rescheduleAppointmentSchema } from "./appoint
 const state = (value: unknown) => (typeof value === "string" ? value as EstadoCita : undefined);
 
 export const requestAppointment: RequestHandler = async (request, response, next) => {
-  try { const input = requestAppointmentSchema.parse(request.body); response.status(201).json(await new AppointmentsService(request.app.locals.prisma).request(request.auth!.userId, input.medicoId, input.disponibilidadId, input.modalidad)); } catch (error) { next(error); }
+  try { const input = requestAppointmentSchema.parse(request.body); response.status(201).json(await new AppointmentsService(request.app.locals.prisma).request(request.auth!.userId, input.medicoId, input.disponibilidadId, input.modalidad, input.preconsulta)); } catch (error) { next(error); }
 };
 export const listOwnAppointments: RequestHandler = async (request, response, next) => {
   try { const service = new AppointmentsService(request.app.locals.prisma); const result = request.auth!.role === RolUsuario.PACIENTE ? await service.listForPatient(request.auth!.userId, state(request.query.estado)) : await service.listForDoctor(request.auth!.userId, state(request.query.estado)); response.json(result); } catch (error) { next(error); }

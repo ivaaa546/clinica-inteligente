@@ -102,8 +102,9 @@ export default function InicioPaciente({ soloCitas = false }) {
     return () => { active = false }
   }, [])
 
+  // La lista prioriza la cita creada más recientemente, independientemente de su fecha de atención.
   const orderedAppointments = useMemo(() => [...appointments].sort(
-    (first, second) => new Date(first.inicio).getTime() - new Date(second.inicio).getTime(),
+    (first, second) => new Date(second.creadoEn).getTime() - new Date(first.creadoEn).getTime(),
   ), [appointments])
 
   const nextAppointment = orderedAppointments.find((appointment) => (

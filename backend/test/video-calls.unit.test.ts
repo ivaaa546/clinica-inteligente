@@ -111,7 +111,7 @@ describe.skipIf(!enabled)("emisor y revocador de videollamadas", () => {
     return appointment;
   }
 
-  it("autoriza solo a Paciente y Medico asignados durante la ventana de cinco minutos y nunca audita secretos", async () => {
+  it("autoriza solo a Paciente y Medico asignados para una cita virtual aceptada y nunca audita secretos", async () => {
     const appointment = await createAppointment("ACEPTADA", new Date(now.getTime() + 4 * 60_000));
     const provider = new FakeVideoProvider();
     const service = new VideoCallsService(prisma, provider);
@@ -127,7 +127,7 @@ describe.skipIf(!enabled)("emisor y revocador de videollamadas", () => {
     expect(JSON.stringify(records)).not.toContain("https://fake.livekit.invalid");
   });
 
-  it("deniega modalidad presencial, todos los estados no aceptados y citas fuera de ventana", async () => {
+  it("deniega modalidad presencial y todos los estados no aceptados, sin restringir horario", async () => {
     const provider = new FakeVideoProvider();
     const service = new VideoCallsService(prisma, provider);
     const actor = { userId: patientUserId, role: RolUsuario.PACIENTE };
@@ -138,9 +138,9 @@ describe.skipIf(!enabled)("emisor y revocador de videollamadas", () => {
     for (const appointment of cases) await expect(service.issueAccess(actor, appointment.id, now)).rejects.toThrow();
     const early = await createAppointment("ACEPTADA", new Date(now.getTime() + 6 * 60_000));
     const finished = await createAppointment("ACEPTADA", new Date(now.getTime() - 31 * 60_000));
-    await expect(service.issueAccess(actor, early.id, now)).rejects.toThrow("fuera de su periodo");
-    await expect(service.issueAccess(actor, finished.id, now)).rejects.toThrow("fuera de su periodo");
-    expect(provider.accessRequests).toHaveLength(0);
+    await expect(service.issueAccess(actor, early.id, now)).resolves.toBeDefined();
+    await expect(service.issueAccess(actor, finished.id, now)).resolves.toBeDefined();
+    expect(provider.accessRequests).toHaveLength(2);
   });
 
   it("reintenta revocaciones, revoca ambos participantes y registra el exito una sola vez sin secretos", async () => {

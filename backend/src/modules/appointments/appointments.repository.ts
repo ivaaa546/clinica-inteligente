@@ -33,7 +33,7 @@ export class AppointmentsRepository {
   listByPatient(pacienteId: string, estado?: EstadoCita) {
     return this.db.cita.findMany({
       where: { pacienteId, ...(estado ? { estado } : {}) },
-      orderBy: { inicio: "desc" },
+      orderBy: { creadoEn: "desc" },
     });
   }
 
@@ -49,7 +49,7 @@ export class AppointmentsRepository {
         },
         consulta: { select: { id: true } },
       },
-      orderBy: { inicio: "asc" },
+      orderBy: { creadoEn: "desc" },
     });
   }
 

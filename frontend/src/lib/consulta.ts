@@ -16,6 +16,7 @@ export const formularioVacio = (tipoFicha: TipoFicha): FormularioConsulta => ({
   tipoFicha, motivo: '', historiaActual: '', evaluacion: '', problemas: '', examenFisico: '', signosPeligro: '',
   diagnostico: '', observaciones: '',
   signos: { peso: '', talla: '', temperatura: '', presion: '', fc: '', fr: '' },
+  signosEstado: { peso: 'NO_MEDIDO', talla: 'NO_MEDIDO', temperatura: 'NO_MEDIDO', presion: 'NO_MEDIDO', fc: 'NO_MEDIDO', fr: 'NO_MEDIDO' },
   receta: [],
 })
 
@@ -74,12 +75,14 @@ export const erroresConsulta = (f: FormularioConsulta): Partial<Record<CampoCons
   const errores: Partial<Record<CampoConsulta, string>> = {}
   if (!f.motivo.trim()) errores.motivo = 'El motivo de consulta es obligatorio.'
   if (!f.diagnostico.trim()) errores.diagnostico = 'El diagnóstico es obligatorio para completar la consulta.'
-  if (!entre(f.signos.peso, 0.1, 1000)) errores.peso = 'Indica el peso en libras.'
-  if (!entre(f.signos.talla, 1, 300)) errores.talla = 'Indica la talla en centímetros.'
-  if (!entre(f.signos.temperatura, 30, 45)) errores.temperatura = 'Indica una temperatura entre 30 y 45 °C.'
-  if (!/^\d{2,3}\s*\/\s*\d{2,3}$/.test(f.signos.presion.trim())) errores.presion = 'Usa el formato 120/80.'
-  if (!entre(f.signos.fc, 1, 300) || !Number.isInteger(aNumero(f.signos.fc))) errores.fc = 'Indica la frecuencia cardíaca.'
-  if (!entre(f.signos.fr, 1, 150) || !Number.isInteger(aNumero(f.signos.fr))) errores.fr = 'Indica la frecuencia respiratoria.'
+  // NO_MEDIDO no requiere valor. MEDIDO y AUTORREPORTADO requieren un valor válido.
+  const requerido = (campo: keyof typeof f.signos) => f.signosEstado[campo] !== 'NO_MEDIDO'
+  if (requerido('peso') && !entre(f.signos.peso, 0.1, 1000)) errores.peso = 'Indica un peso válido en libras.'
+  if (requerido('talla') && !entre(f.signos.talla, 1, 300)) errores.talla = 'Indica una talla válida en centímetros.'
+  if (requerido('temperatura') && !entre(f.signos.temperatura, 30, 45)) errores.temperatura = 'Indica una temperatura entre 30 y 45 °C.'
+  if (requerido('presion') && !/^\d{2,3}\s*\/\s*\d{2,3}$/.test(f.signos.presion.trim())) errores.presion = 'Usa el formato 120/80.'
+  if (requerido('fc') && (!entre(f.signos.fc, 1, 300) || !Number.isInteger(aNumero(f.signos.fc)))) errores.fc = 'Indica una frecuencia cardíaca válida.'
+  if (requerido('fr') && (!entre(f.signos.fr, 1, 150) || !Number.isInteger(aNumero(f.signos.fr)))) errores.fr = 'Indica una frecuencia respiratoria válida.'
   return errores
 }
 

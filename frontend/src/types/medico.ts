@@ -139,6 +139,9 @@ export interface SignosVitales {
   fr: string // respiraciones por minuto
 }
 
+export type EstadoSignoVital = 'MEDIDO' | 'AUTORREPORTADO' | 'NO_MEDIDO'
+export type EstadosSignosVitales = Record<keyof SignosVitales, EstadoSignoVital>
+
 /** Una fila de receta = UN medicamento (una consulta puede tener varios) */
 export interface Medicamento {
   medicamento: string
@@ -160,6 +163,7 @@ export interface FormularioConsulta {
   diagnostico: string
   observaciones: string
   signos: SignosVitales
+  signosEstado: EstadosSignosVitales
   receta: Medicamento[]
 }
 
@@ -170,6 +174,12 @@ export interface DisponibilidadFicha {
 }
 
 /** Todo lo que necesita la pantalla "Registrar consulta" */
+export interface PreconsultaPaciente {
+  motivoConsulta: string
+  antecedentesIniciales: unknown
+  signosVitales: Record<string, unknown>
+}
+
 export interface ContextoConsulta {
   cita: CitaAgenda
   paciente: Paciente
@@ -179,6 +189,7 @@ export interface ContextoConsulta {
   fichas: Record<TipoFicha, DisponibilidadFicha>
   sugerida: TipoFicha
   consultaId: string | null
+  preconsulta: PreconsultaPaciente | null
   borrador: FormularioConsulta | null
 }
 

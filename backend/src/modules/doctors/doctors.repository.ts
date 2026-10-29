@@ -2,10 +2,11 @@ import { Prisma, PrismaClient } from "@prisma/client";
 
 type DbClient = PrismaClient | Prisma.TransactionClient;
 
-// La proyeccion publica no incluye direccion de atencion ni campos de cuenta sensibles.
+// La proyección pública permite previsualizar la dirección presencial, no datos de cuenta sensibles.
 const publicDoctorSelect = {
   id: true,
   numeroProfesional: true,
+  direccionAtencionPresencial: true,
   usuario: { select: { nombre: true, apellidos: true, telefono: true } },
   especialidad: { select: { id: true, nombre: true } },
 } satisfies Prisma.MedicoSelect;

@@ -37,6 +37,27 @@ export class ConsultationsRepository {
     });
   }
 
+  listSafeByPatient(pacienteId: string) {
+    return this.db.consulta.findMany({
+      where: { cita: { pacienteId } },
+      orderBy: { fechaConsulta: "desc" },
+      select: {
+        id: true,
+        motivoConsulta: true,
+        diagnostico: true,
+        fechaConsulta: true,
+        signosVitales: true,
+        recetas: { select: { id: true, medicamento: true, dosis: true, via: true, frecuencia: true, duracion: true, indicaciones: true } },
+        cita: {
+          select: {
+            inicio: true,
+            medico: { select: { usuario: { select: { nombre: true, apellidos: true } }, especialidad: { select: { nombre: true } } } },
+          },
+        },
+      },
+    });
+  }
+
   create(data: Prisma.ConsultaUncheckedCreateInput) {
     return this.db.consulta.create({ data });
   }

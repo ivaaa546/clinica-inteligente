@@ -7,3 +7,7 @@ export function createConsultation(payload) {
 export function getConsultation(id) {
   return apiClient(`/consultations/${id}`)
 }
+
+export function listOwnClinicalHistory() {
+  return apiClient('/consultations/me/history')
+}

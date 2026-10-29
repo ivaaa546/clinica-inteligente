@@ -30,6 +30,15 @@ const initialBackgroundText = (value) => {
   return typeof value === 'string' ? value : JSON.stringify(value, null, 2)
 }
 
+const VITAL_SIGNS = [
+  ['pesoLb', 'Peso', 'lb'],
+  ['tallaCm', 'Talla', 'cm'],
+  ['temperatura', 'Temperatura', '°C'],
+  ['presionArterial', 'Presión arterial', ''],
+  ['frecCardiaca', 'Frecuencia cardíaca', 'lpm'],
+  ['frecRespiratoria', 'Frecuencia respiratoria', 'rpm'],
+]
+
 export default function ReprogramarCita() {
   const { id } = useParams()
   const [appointment, setAppointment] = useState(null)
@@ -81,6 +90,7 @@ export default function ReprogramarCita() {
   )), [availability, fecha, now])
 
   const selectedBlock = blocksForDate.find((block) => block.id === availabilityId)
+  const signosVitales = appointment?.preconsulta?.signosVitales || {}
   const filas = appointment ? [
     ['Especialidad', doctorSpecialty(doctor)],
     ['Modalidad', appointment.modalidad === 'VIRTUAL' ? 'En línea (Videollamada)' : 'Presencial'],
@@ -174,7 +184,7 @@ export default function ReprogramarCita() {
           {success.type === 'preconsulta' ? (
             <><strong>Preconsulta guardada</strong><p>El motivo y los antecedentes iniciales quedaron asociados a esta cita.</p></>
           ) : (
-            <><strong>Solicitud reprogramada</strong><p>La cita original quedó Reprogramada y la nueva cita {success.id} está en estado {statusLabel(success.estado)}.</p></>
+            <><strong>Cita reprogramada</strong><p>La cita original quedó Reprogramada y la nueva cita {success.id} quedó aceptada.</p></>
           )}
         </div>
       )}
@@ -223,6 +233,17 @@ export default function ReprogramarCita() {
           </section>
 
           <section className="rep-card">
+            <h2>Signos vitales</h2>
+            <p className="rep-small">Datos autorreportados durante la creación de la cita.</p>
+            <dl className="rep-rows">
+              {VITAL_SIGNS.map(([field, label, unit]) => {
+                const value = signosVitales[field]
+                return <div key={field}><dt>{label}</dt><dd>{value === undefined || value === null || value === '' ? 'No registrado' : `${value}${unit ? ` ${unit}` : ''}`}</dd></div>
+              })}
+            </dl>
+          </section>
+
+          <section className="rep-card">
             <h2>Acciones disponibles</h2>
             {appointment.modalidad === 'VIRTUAL' && appointment.estado === 'ACEPTADA' && (
               <Link to={`/paciente/citas/${appointment.id}/llamada`} className="rep-btn rep-btn--primary">
@@ -235,7 +256,7 @@ export default function ReprogramarCita() {
             <button type="button" className="rep-btn rep-btn--ghost" onClick={cancelarCita} disabled={!canManage || isSubmitting}>
               {isSubmitting ? 'Procesando…' : 'Cancelar cita'}
             </button>
-            <p className="rep-small">La autorización final siempre la realiza el backend.</p>
+
           </section>
         </div>
 
@@ -271,13 +292,13 @@ export default function ReprogramarCita() {
 
             <div className="rep-field">
               <span>Estado de la nueva cita</span>
-              <div className="rep-static">Pendiente</div>
+              <div className="rep-static">Aceptada</div>
             </div>
 
             <button type="button" className="rep-btn rep-btn--primary rep-btn--fit" onClick={confirmar} disabled={!canManage || !selectedBlock || isSubmitting}>
               {isSubmitting ? 'Guardando…' : 'Confirmar cambio'}
             </button>
-            <p className="rep-small">La nueva cita se crea Pendiente y la original conserva su historial.</p>
+            <p className="rep-small">La nueva cita se crea aceptada y la original conserva su historial.</p>
           </section>
 
           <div className="rep-notice rep-notice--side">

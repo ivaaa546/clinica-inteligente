@@ -207,6 +207,7 @@ model Preconsulta {
   citaId                String   @unique @map("cita_id") @db.Uuid
   motivoConsulta        String   @map("motivo_consulta")
   antecedentesIniciales Json?    @map("antecedentes_iniciales")
+  signosVitales        Json?    @map("signos_vitales")
   creadoEn              DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
   actualizadoEn         DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
   cita                  Cita     @relation(fields: [citaId], references: [id])

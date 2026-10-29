@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Search, ChevronDown, CalendarDays, ArrowRight, Info, MapPin, Video } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Search, ChevronDown, CalendarDays, ArrowRight, MapPin, Video } from 'lucide-react'
 import { listDoctorAvailability } from '../../api/availability.js'
 import { requestAppointment } from '../../api/appointments.js'
 import { listDoctors } from '../../api/doctors.js'
@@ -20,6 +20,7 @@ function initials(doctor) {
 }
 
 export default function SolicitarCita() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [busqueda, setBusqueda] = useState('')
   const [especialidadId, setEspecialidadId] = useState('')
@@ -36,6 +37,10 @@ export default function SolicitarCita() {
   const [error, setError] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createdAppointment, setCreatedAppointment] = useState(null)
+  const [preconsulta, setPreconsulta] = useState({
+    motivoConsulta: '', antecedentesIniciales: '', pesoLb: '', tallaCm: '', temperatura: '',
+    presionArterial: '', frecCardiaca: '', frecRespiratoria: '',
+  })
   const [now] = useState(() => Date.now())
 
   useEffect(() => {
@@ -115,7 +120,27 @@ export default function SolicitarCita() {
     || (modalidadesDisponibles.includes('PRESENCIAL') ? 'PRESENCIAL' : modalidadesDisponibles[0]) || ''
 
   const diaLargo = fecha ? capitalizar(formatClinicDate(`${fecha}T12:00:00Z`) || '') : ''
-  const completo = Boolean(medico && bloque && modalidad)
+  const completo = Boolean(medico && bloque && modalidad && preconsulta.motivoConsulta.trim() && preconsulta.antecedentesIniciales.trim())
+
+  const actualizarPreconsulta = (field, value) => setPreconsulta((current) => ({ ...current, [field]: value }))
+
+  const construirPreconsulta = () => {
+    const motivoConsulta = preconsulta.motivoConsulta.trim()
+    const antecedentesIniciales = preconsulta.antecedentesIniciales.trim()
+    const vitalFields = ['pesoLb', 'tallaCm', 'temperatura', 'presionArterial', 'frecCardiaca', 'frecRespiratoria']
+    if (!motivoConsulta || !antecedentesIniciales) {
+      throw new Error('Motivo de consulta y antecedentes iniciales son obligatorios.')
+    }
+
+    const signosVitales = Object.fromEntries(vitalFields
+      .filter((field) => preconsulta[field].trim())
+      .map((field) => [field, field === 'presionArterial' ? preconsulta[field].trim() : Number(preconsulta[field])]))
+    return {
+      motivoConsulta,
+      ...(antecedentesIniciales ? { antecedentesIniciales } : {}),
+      ...(Object.keys(signosVitales).length ? { signosVitales } : {}),
+    }
+  }
 
   const seleccionarMedico = (id) => {
     setMedicoId(id)
@@ -142,8 +167,10 @@ export default function SolicitarCita() {
         medicoId: medico.id,
         disponibilidadId: bloque.id,
         modalidad,
+        preconsulta: construirPreconsulta(),
       })
       setCreatedAppointment(appointment)
+      window.setTimeout(() => navigate('/paciente', { replace: true }), 800)
     } catch (requestError) {
       setError(requestError)
     } finally {
@@ -156,8 +183,7 @@ export default function SolicitarCita() {
       <div className="sol-head">
         <h1>Solicitar cita</h1>
         <p>
-          Busca médico activo por especialidad, selecciona día y bloque disponible de 30 min.
-          La solicitud queda pendiente hasta que el médico la acepte o rechace.
+          Busca un médico activo por especialidad, selecciona un día, bloque disponible y modalidad de atención.
         </p>
       </div>
 
@@ -252,7 +278,6 @@ export default function SolicitarCita() {
                     ))}
                   </div>
                   {bloques.length === 0 && <small>No hay bloques futuros para esta fecha.</small>}
-                  <small>La disponibilidad se confirma al reservar; un bloque activo puede ocuparse antes.</small>
                 </>
               )}
             </div>
@@ -292,21 +317,48 @@ export default function SolicitarCita() {
                     </button>
                   )}
                 </div>
+                {modalidad === 'PRESENCIAL' && (
+                  <div className="sol-info" role="status">
+                    <MapPin size={17} color="#4f6e5b" />
+                    <p><strong>Dirección de la clínica:</strong> {medico?.direccionAtencionPresencial || 'El médico no tiene una dirección presencial disponible.'}</p>
+                  </div>
+                )}
               </div>
               <hr />
             </>
           )}
+
+          <section className="sol-preconsulta">
+            <h2>Datos de preconsulta</h2>
+            <p>Comparte esta información con el médico antes de tu atención.</p>
+            <label className="sol-field">
+              <span>Motivo de consulta *</span>
+              <textarea required value={preconsulta.motivoConsulta} onChange={(event) => actualizarPreconsulta('motivoConsulta', event.target.value)} rows="3" placeholder="Describe el motivo de tu cita" />
+            </label>
+            <label className="sol-field">
+              <span>Antecedentes iniciales *</span>
+              <textarea required value={preconsulta.antecedentesIniciales} onChange={(event) => actualizarPreconsulta('antecedentesIniciales', event.target.value)} rows="3" placeholder="Alergias, tratamientos o información relevante" />
+            </label>
+            <p className="sol-slots__title">Signos vitales (opcionales, autorreportados)</p>
+            <div className="sol-row">
+              <label className="sol-field"><span>Peso (lb)</span><input type="number" min="0" step="0.1" value={preconsulta.pesoLb} onChange={(event) => actualizarPreconsulta('pesoLb', event.target.value)} /></label>
+              <label className="sol-field"><span>Talla (cm)</span><input type="number" min="0" step="0.1" value={preconsulta.tallaCm} onChange={(event) => actualizarPreconsulta('tallaCm', event.target.value)} /></label>
+              <label className="sol-field"><span>Temperatura (°C)</span><input type="number" min="0" step="0.1" value={preconsulta.temperatura} onChange={(event) => actualizarPreconsulta('temperatura', event.target.value)} /></label>
+              <label className="sol-field"><span>Presión arterial</span><input value={preconsulta.presionArterial} placeholder="120/80" onChange={(event) => actualizarPreconsulta('presionArterial', event.target.value)} /></label>
+              <label className="sol-field"><span>Frecuencia cardíaca</span><input type="number" min="0" value={preconsulta.frecCardiaca} onChange={(event) => actualizarPreconsulta('frecCardiaca', event.target.value)} /></label>
+              <label className="sol-field"><span>Frecuencia respiratoria</span><input type="number" min="0" value={preconsulta.frecRespiratoria} onChange={(event) => actualizarPreconsulta('frecRespiratoria', event.target.value)} /></label>
+            </div>
+          </section>
         </section>
 
         <aside className="sol-side">
           <div className="sol-summary">
-            <h2>Tu solicitud</h2>
-            <span className="sol-badge">Confirmación automática</span>
+            <h2>Tu cita</h2>
 
             {createdAppointment && (
               <div className="sol-success" role="status">
-                <strong>Cita confirmada</strong>
-                <p>Tu cita quedó confirmada en estado {createdAppointment.estado}.</p>
+                <strong>Cita creada</strong>
+                <p>Redirigiendo a tu panel inicial…</p>
               </div>
             )}
 
@@ -321,16 +373,10 @@ export default function SolicitarCita() {
 
             <hr />
             <button type="button" className="sol-submit" disabled={!completo || isSubmitting || Boolean(createdAppointment)} onClick={enviar}>
-              <ArrowRight size={18} /> {isSubmitting ? 'Enviando solicitud…' : createdAppointment ? 'Solicitud enviada' : 'Solicitar cita'}
+              <ArrowRight size={18} /> {isSubmitting ? 'Creando cita…' : createdAppointment ? 'Cita creada' : 'Crear cita'}
             </button>
           </div>
 
-          <div className="sol-info">
-            <Info size={17} color="#4f6e5b" />
-            <p>
-              La disponibilidad se confirma al reservar. No se garantiza que todos los bloques activos sigan libres.
-            </p>
-          </div>
 
           <Link to="/paciente" className="sol-back">← Volver a mis solicitudes</Link>
         </aside>

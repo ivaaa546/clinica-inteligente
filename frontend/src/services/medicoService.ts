@@ -10,7 +10,7 @@ import {
 } from '../lib/consulta'
 import type {
   AgendaSemana, Antecedentes, AntecedentesGineco, BloqueDisponibilidad, CitaAgenda, ConsultaGuardada, ConsultaPrevia,
-  ContextoConsulta, Expediente, FechaISO, FormularioConsulta, Medico, NuevoBloque, Paciente, PacienteVinculado,
+  ContextoConsulta, Expediente, FechaISO, FormularioConsulta, Medico, NuevoBloque, Paciente, PacienteVinculado, PreconsultaPaciente,
 } from '../types/medico'
 import { CLINIC_TIMEZONE, clinicDateKey } from '../lib/date'
 
@@ -226,7 +226,12 @@ type ApiPatientRecord = {
   nombreResponsable: string | null
   antecedentesGenerales: Partial<Antecedentes> | null
   antecedentesGineco: Partial<AntecedentesGineco> | null
-  citas: Array<{ id: string; inicio: string; consulta: { id: string; diagnostico: string } | null }>
+  citas: Array<{
+    id: string
+    inicio: string
+    consulta: { id: string; diagnostico: string } | null
+    medico?: { usuario?: { nombre: string; apellidos: string }; especialidad?: { nombre: string } }
+  }>
 }
 
 export async function obtenerExpediente(pacienteId: string): Promise<Expediente> {
@@ -252,12 +257,13 @@ export async function obtenerExpediente(pacienteId: string): Promise<Expediente>
     responsable: record.nombreResponsable ?? null,
   } as Paciente
   const consultas: ConsultaPrevia[] = (record.citas || [])
-    .filter((cita): cita is { id: string; inicio: string; consulta: { id: string; diagnostico: string } } => cita.consulta !== null)
+    .filter((cita): cita is ApiPatientRecord['citas'][number] & { consulta: { id: string; diagnostico: string } } => cita.consulta !== null)
     .map((cita) => ({
       id: cita.consulta.id,
       fecha: clinicDateKey(cita.inicio) ?? '',
-      medico: 'No disponible en esta proyección',
-      especialidad: 'No disponible',
+      // Admite temporalmente respuestas de servidores aún no reiniciados tras ampliar la proyección.
+      medico: cita.medico?.usuario ? `${cita.medico.usuario.nombre} ${cita.medico.usuario.apellidos}` : 'Médico no disponible',
+      especialidad: cita.medico?.especialidad?.nombre ?? 'Especialidad no disponible',
       diagnostico: cita.consulta.diagnostico,
     }))
   const aceptada = appointments.find((appointment) => appointment.paciente.id === pacienteId && appointment.estado === 'ACEPTADA' && !appointment.consultaId)
@@ -367,13 +373,21 @@ type ApiConsultation = {
     paciente: ApiPatient
     medico: { id: string; numeroProfesional: string; usuario: { nombre: string; apellidos: string }; especialidad: { nombre: string } }
   }
-  signosVitales: { pesoLb: string | number | null; tallaCm: string | number | null; temperatura: string | number | null; presionArterial: string | null; frecCardiaca: number | null; frecRespiratoria: number | null } | null
+  signosVitales: {
+    pesoLb: string | number | null; pesoLbEstado: 'MEDIDO' | 'AUTORREPORTADO' | 'NO_MEDIDO'
+    tallaCm: string | number | null; tallaCmEstado: 'MEDIDO' | 'AUTORREPORTADO' | 'NO_MEDIDO'
+    temperatura: string | number | null; temperaturaEstado: 'MEDIDO' | 'AUTORREPORTADO' | 'NO_MEDIDO'
+    presionArterial: string | null; presionArterialEstado: 'MEDIDO' | 'AUTORREPORTADO' | 'NO_MEDIDO'
+    frecCardiaca: number | null; frecCardiacaEstado: 'MEDIDO' | 'AUTORREPORTADO' | 'NO_MEDIDO'
+    frecRespiratoria: number | null; frecRespiratoriaEstado: 'MEDIDO' | 'AUTORREPORTADO' | 'NO_MEDIDO'
+  } | null
   recetas: FormularioConsulta['receta']
 }
 
 type ApiClinicalAppointment = Omit<ApiDoctorAppointment, 'paciente' | 'consultaId'> & {
   paciente: ApiPatient
   consulta: { id: string } | null
+  preconsulta: PreconsultaPaciente | null
 }
 
 const toPatient = (patient: ApiPatient): Paciente => ({
@@ -435,6 +449,11 @@ const toConsultation = (consultation: ApiConsultation): ConsultaGuardada => {
         fc: consultation.signosVitales?.frecCardiaca?.toString() ?? '',
         fr: consultation.signosVitales?.frecRespiratoria?.toString() ?? '',
       },
+      signosEstado: {
+        peso: consultation.signosVitales?.pesoLbEstado ?? 'NO_MEDIDO', talla: consultation.signosVitales?.tallaCmEstado ?? 'NO_MEDIDO',
+        temperatura: consultation.signosVitales?.temperaturaEstado ?? 'NO_MEDIDO', presion: consultation.signosVitales?.presionArterialEstado ?? 'NO_MEDIDO',
+        fc: consultation.signosVitales?.frecCardiacaEstado ?? 'NO_MEDIDO', fr: consultation.signosVitales?.frecRespiratoriaEstado ?? 'NO_MEDIDO',
+      },
       receta: consultation.recetas,
     },
   }
@@ -453,6 +472,24 @@ export async function obtenerContextoConsulta(citaId: string): Promise<ContextoC
   const cita = toMedicalAppointment(appointment)
   const paciente = toPatient(appointment.paciente)
   const fichas = fichasDisponibles(paciente, cita.fecha)
+  const preconsulta = appointment.preconsulta ?? null
+  const borrador = (() => {
+    if (!preconsulta) return null
+    const form = { ...formularioVacio(fichaSugerida(fichas)), motivo: preconsulta.motivoConsulta }
+    const source = preconsulta.signosVitales ?? {}
+    const fields = [
+      ['peso', 'pesoLb'], ['talla', 'tallaCm'], ['temperatura', 'temperatura'],
+      ['presion', 'presionArterial'], ['fc', 'frecCardiaca'], ['fr', 'frecRespiratoria'],
+    ] as const
+    fields.forEach(([field, sourceField]) => {
+      const value = source[sourceField]
+      if (value !== undefined && value !== null && value !== '') {
+        form.signos[field] = String(value)
+        form.signosEstado[field] = 'AUTORREPORTADO'
+      }
+    })
+    return form
+  })()
   return {
     cita,
     paciente,
@@ -462,7 +499,8 @@ export async function obtenerContextoConsulta(citaId: string): Promise<ContextoC
     fichas,
     sugerida: fichaSugerida(fichas),
     consultaId: null,
-    borrador: null,
+    preconsulta,
+    borrador,
   }
 }
 
@@ -474,6 +512,18 @@ export async function registrarConsulta(citaId: string, formulario: FormularioCo
     throw new ApiError('Si añades una receta, completa los seis campos de cada medicamento.', 400)
   }
 
+  const signo = (campo: keyof FormularioConsulta['signos'], valor: string | number) => {
+    const estado = formulario.signosEstado[campo]
+    return estado === 'NO_MEDIDO' ? { estado } : { estado, valor }
+  }
+  const signosVitales = {
+    pesoLb: signo('peso', aNumero(formulario.signos.peso)),
+    tallaCm: signo('talla', aNumero(formulario.signos.talla)),
+    temperatura: signo('temperatura', aNumero(formulario.signos.temperatura)),
+    presionArterial: signo('presion', formulario.signos.presion.trim().replace(/\s/g, '')),
+    frecCardiaca: signo('fc', aNumero(formulario.signos.fc)),
+    frecRespiratoria: signo('fr', aNumero(formulario.signos.fr)),
+  }
   const payload = {
     citaId,
     tipoFicha: formulario.tipoFicha,
@@ -481,14 +531,7 @@ export async function registrarConsulta(citaId: string, formulario: FormularioCo
     historiaActual: formulario.historiaActual.trim() || undefined,
     diagnostico: formulario.diagnostico.trim(),
     observaciones: formulario.observaciones.trim() || undefined,
-    signosVitales: {
-      pesoLb: aNumero(formulario.signos.peso),
-      tallaCm: aNumero(formulario.signos.talla),
-      temperatura: aNumero(formulario.signos.temperatura),
-      presionArterial: formulario.signos.presion.trim().replace(/\s/g, ''),
-      frecCardiaca: aNumero(formulario.signos.fc),
-      frecRespiratoria: aNumero(formulario.signos.fr),
-    },
+    signosVitales,
     recetas: recetaFinal(formulario.receta).map((receta) => ({
       medicamento: receta.medicamento.trim(),
       dosis: receta.dosis.trim(),

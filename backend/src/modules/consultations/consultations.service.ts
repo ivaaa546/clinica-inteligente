@@ -11,6 +11,7 @@ import { AuditService } from "../audit/audit.service.js";
 import { DoctorsRepository } from "../doctors/doctors.repository.js";
 import { VideoRevocationRepository } from "../video-calls/video-revocation.repository.js";
 import { PrescriptionsRepository } from "../prescriptions/prescriptions.repository.js";
+import { PatientsRepository } from "../patients/patients.repository.js";
 import { ConsultationsRepository } from "./consultations.repository.js";
 
 type VitalSignInput<T> = T | { estado?: EstadoSignoVital; valor?: T | null };
@@ -174,6 +175,13 @@ export class ConsultationsService {
       throw new Error(`La evaluacion clinica no cumple el contrato de la ficha ${type}`);
     }
     return result.data;
+  }
+
+  async listForPatient(patientUserId: string) {
+    const patient = await new PatientsRepository(this.db).findByUserId(patientUserId);
+    if (!patient) throw new Error("Perfil de paciente no encontrado");
+    // Proyección segura: no expone observaciones internas ni evaluación clínica del médico.
+    return new ConsultationsRepository(this.db).listSafeByPatient(patient.id);
   }
 
   getById(doctorUserId: string, id: string) {

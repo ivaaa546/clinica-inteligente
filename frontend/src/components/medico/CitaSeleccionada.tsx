@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { CircleAlert, Info, Video } from 'lucide-react'
+import { Info, Video } from 'lucide-react'
 import EstadoCita from '../EstadoCita'
 import ModalidadTag from '../ModalidadTag'
 import { diaSemana, formatearFecha } from '../../lib/fechas'
@@ -10,8 +10,6 @@ interface Props {
   ocupado: boolean
   /** Esta cita está en modo "elegir nuevo bloque" */
   reprogramando: boolean
-  onAceptar: () => void
-  onRechazar: () => void
   onCancelar: () => void
   onReprogramar: () => void
   onSalirReprogramar: () => void
@@ -20,13 +18,10 @@ interface Props {
 const corta = (iso: string) => `${diaSemana(iso).slice(0, 3)} ${formatearFecha(iso).slice(0, 6)}`
 
 export default function CitaSeleccionada({
-  cita, ocupado, reprogramando, onAceptar, onRechazar, onCancelar, onReprogramar, onSalirReprogramar,
+  cita, ocupado, reprogramando, onCancelar, onReprogramar, onSalirReprogramar,
 }: Props) {
-  const pendiente = cita.estado === 'PENDIENTE'
-  const activa = pendiente || cita.estado === 'ACEPTADA'
-  const puedeDecidir = pendiente && cita.futura && !ocupado
+  const activa = cita.estado === 'PENDIENTE' || cita.estado === 'ACEPTADA'
   const modificable = activa && cita.futura && !ocupado
-  const motivo = `No disponible: cita ${cita.estado.toLowerCase()}`
 
   const virtual = cita.modalidad === 'VIDEOLLAMADA'
 
@@ -50,21 +45,6 @@ export default function CitaSeleccionada({
       <div className="ag-cita__contacto">
         <small>TELÉFONO DE CONTACTO</small>
         <p><Info size={14} aria-hidden="true" /> {cita.paciente.telefono || 'No disponible'}</p>
-      </div>
-
-      <div className="ag-decisiones">
-        <div className="ag-decision">
-          <span className="ag-decision__icono ag-decision__icono--ok"><CircleAlert size={16} aria-hidden="true" /></span>
-          <strong>Aceptar solicitud</strong>
-          <small>{pendiente && cita.futura ? 'Confirma la reserva del paciente' : motivo}</small>
-          <button type="button" className="ag-btn ag-btn--suave" disabled={!puedeDecidir} onClick={onAceptar}>Aceptar cita</button>
-        </div>
-        <div className="ag-decision">
-          <span className="ag-decision__icono ag-decision__icono--no"><CircleAlert size={16} aria-hidden="true" /></span>
-          <strong>Rechazar solicitud</strong>
-          <small>{pendiente && cita.futura ? 'Libera el bloque para otros pacientes' : motivo}</small>
-          <button type="button" className="ag-btn ag-btn--suave" disabled={!puedeDecidir} onClick={onRechazar}>Rechazar cita</button>
-        </div>
       </div>
 
       {cita.puedeConsultar ? (

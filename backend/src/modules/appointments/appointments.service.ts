@@ -7,6 +7,12 @@ import { PatientsRepository } from "../patients/patients.repository.js";
 import { VideoRevocationRepository } from "../video-calls/video-revocation.repository.js";
 import { AppointmentsRepository } from "./appointments.repository.js";
 
+type AppointmentPreconsultation = {
+  motivoConsulta: string;
+  antecedentesIniciales: string;
+  signosVitales?: Prisma.InputJsonValue;
+};
+
 export class AppointmentsService {
   constructor(private readonly db: PrismaClient) {}
 
@@ -15,6 +21,7 @@ export class AppointmentsService {
     medicoId: string,
     disponibilidadId: string,
     modalidad: ModalidadAtencion = ModalidadAtencion.PRESENCIAL,
+    preconsulta: AppointmentPreconsultation,
   ) {
     try {
       return await this.db.$transaction(async (transaction) => {
@@ -48,6 +55,15 @@ export class AppointmentsService {
           direccionAtencionPresencial,
           direccionPresencialEsLegado: false,
           salaVideoId: modalidad === ModalidadAtencion.VIRTUAL ? this.videoRoomId() : null,
+        });
+
+        await transaction.preconsulta.create({
+          data: {
+            citaId: appointment.id,
+            motivoConsulta: preconsulta.motivoConsulta,
+            antecedentesIniciales: preconsulta.antecedentesIniciales,
+            signosVitales: preconsulta.signosVitales,
+          },
         });
 
         // La auditoria usa el mismo cliente transaccional que la reserva.
@@ -137,6 +153,7 @@ export class AppointmentsService {
           citaId: appointment.preconsulta.citaId,
           motivoConsulta: appointment.preconsulta.motivoConsulta,
           antecedentesIniciales: appointment.preconsulta.antecedentesIniciales,
+          signosVitales: appointment.preconsulta.signosVitales,
         },
         consulta: appointment.consulta && { diagnostico: appointment.consulta.diagnostico },
       };
@@ -233,7 +250,7 @@ export class AppointmentsService {
           disponibilidadId: availability.id,
           inicio: availability.inicio,
           fin: availability.fin,
-          estado: "PENDIENTE",
+          estado: "ACEPTADA",
           citaOrigenId: appointment.id,
           modalidad,
           direccionAtencionPresencial,

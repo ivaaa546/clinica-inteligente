@@ -3,7 +3,7 @@ import AgendaSemana, { type SeleccionAgenda } from '../../components/medico/Agen
 import BloqueDisponible from '../../components/medico/BloqueDisponible'
 import CitaSeleccionada from '../../components/medico/CitaSeleccionada'
 import {
-  aceptarCita, cancelarCitaMedico, eliminarBloque, listarAgendaSemana, publicarBloques, rechazarCita, reprogramarCitaMedico,
+  cancelarCitaMedico, eliminarBloque, listarAgendaSemana, publicarBloques, reprogramarCitaMedico,
 } from '../../services/medicoService'
 import { formatearFecha, proximoDiaHabil } from '../../lib/fechas'
 import { diasHabiles, lunesDe, slotKey, sumarDias, sumarMinutos, MINUTOS_BLOQUE } from '../../lib/semana'
@@ -92,15 +92,8 @@ export default function Agenda() {
       setReprogramando(null)
       setLunes(lunesDe(fecha))
       setSeleccion({ tipo: 'cita', codigo: nueva.codigo })
-      return `Cita ${codigo} reprogramada. La nueva solicitud ${nueva.codigo} quedó pendiente.`
+      return `Cita ${codigo} reprogramada. La nueva cita ${nueva.codigo} quedó aceptada.`
     })
-  }
-
-  const aceptar = (codigo: string) => ejecutar(async () => { await aceptarCita(codigo); return `Cita ${codigo} aceptada.` })
-
-  const rechazar = (codigo: string) => {
-    if (!window.confirm('¿Seguro que deseas rechazar esta solicitud?')) return
-    return ejecutar(async () => { await rechazarCita(codigo); return `Cita ${codigo} rechazada.` })
   }
 
   const cancelar = (codigo: string) => {
@@ -159,8 +152,6 @@ export default function Agenda() {
               reprogramando={reprogramando === citaSeleccionada.codigo}
               onReprogramar={() => { setError(''); setAviso(''); setReprogramando(citaSeleccionada.codigo) }}
               onSalirReprogramar={() => setReprogramando(null)}
-              onAceptar={() => aceptar(citaSeleccionada.codigo)}
-              onRechazar={() => rechazar(citaSeleccionada.codigo)}
               onCancelar={() => cancelar(citaSeleccionada.codigo)}
             />
           )}

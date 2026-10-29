@@ -6,8 +6,6 @@ import { LiveKitAdapter, type VideoAccess, type VideoCallProvider } from "./live
 
 type AuthenticatedActor = { userId: string; role: RolUsuario };
 
-const accessWindowBeforeMs = 5 * 60 * 1000;
-
 export class VideoCallsService {
   private readonly provider: VideoCallProvider;
 
@@ -61,7 +59,7 @@ export class VideoCallsService {
     if (![RolUsuario.PACIENTE, RolUsuario.MEDICO].includes(actor.role)) return "Rol no autorizado";
     if (appointment.modalidad !== "VIRTUAL" || !appointment.salaVideoId) return "La cita no tiene videollamada";
     if (appointment.estado !== EstadoCita.ACEPTADA || appointment.videoRevocadaEn) return "El acceso de videollamada no esta habilitado";
-    if (now < new Date(appointment.inicio.getTime() - accessWindowBeforeMs) || now > appointment.fin) return "La videollamada esta fuera de su periodo de acceso";
+    // Una cita virtual aceptada puede abrirse en cualquier momento hasta que cambie de estado.
     return null;
   }
 }

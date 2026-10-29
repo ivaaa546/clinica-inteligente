@@ -13,6 +13,11 @@ const fechaLarga = (iso: string) => `${Number(iso.slice(8))} de ${mesMayusculas(
 
 const detalle = (m: Medicamento) => `Dosis: ${m.dosis} · Vía: ${m.via} · Frecuencia: ${m.frecuencia} · Duración: ${m.duracion} · Indicaciones: ${m.indicaciones}`
 
+const SIGNOS_VITALES = [
+  ['peso', 'Peso', 'lb'], ['talla', 'Talla', 'cm'], ['temperatura', 'Temperatura', '°C'],
+  ['presion', 'Presión arterial', ''], ['fc', 'Frecuencia cardíaca', 'lpm'], ['fr', 'Frecuencia respiratoria', 'rpm'],
+] as const
+
 export default function ConsultaCompletada() {
   const { consultaId = '' } = useParams()
   const [consulta, setConsulta] = useState<ConsultaGuardada | null>(null)
@@ -81,7 +86,29 @@ export default function ConsultaCompletada() {
             <div className="cc-dato"><small>MÉDICO</small><strong>{medico.nombre}</strong><span>{medico.especialidad} · Colegiado {medico.numeroProfesional}</span></div>
           </div>
 
-          <div className="cc-dato"><small>DIAGNÓSTICO / MOTIVO DE CONSULTA</small><div className="md-caja cc-diag">{formulario.diagnostico}</div></div>
+          <div className="md-grid2">
+            <div className="cc-dato"><small>MOTIVO DE CONSULTA</small><div className="md-caja cc-diag">{formulario.motivo}</div></div>
+            <div className="cc-dato"><small>DIAGNÓSTICO</small><div className="md-caja cc-diag">{formulario.diagnostico}</div></div>
+          </div>
+
+          <section className="cc-signos" aria-labelledby="cc-signos-titulo">
+            <div>
+              <h3 id="cc-signos-titulo">Signos vitales registrados</h3>
+              <p>Resumen histórico de la consulta; esta información es de solo lectura.</p>
+            </div>
+            <div className="cc-signos__grid">
+              {SIGNOS_VITALES.map(([field, label, unit]) => {
+                const estado = formulario.signosEstado[field]
+                const value = formulario.signos[field]
+                return (
+                  <div className="cc-signo" key={field}>
+                    <small>{label}</small>
+                    <strong>{estado === 'NO_MEDIDO' ? 'No registrado' : `${value}${unit ? ` ${unit}` : ''}`}</strong>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
 
           {receta.length > 0 ? (
             <table className="md-tabla cc-medicamentos">

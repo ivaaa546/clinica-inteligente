@@ -15,6 +15,12 @@
 .sol-row { display: flex; gap: 16px; }
 .sol-field { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px; }
 .sol-field > span:first-child { font-size: 14px; font-weight: 700; color: var(--color-text); }
+.sol-field > input, .sol-field > textarea {
+  width: 100%; box-sizing: border-box; border: 1px solid var(--color-border); border-radius: 8px;
+  background: var(--color-input-bg); color: var(--color-text); font: inherit; font-size: 15px; padding: 12px 14px;
+}
+.sol-field > textarea { resize: vertical; line-height: 1.4; }
+.sol-field > input:focus, .sol-field > textarea:focus { outline: 0; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(22, 113, 62, .15); }
 .sol-input {
   display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px;
   background: var(--color-input-bg); border: 1px solid var(--color-border); border-radius: 8px;
@@ -80,6 +86,11 @@
 .sol-modalidad__btn.is-selected svg { color: var(--color-primary-dark); }
 .sol-modalidad__btn strong { display: block; font-size: 14px; color: var(--color-text); }
 .sol-modalidad__btn small { display: block; font-size: 12px; color: var(--color-muted); margin-top: 2px; }
+
+/* Preconsulta */
+.sol-preconsulta { display: flex; flex-direction: column; gap: 16px; }
+.sol-preconsulta h2, .sol-preconsulta p { margin: 0; }
+.sol-preconsulta > p { font-size: 14px; color: var(--color-muted); }
 
 /* Resumen */
 .sol-side { width: 348px; flex-shrink: 0; display: flex; flex-direction: column; gap: 20px; }

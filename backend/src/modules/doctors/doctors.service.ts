@@ -100,6 +100,7 @@ export class DoctorsService {
   private publicDoctor(doctor: {
     id: string;
     numeroProfesional: string;
+    direccionAtencionPresencial: string | null;
     usuario: { nombre: string; apellidos: string; telefono: string };
     especialidad: { id: string; nombre: string };
   }) {
@@ -110,6 +111,7 @@ export class DoctorsService {
       apellidos: doctor.usuario.apellidos,
       telefono: doctor.usuario.telefono,
       numeroProfesional: doctor.numeroProfesional,
+      direccionAtencionPresencial: doctor.direccionAtencionPresencial,
       especialidad: doctor.especialidad,
     };
   }

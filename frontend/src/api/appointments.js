@@ -9,10 +9,10 @@ export const APPOINTMENT_STATES = new Set([
   'COMPLETADA',
 ])
 
-export function requestAppointment({ medicoId, disponibilidadId, modalidad }) {
+export function requestAppointment({ medicoId, disponibilidadId, modalidad, preconsulta }) {
   return apiClient('/appointments', {
     method: 'POST',
-    body: { medicoId, disponibilidadId, modalidad },
+    body: { medicoId, disponibilidadId, modalidad, ...(preconsulta ? { preconsulta } : {}) },
   })
 }
 

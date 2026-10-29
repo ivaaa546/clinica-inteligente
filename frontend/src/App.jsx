@@ -10,6 +10,7 @@ import InicioPaciente from './pages/paciente/Inicio'
 import MisCitas from './pages/paciente/MisCitas'
 import SolicitarCita from './pages/paciente/SolicitarCita'
 import Diagnosticos from './pages/paciente/Diagnosticos'
+import Historial from './pages/paciente/Historial'
 import CuentaPaciente from './pages/paciente/CuentaPaciente'
 import ProtectedRoute from './auth/ProtectedRoute.jsx'
 import ReprogramarCita from './pages/paciente/Reprogramarcita'
@@ -59,7 +60,7 @@ export default function App() {
             <Route path="citas/solicitar" element={<SolicitarCita />} />
             <Route path="citas/:id" element={<ReprogramarCita />} />
             <Route path="citas/:id/reprogramar" element={<ReprogramarCita />} />
-            <Route path="historial" element={<FeatureUnavailable title="El historial clínico no está disponible" detail="Esta versión solo expone recetas simples y no presenta un historial clínico completo." backTo="/paciente" backLabel="Volver al inicio" />} />
+            <Route path="historial" element={<Historial />} />
             <Route path="recetas" element={<Diagnosticos />} />
             <Route path="cuenta" element={<CuentaPaciente />} />
             <Route path="cambiar-password" element={<FeatureUnavailable title="El cambio de contraseña no está disponible" detail="Esta acción no cuenta con una capacidad aprobada en esta versión." backTo="/paciente/cuenta" backLabel="Volver a mi cuenta" />} />

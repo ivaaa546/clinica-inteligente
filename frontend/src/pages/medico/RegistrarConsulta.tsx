@@ -72,6 +72,13 @@ const sexoTexto = (sexo: 'M' | 'F' | 'NO_ESPECIFICADO') => ({
   NO_ESPECIFICADO: 'No especificado',
 }[sexo])
 
+const PRECONSULTA_SIGNOS = [
+  ['pesoLb', 'Peso', 'lb'], ['tallaCm', 'Talla', 'cm'], ['temperatura', 'Temperatura', '°C'],
+  ['presionArterial', 'Presión arterial', ''], ['frecCardiaca', 'Frecuencia cardíaca', 'lpm'], ['frecRespiratoria', 'Frecuencia respiratoria', 'rpm'],
+] as const
+
+const textoPreconsulta = (value: unknown) => typeof value === 'string' ? value : value ? JSON.stringify(value) : 'No registrado'
+
 export default function RegistrarConsulta() {
   const { citaCodigo = '' } = useParams()
   const navigate = useNavigate()
@@ -113,13 +120,17 @@ export default function RegistrarConsulta() {
   }
   if (!ctx || !form) return <p className="md-estado">Cargando la ficha de consulta…</p>
 
-  const { cita, paciente, medico, fichas, edadTexto } = ctx
+  const { cita, paciente, medico, fichas, edadTexto, preconsulta } = ctx
   const textos = TEXTOS[form.tipoFicha]
   const nombre = `${paciente.nombre} ${paciente.apellidos}`
   const verError = (campo: CampoConsulta) => (tocados.has(campo) ? errores[campo] : undefined)
   const tocar = (campo: CampoConsulta) => setTocados((actual) => new Set(actual).add(campo))
   const cambiar = (cambios: Partial<FormularioConsulta>) => { setAviso(''); setForm({ ...form, ...cambios }) }
   const cambiarSigno = (clave: keyof SignosVitales, valor: string) => cambiar({ signos: { ...form.signos, [clave]: valor } })
+  const cambiarEstadoSigno = (clave: keyof SignosVitales, estado: FormularioConsulta['signosEstado'][keyof SignosVitales]) => cambiar({
+    signosEstado: { ...form.signosEstado, [clave]: estado },
+    ...(estado === 'NO_MEDIDO' ? { signos: { ...form.signos, [clave]: '' } } : {}),
+  })
 
   const ayudaFicha = [
     fichas.NEONATO.disponible ? 'Neonato sugerido por edad menor de 28 días.' : '',
@@ -180,6 +191,23 @@ export default function RegistrarConsulta() {
 
       {aviso && <p className="md-aviso" role="status">{aviso}</p>}
       {errorAccion && <p className="md-alerta" role="alert">{errorAccion}</p>}
+
+      {preconsulta && (
+        <section className="md-card" aria-labelledby="rc-preconsulta">
+          <h2 id="rc-preconsulta">Datos de preconsulta del paciente</h2>
+          <div className="md-grid2">
+            <div className="md-campo"><span>Motivo de consulta</span><div className="md-caja">{preconsulta.motivoConsulta}</div></div>
+            <div className="md-campo"><span>Antecedentes iniciales</span><div className="md-caja">{textoPreconsulta(preconsulta.antecedentesIniciales)}</div></div>
+          </div>
+          <div className="md-grid2">
+            {PRECONSULTA_SIGNOS.map(([field, label, unit]) => {
+              const value = preconsulta.signosVitales?.[field]
+              return <div className="md-campo" key={field}><span>{label}</span><div className="md-caja">{value === undefined || value === null || value === '' ? 'No registrado' : `${value}${unit ? ` ${unit}` : ''}`}</div></div>
+            })}
+          </div>
+          <p className="md-ayuda">Son datos autorreportados por el paciente; verifica o registra las mediciones clínicas si corresponde.</p>
+        </section>
+      )}
 
       <div className="rc-layout">
         <div className="rc-col">
@@ -274,8 +302,17 @@ export default function RegistrarConsulta() {
               {SIGNOS.map(({ clave, etiqueta, placeholder, modo }) => (
                 <div key={clave} className={`md-campo ${verError(clave) ? 'is-error' : ''}`}>
                   <label htmlFor={`rc-s-${clave}`}>{etiqueta}</label>
+                  <select
+                    aria-label={`Estado de ${etiqueta}`} value={form.signosEstado[clave]}
+                    onChange={(e) => cambiarEstadoSigno(clave, e.target.value as FormularioConsulta['signosEstado'][keyof SignosVitales])}
+                  >
+                    <option value="NO_MEDIDO">No medido</option>
+                    <option value="AUTORREPORTADO">Autorreportado por paciente</option>
+                    <option value="MEDIDO">Medido por médico</option>
+                  </select>
                   <input
                     id={`rc-s-${clave}`} type="text" inputMode={modo} value={form.signos[clave]} placeholder={placeholder}
+                    disabled={form.signosEstado[clave] === 'NO_MEDIDO'}
                     onChange={(e) => cambiarSigno(clave, e.target.value)} onBlur={() => tocar(clave)}
                   />
                   {verError(clave) && <span className="md-campo__error">{errores[clave]}</span>}
