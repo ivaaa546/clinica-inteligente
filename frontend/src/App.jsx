@@ -15,6 +15,8 @@ import ReprogramarCita from './pages/paciente/Reprogramarcita'
 import FeatureUnavailable from './pages/FeatureUnavailable'
 import MedicoLayout from './layouts/MedicoLayout'
 import AgendaMedico from './pages/medico/Agenda'
+import RegistrarConsulta from './pages/medico/RegistrarConsulta'
+import ConsultaCompletada from './pages/medico/ConsultaCompletada'
 
 export default function App() {
   return (
@@ -46,6 +48,8 @@ export default function App() {
         <Route element={<ProtectedRoute role="MEDICO" />}>
           <Route path="/medico" element={<MedicoLayout />}>
             <Route path="agenda" element={<AgendaMedico />} />
+            <Route path="consulta/:citaCodigo" element={<RegistrarConsulta />} />
+            <Route path="consultas/:consultaId" element={<ConsultaCompletada />} />
             <Route
               path="*"
               element={<FeatureUnavailable title="Esta sección del portal médico aún no está disponible" detail="Solo la agenda y las transiciones de citas están conectadas y verificadas contra la API." backTo="/medico/agenda" backLabel="Volver a la agenda" />}

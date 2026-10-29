@@ -16,7 +16,11 @@ const CAMPOS_ANTECEDENTES: { clave: keyof Antecedentes; etiqueta: string }[] = [
   { clave: 'habitos', etiqueta: 'Hábitos' },
 ]
 
-const sexoTexto = (sexo: 'M' | 'F') => (sexo === 'M' ? 'Masculino' : 'Femenino')
+const sexoTexto = (sexo: 'M' | 'F' | 'NO_ESPECIFICADO') => ({
+  M: 'Masculino',
+  F: 'Femenino',
+  NO_ESPECIFICADO: 'No especificado',
+}[sexo])
 
 export default function Expediente() {
   const { pacienteId = '' } = useParams()

@@ -5,7 +5,7 @@ import EstadoCita from '../../components/EstadoCita'
 import GinecoCampos from '../../components/medico/GinecoCampos'
 import RecetaEditor from '../../components/medico/RecetaEditor'
 import {
-  guardarBorradorConsulta, guardarGineco, obtenerContextoConsulta, registrarConsulta,
+  guardarGineco, obtenerContextoConsulta, registrarConsulta,
 } from '../../services/medicoService'
 import { diaSemana, formatearFecha } from '../../lib/fechas'
 import {
@@ -66,7 +66,11 @@ const SIGNOS: { clave: keyof SignosVitales; etiqueta: string; placeholder: strin
   { clave: 'fr', etiqueta: 'Frec. respiratoria / min', placeholder: 'Ej. 16', modo: 'numeric' },
 ]
 
-const sexoTexto = (sexo: 'M' | 'F') => (sexo === 'M' ? 'Masculino (M)' : 'Femenino (F)')
+const sexoTexto = (sexo: 'M' | 'F' | 'NO_ESPECIFICADO') => ({
+  M: 'Masculino (M)',
+  F: 'Femenino (F)',
+  NO_ESPECIFICADO: 'No especificado',
+}[sexo])
 
 export default function RegistrarConsulta() {
   const { citaCodigo = '' } = useParams()
@@ -109,7 +113,7 @@ export default function RegistrarConsulta() {
   }
   if (!ctx || !form) return <p className="md-estado">Cargando la ficha de consulta…</p>
 
-  const { cita, paciente, medico, fichas, edadTexto, consultaId } = ctx
+  const { cita, paciente, medico, fichas, edadTexto } = ctx
   const textos = TEXTOS[form.tipoFicha]
   const nombre = `${paciente.nombre} ${paciente.apellidos}`
   const verError = (campo: CampoConsulta) => (tocados.has(campo) ? errores[campo] : undefined)
@@ -123,20 +127,8 @@ export default function RegistrarConsulta() {
   ].filter(Boolean)
 
   const mensajePie = !completo
-    ? (Object.keys(errores).length > 0 ? resumenFaltantes(errores, consultaId) : 'Completa los seis campos de cada medicamento de la receta.')
-    : `El registro y la receta quedarán asociados a ${consultaId}.`
-
-  const guardarEvolucion = async () => {
-    setOcupado(true); setErrorAccion(''); setAviso('')
-    try {
-      await guardarBorradorConsulta(cita.codigo, form)
-      setAviso('Evolución guardada. Puedes continuar después.')
-    } catch (e) {
-      setErrorAccion((e as Error).message)
-    } finally {
-      setOcupado(false)
-    }
-  }
+    ? (Object.keys(errores).length > 0 ? resumenFaltantes(errores, 'la consulta') : 'Completa los seis campos de cada medicamento de la receta.')
+    : 'El registro y las recetas se guardarán juntos.'
 
   const completar = async () => {
     if (!completo) return
@@ -180,7 +172,7 @@ export default function RegistrarConsulta() {
         </div>
         <div className="rc-banner__cita">
           <strong>{diaSemana(cita.fecha)} {formatearFecha(cita.fecha)} · {cita.hora}</strong>
-          <small>Cita {cita.codigo} · Consulta {consultaId}</small>
+          <small>Cita {cita.codigo} · La consulta recibirá un identificador al completarse</small>
           <small>{medico.nombre} · {medico.especialidad}</small>
         </div>
         <EstadoCita estado={cita.estado} />
@@ -305,8 +297,7 @@ export default function RegistrarConsulta() {
           ) : (
             <section className="md-card" aria-labelledby="rc-ant">
               <h2 id="rc-ant">Antecedentes y alergias</h2>
-              <p className="md-ayuda">Consulta los antecedentes generales y las alergias del expediente. Se mantienen independientes de esta consulta.</p>
-              <Link to={`/medico/pacientes/${paciente.id}`} className="md-btn md-btn--borde md-btn--bloque">Abrir expediente {paciente.id}</Link>
+            <p className="md-ayuda">La edición de antecedentes se habilitará al integrar el expediente clínico. Esta consulta no modifica antecedentes permanentes.</p>
             </section>
           )}
 
@@ -323,7 +314,7 @@ export default function RegistrarConsulta() {
           <small className={completo ? '' : 'is-falta'} role="status">{mensajePie}</small>
         </div>
         <div className="md-acciones">
-          <button type="button" className="md-btn md-btn--borde" onClick={guardarEvolucion} disabled={ocupado}>Guardar evolución</button>
+          <button type="button" className="md-btn md-btn--borde" disabled title="Los borradores clínicos no están disponibles todavía">Guardar evolución (no disponible)</button>
           <button type="button" className="md-btn md-btn--primario" onClick={completar} disabled={ocupado || !completo}>Guardar y completar consulta</button>
         </div>
       </section>

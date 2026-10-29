@@ -31,7 +31,7 @@ export interface Paciente {
   nombre: string
   apellidos: string
   nacimiento: FechaISO
-  sexo: 'M' | 'F'
+  sexo: 'M' | 'F' | 'NO_ESPECIFICADO'
   telefono: string
   email: string
   direccion: string
@@ -177,7 +177,7 @@ export interface ContextoConsulta {
   edadTexto: string // '29 años' | '14 días'
   fichas: Record<TipoFicha, DisponibilidadFicha>
   sugerida: TipoFicha
-  consultaId: string // 'CO-1042' (se asigna al completar)
+  consultaId: string | null
   borrador: FormularioConsulta | null
 }
 

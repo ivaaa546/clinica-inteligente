@@ -4,6 +4,7 @@ import { login, registerPatient } from '../src/api/auth.js'
 import { acceptAppointment, requestAppointment, rescheduleAppointment } from '../src/api/appointments.js'
 import { listOwnAvailability, publishAvailability, removeAvailability } from '../src/api/availability.js'
 import { getOwnDoctor } from '../src/api/doctors.js'
+import { createConsultation } from '../src/api/consultations.js'
 import { ApiError, apiClient } from '../src/api/client.js'
 
 const originalFetch = globalThis.fetch
@@ -149,6 +150,13 @@ describe('adaptadores', () => {
     await publishAvailability({ inicio: '2026-11-02T15:00:00.000Z', modalidades: ['PRESENCIAL'] })
     await acceptAppointment('appointment-uuid')
     await removeAvailability('availability-uuid')
+    await createConsultation({
+      citaId: 'appointment-uuid',
+      tipoFicha: 'ADULTO',
+      motivoConsulta: 'Control',
+      diagnostico: 'Diagnóstico',
+      recetas: [],
+    })
 
     assert.equal(requests[0].url, 'http://localhost:3000/api/v1/doctors/me')
     assert.equal(requests[1].url, 'http://localhost:3000/api/v1/availability/me')
@@ -160,5 +168,8 @@ describe('adaptadores', () => {
     assert.equal(requests[3].options.method, 'PATCH')
     assert.equal(requests[4].url, 'http://localhost:3000/api/v1/availability/availability-uuid')
     assert.equal(requests[4].options.method, 'DELETE')
+    assert.equal(requests[5].url, 'http://localhost:3000/api/v1/consultations')
+    assert.equal(requests[5].options.method, 'POST')
+    assert.deepEqual(JSON.parse(requests[5].options.body).recetas, [])
   })
 })

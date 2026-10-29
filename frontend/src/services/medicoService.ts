@@ -1,14 +1,15 @@
 import { ApiError, USAR_MOCK, esperar } from './api'
-import { acceptAppointment, cancelAppointment, listOwnAppointments, rejectAppointment, rescheduleAppointment } from '../api/appointments'
+import { acceptAppointment, cancelAppointment, getAppointment, listOwnAppointments, rejectAppointment, rescheduleAppointment } from '../api/appointments'
 import { listOwnAvailability, publishAvailability, removeAvailability } from '../api/availability'
 import { getOwnDoctor } from '../api/doctors'
+import { createConsultation, getConsultation } from '../api/consultations'
 import {
-  ANTECEDENTES, CITAS_INICIALES, CONSULTAS_INICIALES, GINECO, GINECO_VACIO, MEDICO_ACTUAL, PACIENTES,
+  ANTECEDENTES, CITAS_INICIALES, CONSULTAS_INICIALES, GINECO, GINECO_VACIO, PACIENTES,
   type CitaMock,
 } from '../pages/medico/datosEjemplo'
 import { diasHabiles, esFutura, sumarMinutos } from '../lib/semana'
 import {
-  codigoConsulta, edadTexto, erroresConsulta, fichaSugerida, fichasDisponibles, recetaFinal, recetaValida,
+  aNumero, edadTexto, erroresConsulta, fichaSugerida, fichasDisponibles, formularioVacio, recetaFinal, recetaValida,
 } from '../lib/consulta'
 import type {
   AgendaSemana, Antecedentes, AntecedentesGineco, BloqueDisponibilidad, CitaAgenda, ConsultaGuardada, ConsultaPrevia,
@@ -21,7 +22,6 @@ const citasMock: CitaMock[] = CITAS_INICIALES.map((c) => ({ ...c }))
 const consultasMock: ConsultaGuardada[] = structuredClone(CONSULTAS_INICIALES)
 const antecedentesMock: Record<string, Antecedentes> = structuredClone(ANTECEDENTES)
 const ginecoMock: Record<string, AntecedentesGineco> = structuredClone(GINECO)
-const borradoresMock = new Map<string, FormularioConsulta>()
 
 /** Todas las funciones usan datos de ejemplo hasta que el backend esté conectado */
 const exigirMock = () => {
@@ -316,83 +316,166 @@ export async function guardarGineco(pacienteId: string, datos: AntecedentesGinec
 }
 
 // ---------- Consulta ----------
-/**
- * Todo lo necesario para abrir la ficha de una cita aceptada.
- * TODO API: GET /appointments/:id + GET /patients/:id/record (la cita debe ser propia y estar ACEPTADA)
- */
-export async function obtenerContextoConsulta(citaCodigo: string): Promise<ContextoConsulta> {
-  exigirMock()
-  await esperar(250)
-  const cita = buscarCita(citaCodigo)
-  if (consultaDeCita(citaCodigo)) throw new ApiError('Esta cita ya tiene una consulta registrada.', 409)
-  if (cita.estado !== 'ACEPTADA') throw new ApiError('La consulta solo puede registrarse para una cita aceptada.', 409)
+type ApiPatient = {
+  id: string
+  fechaNacimiento: string
+  sexo: Paciente['sexo']
+  direccion: string | null
+  ocupacion: string | null
+  poblacionMigrante: boolean
+  nombreResponsable: string | null
+  usuario: { nombre: string; apellidos: string; correo: string; telefono: string }
+}
 
-  const paciente = buscarPaciente(cita.pacienteId)
-  const fichas = fichasDisponibles(paciente, cita.fecha)
-  const borrador = borradoresMock.get(citaCodigo)
+type ApiConsultation = {
+  id: string
+  citaId: string
+  tipoFicha: FormularioConsulta['tipoFicha']
+  motivoConsulta: string
+  historiaActual: string | null
+  diagnostico: string
+  observaciones: string | null
+  cita: {
+    inicio: string
+    fin: string
+    paciente: ApiPatient
+    medico: { id: string; numeroProfesional: string; usuario: { nombre: string; apellidos: string }; especialidad: { nombre: string } }
+  }
+  signosVitales: { pesoLb: string | number | null; tallaCm: string | number | null; temperatura: string | number | null; presionArterial: string | null; frecCardiaca: number | null; frecRespiratoria: number | null } | null
+  recetas: FormularioConsulta['receta']
+}
+
+type ApiClinicalAppointment = Omit<ApiDoctorAppointment, 'paciente' | 'consultaId'> & {
+  paciente: ApiPatient
+  consulta: { id: string } | null
+}
+
+const toPatient = (patient: ApiPatient): Paciente => ({
+  id: patient.id,
+  nombre: patient.usuario.nombre,
+  apellidos: patient.usuario.apellidos,
+  nacimiento: patient.fechaNacimiento.slice(0, 10),
+  sexo: patient.sexo,
+  telefono: patient.usuario.telefono,
+  email: patient.usuario.correo,
+  direccion: patient.direccion ?? '',
+  ocupacion: patient.ocupacion ?? '',
+  migrante: patient.poblacionMigrante,
+  responsable: patient.nombreResponsable,
+})
+
+const toMedicalAppointment = (appointment: ApiClinicalAppointment): CitaAgenda => toAgendaAppointment({
+  ...appointment,
+  paciente: {
+    id: appointment.paciente.id,
+    nombre: appointment.paciente.usuario.nombre,
+    apellidos: appointment.paciente.usuario.apellidos,
+    telefono: appointment.paciente.usuario.telefono,
+  },
+  consultaId: appointment.consulta?.id ?? null,
+})
+
+const toConsultation = (consultation: ApiConsultation): ConsultaGuardada => {
+  const fecha = clinicDateKey(consultation.cita.inicio)
+  const inicio = agendaTime(consultation.cita.inicio)
+  const fin = agendaTime(consultation.cita.fin)
+  if (!fecha || !inicio || !fin) throw new Error('La API devolvió una consulta con horario inválido.')
+
+  const form = formularioVacio(consultation.tipoFicha)
   return {
-    cita: paraAgenda(cita),
-    paciente: { ...paciente },
-    medico: { ...MEDICO_ACTUAL },
-    gineco: paciente.sexo === 'F' ? { ...(ginecoMock[paciente.id] ?? GINECO_VACIO) } : null,
+    id: consultation.id,
+    citaCodigo: consultation.citaId,
+    fecha,
+    hora: `${inicio}–${fin}`,
+    paciente: toPatient(consultation.cita.paciente),
+    medico: {
+      id: consultation.cita.medico.id,
+      nombre: `${consultation.cita.medico.usuario.nombre} ${consultation.cita.medico.usuario.apellidos}`,
+      iniciales: `${consultation.cita.medico.usuario.nombre[0] ?? ''}${consultation.cita.medico.usuario.apellidos[0] ?? ''}`.toUpperCase(),
+      especialidad: consultation.cita.medico.especialidad.nombre,
+      numeroProfesional: consultation.cita.medico.numeroProfesional,
+    },
+    formulario: {
+      ...form,
+      motivo: consultation.motivoConsulta,
+      historiaActual: consultation.historiaActual ?? '',
+      diagnostico: consultation.diagnostico,
+      observaciones: consultation.observaciones ?? '',
+      signos: {
+        peso: consultation.signosVitales?.pesoLb?.toString() ?? '',
+        talla: consultation.signosVitales?.tallaCm?.toString() ?? '',
+        temperatura: consultation.signosVitales?.temperatura?.toString() ?? '',
+        presion: consultation.signosVitales?.presionArterial ?? '',
+        fc: consultation.signosVitales?.frecCardiaca?.toString() ?? '',
+        fr: consultation.signosVitales?.frecRespiratoria?.toString() ?? '',
+      },
+      receta: consultation.recetas,
+    },
+  }
+}
+
+/** Todo lo necesario para abrir la ficha de una cita aceptada propia. */
+export async function obtenerContextoConsulta(citaId: string): Promise<ContextoConsulta> {
+  const [appointment, doctor] = await Promise.all([
+    getAppointment(citaId) as Promise<ApiClinicalAppointment>,
+    obtenerMedicoActual(),
+  ])
+  if (appointment.estado !== 'ACEPTADA' || appointment.consulta) {
+    throw new ApiError('La consulta solo puede registrarse una vez para una cita aceptada.', 409)
+  }
+
+  const cita = toMedicalAppointment(appointment)
+  const paciente = toPatient(appointment.paciente)
+  const fichas = fichasDisponibles(paciente, cita.fecha)
+  return {
+    cita,
+    paciente,
+    medico: doctor,
+    gineco: null,
     edadTexto: edadTexto(paciente.nacimiento, cita.fecha),
     fichas,
     sugerida: fichaSugerida(fichas),
-    consultaId: codigoConsulta(citaCodigo),
-    borrador: borrador ? structuredClone(borrador) : null,
+    consultaId: null,
+    borrador: null,
   }
 }
 
-/**
- * "Guardar evolución": guarda lo escrito sin completar la consulta.
- * ⚠ TODO API: el backend no tiene borradores (pedirlos, o guardarlos solo en el navegador).
- */
-export async function guardarBorradorConsulta(citaCodigo: string, formulario: FormularioConsulta): Promise<void> {
-  exigirMock()
-  await esperar(250)
-  const cita = buscarCita(citaCodigo)
-  if (cita.estado !== 'ACEPTADA') throw new ApiError('La consulta solo puede registrarse para una cita aceptada.', 409)
-  borradoresMock.set(citaCodigo, structuredClone(formulario))
-}
-
-/**
- * Completa la consulta: la cita pasa a COMPLETADA y las filas de receta quedan asociadas.
- * TODO API: POST /consultations  +  POST /prescriptions (una llamada por medicamento)
- * ⚠ El backend pide `evaluacionClinica` con campos distintos según la ficha (ver docs); aquí se guardan como en el Figma.
- */
-export async function registrarConsulta(citaCodigo: string, formulario: FormularioConsulta): Promise<ConsultaGuardada> {
-  exigirMock()
-  await esperar(400)
-  const cita = buscarCita(citaCodigo)
-  if (consultaDeCita(citaCodigo)) throw new ApiError('Esta cita ya tiene una consulta registrada.', 409)
-  if (cita.estado !== 'ACEPTADA') throw new ApiError('La consulta solo puede registrarse para una cita aceptada.', 409)
-
-  const paciente = buscarPaciente(cita.pacienteId)
-  if (!fichasDisponibles(paciente, cita.fecha)[formulario.tipoFicha].disponible) {
-    throw new ApiError('La ficha seleccionada no está disponible para este paciente.', 400)
-  }
+/** Completa consulta, diagnóstico, signos vitales y recetas en una sola transacción. */
+export async function registrarConsulta(citaId: string, formulario: FormularioConsulta): Promise<ConsultaGuardada> {
   const errores = Object.values(erroresConsulta(formulario))
   if (errores.length > 0) throw new ApiError(errores[0], 400)
   if (!recetaValida(formulario.receta)) {
     throw new ApiError('Si añades una receta, completa los seis campos de cada medicamento.', 400)
   }
 
-  const consulta: ConsultaGuardada = {
-    id: codigoConsulta(citaCodigo), citaCodigo, fecha: cita.fecha, hora: cita.hora,
-    paciente: { ...paciente }, medico: { ...MEDICO_ACTUAL },
-    formulario: structuredClone({ ...formulario, receta: recetaFinal(formulario.receta) }),
+  const payload = {
+    citaId,
+    tipoFicha: formulario.tipoFicha,
+    motivoConsulta: formulario.motivo.trim(),
+    historiaActual: formulario.historiaActual.trim() || undefined,
+    diagnostico: formulario.diagnostico.trim(),
+    observaciones: formulario.observaciones.trim() || undefined,
+    signosVitales: {
+      pesoLb: aNumero(formulario.signos.peso),
+      tallaCm: aNumero(formulario.signos.talla),
+      temperatura: aNumero(formulario.signos.temperatura),
+      presionArterial: formulario.signos.presion.trim().replace(/\s/g, ''),
+      frecCardiaca: aNumero(formulario.signos.fc),
+      frecRespiratoria: aNumero(formulario.signos.fr),
+    },
+    recetas: recetaFinal(formulario.receta).map((receta) => ({
+      medicamento: receta.medicamento.trim(),
+      dosis: receta.dosis.trim(),
+      via: receta.via.trim(),
+      frecuencia: receta.frecuencia.trim(),
+      duracion: receta.duracion.trim(),
+      indicaciones: receta.indicaciones.trim(),
+    })),
   }
-  consultasMock.push(consulta)
-  cita.estado = 'COMPLETADA'
-  borradoresMock.delete(citaCodigo)
-  return structuredClone(consulta)
+  return toConsultation(await createConsultation(payload) as ApiConsultation)
 }
 
-/** Consulta registrada (resumen y receta). TODO API: GET /consultations/:id */
+/** Consulta registrada y sus recetas, autorizada para el médico propietario. */
 export async function obtenerConsulta(consultaId: string): Promise<ConsultaGuardada> {
-  exigirMock()
-  await esperar(250)
-  const consulta = consultasMock.find((c) => c.id === consultaId)
-  if (!consulta) throw new ApiError('No encontramos esta consulta.', 404)
-  return structuredClone({ ...consulta, paciente: buscarPaciente(consulta.paciente.id) })
+  return toConsultation(await getConsultation(consultaId) as ApiConsultation)
 }

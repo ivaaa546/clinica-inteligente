@@ -10,6 +10,7 @@ import { AppointmentsRepository } from "../appointments/appointments.repository.
 import { AuditService } from "../audit/audit.service.js";
 import { DoctorsRepository } from "../doctors/doctors.repository.js";
 import { VideoRevocationRepository } from "../video-calls/video-revocation.repository.js";
+import { PrescriptionsRepository } from "../prescriptions/prescriptions.repository.js";
 import { ConsultationsRepository } from "./consultations.repository.js";
 
 type VitalSignInput<T> = T | { estado?: EstadoSignoVital; valor?: T | null };
@@ -30,6 +31,14 @@ export type ConsultationInput = {
     frecCardiaca?: VitalSignInput<number>;
     frecRespiratoria?: VitalSignInput<number>;
   };
+  recetas: Array<{
+    medicamento: string;
+    dosis: string;
+    via: string;
+    frecuencia: string;
+    duracion: string;
+    indicaciones: string;
+  }>;
 };
 
 const evaluationSchemas = {
@@ -93,6 +102,16 @@ export class ConsultationsService {
         consultaId: consultation.id,
         ...this.normalizeVitalSigns(input.signosVitales),
       });
+      const prescriptions = new PrescriptionsRepository(transaction);
+      for (const receta of input.recetas) {
+        const created = await prescriptions.create({ consultaId: consultation.id, ...receta });
+        await new AuditService(transaction).record({
+          usuarioId: doctorUserId,
+          accion: "RECETA_CREADA",
+          entidad: "Receta",
+          entidadId: created.id,
+        });
+      }
       const completedAppointment = await appointments.updateState(input.citaId, "COMPLETADA");
       if (completedAppointment.modalidad === ModalidadAtencion.VIRTUAL) {
         const now = new Date();

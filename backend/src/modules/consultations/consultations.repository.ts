@@ -8,7 +8,25 @@ export class ConsultationsRepository {
   findById(id: string) {
     return this.db.consulta.findUnique({
       where: { id },
-      include: { cita: true, signosVitales: true, recetas: true },
+      include: {
+        cita: {
+          include: {
+            paciente: {
+              include: {
+                usuario: { select: { nombre: true, apellidos: true, correo: true, telefono: true } },
+              },
+            },
+            medico: {
+              include: {
+                usuario: { select: { nombre: true, apellidos: true, telefono: true } },
+                especialidad: { select: { nombre: true } },
+              },
+            },
+          },
+        },
+        signosVitales: true,
+        recetas: true,
+      },
     });
   }
 

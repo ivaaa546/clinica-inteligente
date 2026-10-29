@@ -71,6 +71,7 @@ Resultado verificado: 7 archivos y 24 pruebas aprobadas. Los datos temporales de
 | T-026 | Perfil editable soportado, preconsulta propia, inmovilización tras consulta, antecedentes auditados, recetas múltiples y mínima exposición clínica al paciente. |
 | T-027 | Viewports móvil/escritorio, overflow horizontal, navegación por teclado, labels asociados, build/lint/pruebas y CI Linux reproducible. |
 | Agenda médica | Perfil propio, disponibilidad propia, citas propias y transiciones de aceptar, rechazar, cancelar o reprogramar se conectan a la API; la publicación crea un único bloque de 30 minutos por operación. |
+| Registro clínico | Una cita aceptada propia carga su contexto autorizado y crea consulta, diagnóstico, signos vitales y recetas completas en una única transacción. Los borradores y la edición de antecedentes quedan fuera de este flujo hasta su integración específica. |
 
 Las comprobaciones de navegador se realizaron con Chromium headless y los datos creados para ellas se limpiaron de la base aislada.
 

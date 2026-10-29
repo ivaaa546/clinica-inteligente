@@ -10,7 +10,17 @@ export class AppointmentsRepository {
   findById(id: string) {
     return this.db.cita.findUnique({
       where: { id },
-      include: { paciente: true, medico: true, disponibilidad: true, preconsulta: true, consulta: true },
+      include: {
+        paciente: {
+          include: {
+            usuario: { select: { nombre: true, apellidos: true, correo: true, telefono: true } },
+          },
+        },
+        medico: true,
+        disponibilidad: true,
+        preconsulta: true,
+        consulta: true,
+      },
     });
   }
 
