@@ -1,0 +1,24 @@
+.pc { display: flex; flex-direction: column; gap: 16px; max-width: 1080px; width: 100%; margin: 0 auto; }
+.pc-volver { align-self: flex-start; font-size: 14px; font-weight: 700; color: var(--color-primary); text-decoration: none; }
+.pc-volver:hover { text-decoration: underline; }
+
+.pc-perfil { padding: 18px 24px; border-radius: 16px; border: 1px solid #f0e3a3; background: var(--color-accent); display: flex; align-items: center; gap: 16px; }
+.pc-perfil > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.pc-perfil strong { font-size: 18px; color: var(--color-text); }
+.pc-perfil small { font-size: 13px; color: var(--color-muted); }
+.pc-perfil__avatar { width: 52px; height: 52px; flex: none; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 17px; font-weight: 700; color: var(--color-primary-dark); }
+.pc-perfil__rol { padding: 5px 11px; border-radius: 100px; background: #fff; font-size: 12px; font-weight: 700; color: var(--color-primary-dark); }
+
+.pc-columnas { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.pc-correo { justify-content: space-between; }
+.pc-clave { position: relative; display: block; }
+.pc-clave input { padding-right: 44px; }
+.pc-clave button { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); border: 0; background: none; padding: 0; display: grid; place-items: center; cursor: pointer; }
+
+.pc-pie { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 16px 22px; }
+.pc-pie > div:first-child { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.pc-pie strong { font-size: 14px; color: var(--color-text); }
+.pc-pie small { font-size: 12px; color: var(--color-muted); }
+.pc-error { color: #b3261e; }
+
+@media (max-width: 860px) { .pc-columnas { grid-template-columns: 1fr; } }
