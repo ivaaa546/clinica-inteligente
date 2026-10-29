@@ -1,8 +1,9 @@
-const LOCAL_API_URL = 'http://localhost:3000/api/v1'
 const viteEnv = import.meta.env || {}
 let unauthorizedHandler
 
-export const API_BASE_URL = (viteEnv.VITE_API_URL || LOCAL_API_URL).replace(/\/$/, '')
+// Si no hay VITE_API_URL explícita, se usa ruta relativa '/api/v1' para que el proxy
+// de Vite o el túnel de Cloudflare resuelvan en el mismo dominio sin problemas de CORS ni cookies cross-site.
+export const API_BASE_URL = (viteEnv.VITE_API_URL || '/api/v1').replace(/\/$/, '')
 
 export class ApiError extends Error {
   constructor(message, { status = null, code = null, isNetworkError = false, cause } = {}) {
