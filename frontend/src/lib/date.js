@@ -1,4 +1,4 @@
-export const CLINIC_TIMEZONE = import.meta.env.VITE_CLINIC_TIMEZONE || 'America/Guatemala'
+export const CLINIC_TIMEZONE = import.meta.env?.VITE_CLINIC_TIMEZONE || 'America/Guatemala'
 
 function toValidDate(value) {
   if (value === null || value === undefined || value === '') return null

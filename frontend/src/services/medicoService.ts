@@ -1,13 +1,10 @@
-import { ApiError, USAR_MOCK, esperar } from './api'
+import { ApiError } from './api'
 import { acceptAppointment, cancelAppointment, getAppointment, listOwnAppointments, rejectAppointment, rescheduleAppointment } from '../api/appointments'
 import { listOwnAvailability, publishAvailability, removeAvailability } from '../api/availability'
 import { getOwnDoctor } from '../api/doctors'
+import { getPatientRecord, updateBackground } from '../api/patients'
 import { createConsultation, getConsultation } from '../api/consultations'
-import {
-  ANTECEDENTES, CITAS_INICIALES, CONSULTAS_INICIALES, GINECO, GINECO_VACIO, PACIENTES,
-  type CitaMock,
-} from '../pages/medico/datosEjemplo'
-import { diasHabiles, esFutura, sumarMinutos } from '../lib/semana'
+import { diasHabiles, sumarMinutos } from '../lib/semana'
 import {
   aNumero, edadTexto, erroresConsulta, fichaSugerida, fichasDisponibles, formularioVacio, recetaFinal, recetaValida,
 } from '../lib/consulta'
@@ -17,47 +14,6 @@ import type {
 } from '../types/medico'
 import { CLINIC_TIMEZONE, clinicDateKey } from '../lib/date'
 
-// ---------- Base de datos falsa en memoria (solo modo mock) ----------
-const citasMock: CitaMock[] = CITAS_INICIALES.map((c) => ({ ...c }))
-const consultasMock: ConsultaGuardada[] = structuredClone(CONSULTAS_INICIALES)
-const antecedentesMock: Record<string, Antecedentes> = structuredClone(ANTECEDENTES)
-const ginecoMock: Record<string, AntecedentesGineco> = structuredClone(GINECO)
-
-/** Todas las funciones usan datos de ejemplo hasta que el backend esté conectado */
-const exigirMock = () => {
-  if (!USAR_MOCK) throw new ApiError('Pendiente de conectar con la API.', 501)
-}
-
-const buscarCita = (codigo: string) => {
-  const cita = citasMock.find((c) => c.codigo === codigo)
-  if (!cita) throw new ApiError('No encontramos esta cita.', 404)
-  return cita
-}
-
-const buscarPaciente = (id: string): Paciente => {
-  const paciente = PACIENTES.find((p) => p.id === id)
-  if (!paciente) throw new ApiError('No encontramos este paciente.', 404)
-  return paciente
-}
-
-const consultaDeCita = (codigo: string) => consultasMock.find((c) => c.citaCodigo === codigo)
-
-const paraAgenda = (c: CitaMock): CitaAgenda => {
-  const p = PACIENTES.find((x) => x.id === c.pacienteId)
-  const consulta = consultaDeCita(c.codigo)
-  return {
-    codigo: c.codigo, fecha: c.fecha, hora: c.hora, estado: c.estado, modalidad: c.modalidad,
-    paciente: { id: c.pacienteId, nombre: p ? `${p.nombre} ${p.apellidos}` : 'Paciente', telefono: p?.telefono ?? '' },
-    futura: esFutura(c.fecha, c.hora),
-    llamada: c.llamada,
-    puedeConsultar: c.estado === 'ACEPTADA' && !consulta,
-    consultaId: consulta?.id ?? null,
-  }
-}
-
-/** Consultas del paciente, de la más reciente a la más antigua */
-const historialDe = (pacienteId: string) =>
-  consultasMock.filter((c) => c.paciente.id === pacienteId).sort((a, b) => b.fecha.localeCompare(a.fecha))
 
 // ---------- Perfil ----------
 type ApiDoctor = {
@@ -167,11 +123,9 @@ export async function listarAgendaSemana(lunes: FechaISO): Promise<AgendaSemana>
   }
 }
 
-/** Una cita del médico (la usa la sala de videollamada). TODO API: GET /appointments/:id */
+/** Una cita del médico por id (la usa la sala de videollamada y el expediente). */
 export async function obtenerCitaMedico(codigo: string): Promise<CitaAgenda> {
-  exigirMock()
-  await esperar(150)
-  return paraAgenda(buscarCita(codigo))
+  return toAgendaAppointment(await getAppointment(codigo) as ApiDoctorAppointment)
 }
 
 /** Acepta una solicitud PENDIENTE. TODO API: PATCH /appointments/:id/accept */
@@ -205,14 +159,15 @@ export async function reprogramarCitaMedico(codigo: string, disponibilidadId: st
  * Publica bloques de 30 min entre `desde` y `hasta` (los ya existentes se omiten).
  * TODO API: POST /availability  (el backend recibe un bloque por llamada: `inicio` en ISO)
  */
-export async function publicarBloques({ fecha, desde, hasta }: NuevoBloque): Promise<BloqueDisponibilidad[]> {
+export async function publicarBloques({ fecha, desde, hasta, modalidades }: NuevoBloque): Promise<BloqueDisponibilidad[]> {
   if (!fecha || !desde || hasta !== sumarMinutos(desde, 30)) {
     throw new ApiError('La disponibilidad debe publicarse en un único bloque de 30 minutos.', 400)
   }
 
+  const selection = modalidades && modalidades.length > 0 ? modalidades : ['PRESENCIAL', 'VIRTUAL']
   const created = await publishAvailability({
     inicio: agendaDateTime(fecha, desde),
-    modalidades: ['PRESENCIAL'],
+    modalidades: selection,
   }) as ApiAvailability
   return [{
     id: created.id,
@@ -227,92 +182,163 @@ export async function eliminarBloque(id: string): Promise<void> {
   await removeAvailability(id)
 }
 
-// ---------- Videollamada (sala del médico) ----------
-/** Entrar (o volver a entrar) a la sala. TODO API: POST /appointments/:id/call/join */
-export async function unirseLlamadaMedico(codigo: string): Promise<CitaAgenda> {
-  exigirMock()
-  await esperar(150)
-  const cita = buscarCita(codigo)
-  if (cita.modalidad !== 'VIDEOLLAMADA' || cita.estado !== 'ACEPTADA') throw new ApiError('Esta videollamada no está disponible.', 409)
-  if (cita.llamada === 'FINALIZADA') throw new ApiError('Esta videollamada ya finalizó.', 409)
-  cita.llamada = 'EN_CURSO'
-  return paraAgenda(cita)
-}
-
-/** Colgar termina la videollamada para ambas personas. TODO API: POST /appointments/:id/call/end */
-export async function colgarLlamadaMedico(codigo: string): Promise<CitaAgenda> {
-  exigirMock()
-  await esperar(150)
-  const cita = buscarCita(codigo)
-  cita.llamada = 'FINALIZADA'
-  return paraAgenda(cita)
-}
-
 // ---------- Pacientes ----------
 /**
  * Pacientes vinculados al médico, con búsqueda por nombre.
  * ⚠ TODO API: este endpoint NO existe aún (pedir al backend, p. ej. GET /doctors/me/patients?search=...)
  */
 export async function listarPacientes(busqueda = ''): Promise<PacienteVinculado[]> {
-  exigirMock()
-  await esperar(250)
+  const appointments = await listOwnAppointments() as ApiDoctorAppointment[]
   const texto = busqueda.trim().toLowerCase()
-  return PACIENTES
-    .filter((p) => `${p.nombre} ${p.apellidos}`.toLowerCase().includes(texto))
-    .map((paciente) => {
-      const ultima = historialDe(paciente.id)[0]
-      return {
-        paciente: { ...paciente },
-        ultimaConsulta: ultima ? { fecha: ultima.fecha, motivo: ultima.formulario.motivo } : null,
-      }
-    })
+  const unique = new Map<string, ApiDoctorAppointment>()
+  appointments.forEach((appointment) => {
+    if (!unique.has(appointment.paciente.id)) unique.set(appointment.paciente.id, appointment)
+  })
+
+  return [...unique.values()]
+    .map((appointment) => ({
+      paciente: {
+        id: appointment.paciente.id,
+        nombre: appointment.paciente.nombre,
+        apellidos: appointment.paciente.apellidos,
+        nacimiento: '',
+        sexo: 'NO_ESPECIFICADO' as const,
+        telefono: appointment.paciente.telefono ?? '',
+        email: 'No disponible',
+        direccion: '',
+        ocupacion: '',
+        migrante: false,
+        responsable: null,
+      },
+      ultimaConsulta: null,
+    }))
+    .filter(({ paciente }) => `${paciente.nombre} ${paciente.apellidos}`.toLowerCase().includes(texto))
 }
 
 /** Expediente completo de un paciente vinculado. TODO API: GET /patients/:id/record */
+type ApiPatientRecord = {
+  id: string
+  fechaNacimiento: string
+  sexo: Paciente['sexo']
+  direccion: string | null
+  ocupacion: string | null
+  poblacionMigrante: boolean
+  nombreResponsable: string | null
+  antecedentesGenerales: Partial<Antecedentes> | null
+  antecedentesGineco: Partial<AntecedentesGineco> | null
+  citas: Array<{ id: string; inicio: string; consulta: { id: string; diagnostico: string } | null }>
+}
+
 export async function obtenerExpediente(pacienteId: string): Promise<Expediente> {
-  exigirMock()
-  await esperar(250)
-  const paciente = buscarPaciente(pacienteId)
-  const aceptada = citasMock
-    .filter((c) => c.pacienteId === pacienteId && c.estado === 'ACEPTADA' && !consultaDeCita(c.codigo))
-    .sort((a, b) => `${a.fecha}${a.hora}`.localeCompare(`${b.fecha}${b.hora}`))[0]
-  const consultas: ConsultaPrevia[] = historialDe(pacienteId).map((c) => ({
-    id: c.id, fecha: c.fecha, medico: c.medico.nombre, especialidad: c.medico.especialidad, diagnostico: c.formulario.diagnostico,
-  }))
+  const [record, appointments] = await Promise.all([
+    getPatientRecord(pacienteId) as Promise<ApiPatientRecord>,
+    listOwnAppointments() as Promise<ApiDoctorAppointment[]>,
+  ])
+  if (!record) throw new ApiError('No encontramos el expediente solicitado.', 404)
+
+  const linked = appointments.find((appointment) => appointment.paciente.id === pacienteId)
+  if (!linked) throw new ApiError('El paciente no está vinculado a tus citas.', 403)
+  const paciente = {
+    id: record.id,
+    nombre: linked.paciente.nombre,
+    apellidos: linked.paciente.apellidos,
+    nacimiento: String(record.fechaNacimiento || '').slice(0, 10),
+    sexo: record.sexo,
+    telefono: linked.paciente.telefono ?? '',
+    email: 'No disponible',
+    direccion: record.direccion ?? '',
+    ocupacion: record.ocupacion ?? '',
+    migrante: Boolean(record.poblacionMigrante),
+    responsable: record.nombreResponsable ?? null,
+  } as Paciente
+  const consultas: ConsultaPrevia[] = (record.citas || [])
+    .filter((cita): cita is { id: string; inicio: string; consulta: { id: string; diagnostico: string } } => cita.consulta !== null)
+    .map((cita) => ({
+      id: cita.consulta.id,
+      fecha: clinicDateKey(cita.inicio) ?? '',
+      medico: 'No disponible en esta proyección',
+      especialidad: 'No disponible',
+      diagnostico: cita.consulta.diagnostico,
+    }))
+  const aceptada = appointments.find((appointment) => appointment.paciente.id === pacienteId && appointment.estado === 'ACEPTADA' && !appointment.consultaId)
+
   return {
-    paciente: { ...paciente },
-    antecedentes: { ...antecedentesMock[pacienteId] },
-    gineco: paciente.sexo === 'F' ? { ...(ginecoMock[pacienteId] ?? GINECO_VACIO) } : null,
+    paciente,
+    antecedentes: {
+      medicos: record.antecedentesGenerales?.medicos || '',
+      quirurgicos: record.antecedentesGenerales?.quirurgicos || '',
+      familiares: record.antecedentesGenerales?.familiares || '',
+      habitos: record.antecedentesGenerales?.habitos || '',
+      alergias: record.antecedentesGenerales?.alergias || 'Sin alergias conocidas',
+    },
+    gineco: record.antecedentesGineco ? {
+      fur: String(record.antecedentesGineco.fur || '').slice(0, 10),
+      gestas: record.antecedentesGineco.gestas ?? 0,
+      partos: record.antecedentesGineco.partos ?? 0,
+      cesareas: record.antecedentesGineco.cesareas ?? 0,
+      abortos: record.antecedentesGineco.abortos ?? 0,
+      hijosVivos: record.antecedentesGineco.hijosVivos ?? 0,
+      planificacion: record.antecedentesGineco.planificacion ?? '',
+    } : null,
     consultas,
-    citaAceptada: aceptada ? { codigo: aceptada.codigo, fecha: aceptada.fecha, hora: aceptada.hora } : null,
+    citaAceptada: aceptada ? {
+      codigo: aceptada.id,
+      fecha: clinicDateKey(aceptada.inicio) ?? '',
+      hora: `${agendaTime(aceptada.inicio)}–${agendaTime(aceptada.fin)}`,
+    } : null,
   }
 }
 
-/** Edita los antecedentes permanentes sin crear una consulta. TODO API: PUT /patients/:id/background */
+/** Edita los antecedentes permanentes sin crear una consulta. Confirma desde el servidor. */
 export async function guardarAntecedentes(pacienteId: string, datos: Antecedentes): Promise<Antecedentes> {
-  exigirMock()
-  await esperar(250)
-  buscarPaciente(pacienteId)
   if (!datos.alergias.trim()) throw new ApiError('Las alergias son obligatorias: escribe "Sin alergias conocidas" si no hay.', 400)
-  const limpio: Antecedentes = {
-    medicos: datos.medicos.trim(), quirurgicos: datos.quirurgicos.trim(), familiares: datos.familiares.trim(),
-    habitos: datos.habitos.trim(), alergias: datos.alergias.trim(),
+  const antecedentesGenerales = {
+    medicos: datos.medicos.trim(),
+    quirurgicos: datos.quirurgicos.trim(),
+    familiares: datos.familiares.trim(),
+    habitos: datos.habitos.trim(),
+    alergias: datos.alergias.trim(),
   }
-  antecedentesMock[pacienteId] = limpio
-  return { ...limpio }
+  const res = await updateBackground(pacienteId, { antecedentesGenerales }) as {
+    antecedentesGenerales: Partial<Antecedentes> | null
+  }
+  const ag = res?.antecedentesGenerales ?? {}
+  return {
+    medicos: String(ag.medicos ?? ''),
+    quirurgicos: String(ag.quirurgicos ?? ''),
+    familiares: String(ag.familiares ?? ''),
+    habitos: String(ag.habitos ?? ''),
+    alergias: String(ag.alergias ?? datos.alergias),
+  }
 }
 
-/** Edita los antecedentes gineco-obstétricos (solo sexo F). TODO API: PUT /patients/:id/background (campo gineco) */
+/** Edita los antecedentes gineco-obstétricos (solo sexo F). Confirma desde el servidor. */
 export async function guardarGineco(pacienteId: string, datos: AntecedentesGineco): Promise<AntecedentesGineco> {
-  exigirMock()
-  await esperar(250)
-  const paciente = buscarPaciente(pacienteId)
-  if (paciente.sexo !== 'F') throw new ApiError('Este formulario solo aplica a pacientes de sexo F.', 400)
   const conteos = [datos.gestas, datos.partos, datos.cesareas, datos.abortos, datos.hijosVivos]
   if (conteos.some((n) => !Number.isInteger(n) || n < 0)) throw new ApiError('Los conteos deben ser números enteros, 0 o más.', 400)
   if (datos.fur && datos.fur > new Date().toISOString().slice(0, 10)) throw new ApiError('La FUR no puede ser una fecha futura.', 400)
-  ginecoMock[pacienteId] = { ...datos, planificacion: datos.planificacion.trim() }
-  return { ...ginecoMock[pacienteId] }
+  const antecedentesGineco = {
+    fur: datos.fur || undefined,
+    gestas: datos.gestas,
+    partos: datos.partos,
+    cesareas: datos.cesareas,
+    abortos: datos.abortos,
+    hijosVivos: datos.hijosVivos,
+    planificacion: datos.planificacion.trim() || undefined,
+  }
+  const res = await updateBackground(pacienteId, { antecedentesGenerales: null as unknown as object, antecedentesGineco }) as {
+    antecedentesGineco: Partial<AntecedentesGineco> | null
+  }
+  const gi = res?.antecedentesGineco ?? {}
+  return {
+    fur: String(gi.fur ?? datos.fur ?? '').slice(0, 10),
+    gestas: gi.gestas ?? datos.gestas,
+    partos: gi.partos ?? datos.partos,
+    cesareas: gi.cesareas ?? datos.cesareas,
+    abortos: gi.abortos ?? datos.abortos,
+    hijosVivos: gi.hijosVivos ?? datos.hijosVivos,
+    planificacion: String(gi.planificacion ?? datos.planificacion),
+  }
 }
 
 // ---------- Consulta ----------

@@ -83,6 +83,10 @@ export default function ReprogramarCita() {
   const selectedBlock = blocksForDate.find((block) => block.id === availabilityId)
   const filas = appointment ? [
     ['Especialidad', doctorSpecialty(doctor)],
+    ['Modalidad', appointment.modalidad === 'VIRTUAL' ? 'En línea (Videollamada)' : 'Presencial'],
+    ...(appointment.modalidad === 'PRESENCIAL' && appointment.direccionAtencionPresencial ? [
+      ['Dirección de atención', appointment.direccionAtencionPresencial],
+    ] : []),
     ['Fecha', formatClinicDate(appointment.inicio) || 'No disponible'],
     ['Inicio', formatClinicTime(appointment.inicio) || 'No disponible'],
     ['Fin', formatClinicTime(appointment.fin) || 'No disponible'],

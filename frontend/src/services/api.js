@@ -1,13 +1,9 @@
 // ---------------------------------------------------------------
 //  Capa de conexión con el backend
 //
-//  USAR_MOCK = true  -> todo funciona con datos de ejemplo en memoria
-//  USAR_MOCK = false -> las funciones llaman a la API real
-//
-//  Para cambiar la dirección del backend crea frontend/.env con:
-//    VITE_API_URL=http://localhost:3000/api
+//  USAR_MOCK = false -> todo el tráfico va al backend real
 // ---------------------------------------------------------------
-export const USAR_MOCK = true
+export const USAR_MOCK = false
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api'
 

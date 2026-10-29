@@ -63,6 +63,24 @@
 .sol-slot:hover { border-color: var(--color-primary); }
 .sol-slot.is-selected { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
 
+/* Selector de modalidad */
+.sol-modalidad { display: flex; flex-direction: column; gap: 12px; }
+.sol-modalidad__opciones { display: flex; gap: 14px; flex-wrap: wrap; }
+.sol-modalidad__btn {
+  flex: 1; min-width: 200px; padding: 14px 16px; border-radius: 12px;
+  background: var(--color-input-bg); border: 2px solid var(--color-border);
+  display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer;
+  transition: all .15s ease;
+}
+.sol-modalidad__btn:hover { border-color: var(--color-primary); }
+.sol-modalidad__btn.is-selected {
+  background: var(--color-soft); border-color: var(--color-primary); color: var(--color-primary-dark);
+}
+.sol-modalidad__btn svg { color: var(--color-primary); flex-shrink: 0; }
+.sol-modalidad__btn.is-selected svg { color: var(--color-primary-dark); }
+.sol-modalidad__btn strong { display: block; font-size: 14px; color: var(--color-text); }
+.sol-modalidad__btn small { display: block; font-size: 12px; color: var(--color-muted); margin-top: 2px; }
+
 /* Resumen */
 .sol-side { width: 348px; flex-shrink: 0; display: flex; flex-direction: column; gap: 20px; }
 .sol-summary {

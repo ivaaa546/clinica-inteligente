@@ -32,8 +32,12 @@ export default function Login() {
     setIsSubmitting(true)
 
     try {
-      await login({ email, password })
-      navigate('/paciente', { replace: true })
+      const session = await login({ email, password })
+      if (session?.rol === 'MEDICO') {
+        navigate('/medico/agenda', { replace: true })
+      } else {
+        navigate('/paciente', { replace: true })
+      }
     } catch (error) {
       setErrorMessage(error?.isNetworkError
         ? 'No fue posible conectar con el servicio. Verificá tu conexión e intentá nuevamente.'

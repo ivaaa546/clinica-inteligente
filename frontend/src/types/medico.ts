@@ -123,6 +123,7 @@ export interface NuevoBloque {
   fecha: FechaISO
   desde: Hora
   hasta: Hora
+  modalidades?: Array<'PRESENCIAL' | 'VIRTUAL'>
 }
 
 // ---------------------------------------------------------------

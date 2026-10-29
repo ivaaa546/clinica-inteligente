@@ -34,6 +34,38 @@ export default function BloqueDisponible({ form, existe, conCitaActiva, ocupado,
         </label>
       </div>
 
+      <div className="ag-campo">
+        <span>Modalidades admitidas</span>
+        <div style={{ display: 'flex', gap: '14px', marginTop: '6px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={(form.modalidades || ['PRESENCIAL', 'VIRTUAL']).includes('PRESENCIAL')}
+              onChange={(e) => {
+                const actual = new Set<'PRESENCIAL' | 'VIRTUAL'>(form.modalidades || ['PRESENCIAL', 'VIRTUAL'])
+                if (e.target.checked) actual.add('PRESENCIAL')
+                else if (actual.size > 1) actual.delete('PRESENCIAL')
+                onCambio({ modalidades: Array.from(actual) })
+              }}
+            />
+            Presencial
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={(form.modalidades || ['PRESENCIAL', 'VIRTUAL']).includes('VIRTUAL')}
+              onChange={(e) => {
+                const actual = new Set<'PRESENCIAL' | 'VIRTUAL'>(form.modalidades || ['PRESENCIAL', 'VIRTUAL'])
+                if (e.target.checked) actual.add('VIRTUAL')
+                else if (actual.size > 1) actual.delete('VIRTUAL')
+                onCambio({ modalidades: Array.from(actual) })
+              }}
+            />
+            En línea (Videollamada)
+          </label>
+        </div>
+      </div>
+
       <p className="ag-ayuda">Solo los bloques disponibles podrán recibir nuevas solicitudes de cita. Cada bloque dura 30 minutos.</p>
 
       <button type="button" className="ag-btn ag-btn--primario" onClick={onGuardar} disabled={ocupado}>Guardar cambios</button>

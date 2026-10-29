@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, ChevronDown, CalendarDays, ArrowRight, Info } from 'lucide-react'
+import { Search, ChevronDown, CalendarDays, ArrowRight, Info, MapPin, Video } from 'lucide-react'
 import { listDoctorAvailability } from '../../api/availability.js'
 import { requestAppointment } from '../../api/appointments.js'
 import { listDoctors } from '../../api/doctors.js'
@@ -29,6 +29,7 @@ export default function SolicitarCita() {
   const [disponibilidades, setDisponibilidades] = useState([])
   const [fecha, setFecha] = useState(hoy())
   const [bloqueId, setBloqueId] = useState('')
+  const [modalidadElegida, setModalidadElegida] = useState('')
   const [catalogLoading, setCatalogLoading] = useState(true)
   const [doctorsLoading, setDoctorsLoading] = useState(false)
   const [availabilityLoading, setAvailabilityLoading] = useState(false)
@@ -108,13 +109,27 @@ export default function SolicitarCita() {
   const medico = medicos.find((item) => item.id === medicoId)
   const bloque = bloques.find((item) => item.id === bloqueId)
   const especialidad = especialidades.find((item) => item.id === especialidadId)
+
+  const modalidadesDisponibles = bloque?.modalidades || []
+  const modalidad = (modalidadesDisponibles.includes(modalidadElegida) ? modalidadElegida : null)
+    || (modalidadesDisponibles.includes('PRESENCIAL') ? 'PRESENCIAL' : modalidadesDisponibles[0]) || ''
+
   const diaLargo = fecha ? capitalizar(formatClinicDate(`${fecha}T12:00:00Z`) || '') : ''
-  const completo = Boolean(medico && bloque)
+  const completo = Boolean(medico && bloque && modalidad)
 
   const seleccionarMedico = (id) => {
     setMedicoId(id)
     setBloqueId('')
+    setModalidadElegida('')
     setCreatedAppointment(null)
+  }
+
+  const seleccionarBloque = (id) => {
+    setBloqueId(id)
+    const target = bloques.find((b) => b.id === id)
+    if (target?.modalidades && !target.modalidades.includes(modalidadElegida)) {
+      setModalidadElegida(target.modalidades.includes('PRESENCIAL') ? 'PRESENCIAL' : target.modalidades[0])
+    }
   }
 
   const enviar = async () => {
@@ -126,6 +141,7 @@ export default function SolicitarCita() {
       const appointment = await requestAppointment({
         medicoId: medico.id,
         disponibilidadId: bloque.id,
+        modalidad,
       })
       setCreatedAppointment(appointment)
     } catch (requestError) {
@@ -229,7 +245,7 @@ export default function SolicitarCita() {
                         key={item.id}
                         type="button"
                         className={`sol-slot ${bloqueId === item.id ? 'is-selected' : ''}`}
-                        onClick={() => setBloqueId(item.id)}
+                        onClick={() => seleccionarBloque(item.id)}
                       >
                         {formatClinicTime(item.inicio)}–{formatClinicTime(item.fin)}
                       </button>
@@ -243,17 +259,54 @@ export default function SolicitarCita() {
           </div>
 
           <hr />
+
+          {bloque && modalidadesDisponibles.length > 0 && (
+            <>
+              <div className="sol-modalidad">
+                <span className="sol-slots__title">Modalidad de atención</span>
+                <div className="sol-modalidad__opciones">
+                  {modalidadesDisponibles.includes('PRESENCIAL') && (
+                    <button
+                      type="button"
+                      className={`sol-modalidad__btn ${modalidad === 'PRESENCIAL' ? 'is-selected' : ''}`}
+                      onClick={() => setModalidadElegida('PRESENCIAL')}
+                    >
+                      <MapPin size={18} />
+                      <div>
+                        <strong>Presencial</strong>
+                        <small>En consultorio del médico</small>
+                      </div>
+                    </button>
+                  )}
+                  {modalidadesDisponibles.includes('VIRTUAL') && (
+                    <button
+                      type="button"
+                      className={`sol-modalidad__btn ${modalidad === 'VIRTUAL' ? 'is-selected' : ''}`}
+                      onClick={() => setModalidadElegida('VIRTUAL')}
+                    >
+                      <Video size={18} />
+                      <div>
+                        <strong>En línea (Videollamada)</strong>
+                        <small>Consulta remota desde tu navegador</small>
+                      </div>
+                    </button>
+                  )}
+                </div>
+              </div>
+              <hr />
+            </>
+          )}
         </section>
 
         <aside className="sol-side">
           <div className="sol-summary">
             <h2>Tu solicitud</h2>
-            <span className="sol-badge">Pendiente de aceptación</span>
+            <span className="sol-badge">Confirmación automática</span>
 
             {createdAppointment && (
               <div className="sol-success" role="status">
-                <strong>Solicitud creada</strong>
-                <p>Tu cita quedó en estado {createdAppointment.estado}. El médico debe aceptarla o rechazarla.</p>
+                <strong>Cita confirmada</strong>
+                <p>Tu cita quedó confirmada en estado {createdAppointment.estado}.</p>
               </div>
             )}
 
@@ -261,6 +314,7 @@ export default function SolicitarCita() {
               <div><dt>Paciente</dt><dd>{user?.nombre || '—'}</dd></div>
               <div><dt>Profesional</dt><dd>{medico ? `${medico.nombre} ${medico.apellidos}` : '—'}</dd></div>
               <div><dt>Especialidad</dt><dd>{especialidad?.nombre || '—'}</dd></div>
+              <div><dt>Modalidad</dt><dd>{modalidad === 'VIRTUAL' ? 'En línea (Videollamada)' : modalidad === 'PRESENCIAL' ? 'Presencial' : '—'}</dd></div>
               <div><dt>Fecha y hora</dt><dd>{completo ? `${formatClinicDate(bloque.inicio)} · ${formatClinicTime(bloque.inicio)}–${formatClinicTime(bloque.fin)}` : 'Selecciona un bloque'}</dd></div>
               <div><dt>Correo electrónico</dt><dd className="is-plain">{user?.correo || '—'}</dd></div>
             </dl>

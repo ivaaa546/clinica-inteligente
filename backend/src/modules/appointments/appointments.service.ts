@@ -43,7 +43,7 @@ export class AppointmentsService {
           disponibilidadId,
           inicio: block.inicio,
           fin: block.fin,
-          estado: "PENDIENTE",
+          estado: "ACEPTADA",
           modalidad,
           direccionAtencionPresencial,
           direccionPresencialEsLegado: false,
@@ -56,7 +56,7 @@ export class AppointmentsService {
           accion: "CITA_SOLICITADA",
           entidad: "Cita",
           entidadId: appointment.id,
-          detalle: { estado: "PENDIENTE", modalidad },
+          detalle: { estado: "ACEPTADA", modalidad },
         });
         await new AuditService(transaction).record({
           usuarioId: patientUserId,

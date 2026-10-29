@@ -35,6 +35,24 @@ export class AvailabilityService {
     }
 
     const repository = new AvailabilityRepository(this.db);
+    const existing = await repository.findByDoctorAndStart(doctor.id, inicio);
+
+    if (existing) {
+      if (existing.activa) {
+        throw new Error("La disponibilidad ya esta publicada");
+      }
+      // Si el bloque existía pero estaba desactivado, se reactiva con las nuevas modalidades
+      const reactivated = await repository.reactivate(existing.id, validatedModalities);
+      await new AuditService(this.db).record({
+        usuarioId: doctorUserId,
+        accion: "DISPONIBILIDAD_PUBLICADA",
+        entidad: "Disponibilidad",
+        entidadId: reactivated.id,
+        detalle: { duracionMinutos: 30, modalidades: validatedModalities.join(","), reactivada: true },
+      });
+      return reactivated;
+    }
+
     if (await repository.findOverlap(doctor.id, inicio, fin)) {
       throw new Error("La disponibilidad se solapa con otro bloque");
     }

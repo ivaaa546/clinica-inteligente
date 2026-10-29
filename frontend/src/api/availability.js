@@ -19,6 +19,13 @@ export function publishAvailability({ inicio, modalidades }) {
   })
 }
 
+export function updateAvailability(id, { modalidades }) {
+  return apiClient(`/availability/${id}`, {
+    method: 'PATCH',
+    body: { modalidades },
+  })
+}
+
 export function removeAvailability(id) {
   return apiClient(`/availability/${id}`, { method: 'DELETE' })
 }
