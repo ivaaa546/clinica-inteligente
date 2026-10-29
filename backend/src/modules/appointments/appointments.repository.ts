@@ -56,7 +56,11 @@ export class AppointmentsRepository {
   listAll(estado?: EstadoCita) {
     return this.db.cita.findMany({
       where: estado ? { estado } : undefined,
-      orderBy: { inicio: "asc" },
+      include: {
+        paciente: { include: { usuario: true } },
+        medico: { include: { usuario: true, especialidad: true } },
+      },
+      orderBy: { inicio: "desc" },
     });
   }
 

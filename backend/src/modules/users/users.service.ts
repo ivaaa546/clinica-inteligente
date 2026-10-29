@@ -63,7 +63,13 @@ export class UsersService {
         detalle: { rol: RolUsuario.MEDICO, especialidadId: input.especialidadId },
       });
 
-      return this.publicUser(user);
+      return this.publicUser({
+        ...user,
+        medico: {
+          especialidadId: input.especialidadId,
+          numeroProfesional: input.numeroProfesional,
+        },
+      });
     });
   }
 
@@ -89,6 +95,14 @@ export class UsersService {
     return users.map((user) => this.publicUser(user));
   }
 
+  async findById(userId: string) {
+    const user = await new UsersRepository(this.db).findById(userId);
+    if (!user) {
+      throw new Error("Usuario no encontrado");
+    }
+    return this.publicUser(user);
+  }
+
   async deactivate(actorId: string, userId: string) {
     // La desactivacion logica conserva citas y registros clinicos historicos.
     const user = await new UsersRepository(this.db).deactivate(userId);
@@ -103,7 +117,39 @@ export class UsersService {
     return this.publicUser(user);
   }
 
-  private publicUser(user: { id: string; nombre: string; correo: string; rol: RolUsuario }) {
-    return { id: user.id, nombre: user.nombre, correo: user.correo, rol: user.rol };
+  async activate(actorId: string, userId: string) {
+    const user = await new UsersRepository(this.db).activate(userId);
+
+    await new AuditService(this.db).record({
+      usuarioId: actorId,
+      accion: "USUARIO_ACTIVADO",
+      entidad: "Usuario",
+      entidadId: userId,
+    });
+
+    return this.publicUser(user);
+  }
+
+  private publicUser(user: {
+    id: string;
+    nombre: string;
+    apellidos: string;
+    correo: string;
+    telefono: string;
+    rol: RolUsuario;
+    activo: boolean;
+    medico?: { especialidadId: string; numeroProfesional: string } | null;
+  }) {
+    return {
+      id: user.id,
+      nombre: user.nombre,
+      apellidos: user.apellidos,
+      correo: user.correo,
+      telefono: user.telefono,
+      rol: user.rol,
+      activo: user.activo,
+      especialidadId: user.medico?.especialidadId ?? null,
+      numeroProfesional: user.medico?.numeroProfesional ?? null,
+    };
   }
 }

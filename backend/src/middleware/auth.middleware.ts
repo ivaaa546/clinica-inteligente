@@ -23,3 +23,18 @@ export const requireAuth = (db: PrismaClient): RequestHandler => async (request,
     next(error);
   }
 };
+
+export const optionalAuth = (db: PrismaClient): RequestHandler => async (request, _response, next) => {
+  try {
+    const userId = request.session?.userId;
+    if (userId) {
+      const user = await new UsersRepository(db).findById(userId);
+      if (user && user.activo) {
+        request.auth = { userId: user.id, role: user.rol };
+      }
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+};

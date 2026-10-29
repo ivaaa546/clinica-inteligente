@@ -4,6 +4,7 @@ import {
   CalendarCheck, FolderHeart, Mail, Phone, MapPin,
 } from 'lucide-react'
 import './Home.css'
+import { getClinicAddress } from '../services/clinicSettings'
 
 const NAV = [
   { label: 'Inicio', href: '#inicio', active: true },
@@ -43,7 +44,7 @@ const FAQ = [
 const CONTACTO = [
   { icon: Mail, titulo: 'Correo de contacto', texto: 'tilinesmedicos@medicinaumg.com' },
   { icon: Phone, titulo: 'Teléfono', texto: '+502 4935 2697' },
-  { icon: MapPin, titulo: 'Dirección', texto: 'Oficina Central Barrio El Calvario, San Juan Chamelco, Alta Verapaz' },
+  { icon: MapPin, titulo: 'Dirección', texto: null },
 ]
 
 function Brand() {
@@ -164,7 +165,7 @@ export default function Home() {
           {CONTACTO.map(({ icon: Icon, titulo, texto }) => (
             <div className="channel" key={titulo}>
               <Icon size={22} color="#16713e" />
-              <div><strong>{titulo}</strong><span>{texto}</span></div>
+              <div><strong>{titulo}</strong><span>{titulo === 'Dirección' ? getClinicAddress() : texto}</span></div>
             </div>
           ))}
         </div>

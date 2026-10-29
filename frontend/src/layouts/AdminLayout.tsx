@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Plus, Menu, ChevronDown, Users, Briefcase, CalendarDays, BarChart3, Info, LogOut, UserCog } from 'lucide-react'
+import { Plus, Menu, ChevronDown, Users, Briefcase, CalendarDays, BarChart3, Info, LogOut, UserCog, Settings } from 'lucide-react'
 import { useSesion } from '../auth/useSesion'
 // Misma estructura que los demás espacios (clases `esp__*`) con ajustes propios del administrador
 import './EspacioLayout.css'
@@ -11,6 +11,7 @@ const SECCIONES = [
   { to: '/admin/especialidades', label: 'Especialidades', detalle: '', icon: Briefcase },
   { to: '/admin/citas', label: 'Citas', detalle: '', icon: CalendarDays },
   { to: '/admin/metricas', label: 'Métricas', detalle: '', icon: BarChart3 },
+  { to: '/admin/configuracion', label: 'Configuración de la clínica', detalle: 'Dirección pública', icon: Settings },
 ]
 
 const iniciales = (nombre: string) =>

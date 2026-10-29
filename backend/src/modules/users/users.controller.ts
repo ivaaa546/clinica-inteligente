@@ -38,6 +38,27 @@ export const deactivateUser: RequestHandler = async (request, response, next) =>
   }
 };
 
+export const activateUser: RequestHandler = async (request, response, next) => {
+  try {
+    const user = await new UsersService(request.app.locals.prisma).activate(
+      request.auth!.userId,
+      String(request.params.id),
+    );
+    response.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUser: RequestHandler = async (request, response, next) => {
+  try {
+    const user = await new UsersService(request.app.locals.prisma).findById(String(request.params.id));
+    response.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const listUsers: RequestHandler = async (request, response, next) => {
   try {
     const users = await new UsersService(request.app.locals.prisma).list();

@@ -28,6 +28,7 @@ import EditarUsuario from './pages/admin/EditarUsuario'
 import Especialidades from './pages/admin/Especialidades'
 import Citas from './pages/admin/Citas'
 import Metricas from './pages/admin/Metricas'
+import ConfiguracionClinica from './pages/admin/ConfiguracionClinica'
 import CuentaPersonal from './pages/personal/Cuenta'
 
 const VideollamadaPaciente = lazy(() => import('./pages/paciente/Videollamada'))
@@ -91,6 +92,7 @@ export default function App() {
             <Route path="especialidades" element={<Especialidades />} />
             <Route path="citas" element={<Citas />} />
             <Route path="metricas" element={<Metricas />} />
+            <Route path="configuracion" element={<ConfiguracionClinica />} />
             <Route path="cuenta" element={<CuentaPersonal volverA="/admin/usuarios" />} />
             <Route path="*" element={<UnavailableRoute />} />
           </Route>
