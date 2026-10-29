@@ -34,7 +34,7 @@ describe('cliente HTTP', () => {
     const result = await apiClient('/example', { method: 'POST', body: { value: 1 } })
 
     assert.deepEqual(result, { ok: true })
-    assert.equal(request.url, 'http://localhost:3000/api/v1/example')
+    assert.equal(request.url, '/api/v1/example')
     assert.equal(request.options.credentials, 'include')
     assert.equal(request.options.headers.get('Content-Type'), 'application/json')
     assert.deepEqual(JSON.parse(request.options.body), { value: 1 })
@@ -129,13 +129,13 @@ describe('adaptadores', () => {
       correo: 'patient@example.test',
       contrasena: 'password-123',
     })
-    assert.equal(requests[1].url, 'http://localhost:3000/api/v1/appointments')
+    assert.equal(requests[1].url, '/api/v1/appointments')
     assert.deepEqual(JSON.parse(requests[1].options.body), {
       medicoId: 'doctor-uuid',
       disponibilidadId: 'availability-uuid',
       modalidad: 'PRESENCIAL',
     })
-    assert.equal(requests[2].url, 'http://localhost:3000/api/v1/appointments/appointment-uuid/reschedule')
+    assert.equal(requests[2].url, '/api/v1/appointments/appointment-uuid/reschedule')
     assert.deepEqual(JSON.parse(requests[2].options.body), {
       nuevaDisponibilidadId: 'new-availability-uuid',
       modalidad: 'PRESENCIAL',
@@ -164,23 +164,23 @@ describe('adaptadores', () => {
     })
     await requestVideoAccess('appointment-uuid')
 
-    assert.equal(requests[0].url, 'http://localhost:3000/api/v1/doctors/me')
-    assert.equal(requests[1].url, 'http://localhost:3000/api/v1/availability/me')
+    assert.equal(requests[0].url, '/api/v1/doctors/me')
+    assert.equal(requests[1].url, '/api/v1/availability/me')
     assert.deepEqual(JSON.parse(requests[2].options.body), {
       inicio: '2026-11-02T15:00:00.000Z',
       modalidades: ['PRESENCIAL'],
     })
-    assert.equal(requests[3].url, 'http://localhost:3000/api/v1/availability/availability-uuid')
+    assert.equal(requests[3].url, '/api/v1/availability/availability-uuid')
     assert.equal(requests[3].options.method, 'PATCH')
     assert.deepEqual(JSON.parse(requests[3].options.body), { modalidades: ['VIRTUAL'] })
-    assert.equal(requests[4].url, 'http://localhost:3000/api/v1/appointments/appointment-uuid/accept')
+    assert.equal(requests[4].url, '/api/v1/appointments/appointment-uuid/accept')
     assert.equal(requests[4].options.method, 'PATCH')
-    assert.equal(requests[5].url, 'http://localhost:3000/api/v1/availability/availability-uuid')
+    assert.equal(requests[5].url, '/api/v1/availability/availability-uuid')
     assert.equal(requests[5].options.method, 'DELETE')
-    assert.equal(requests[6].url, 'http://localhost:3000/api/v1/consultations')
+    assert.equal(requests[6].url, '/api/v1/consultations')
     assert.equal(requests[6].options.method, 'POST')
     assert.deepEqual(JSON.parse(requests[6].options.body).recetas, [])
-    assert.equal(requests[7].url, 'http://localhost:3000/api/v1/video-calls/appointments/appointment-uuid/access')
+    assert.equal(requests[7].url, '/api/v1/video-calls/appointments/appointment-uuid/access')
     assert.equal(requests[7].options.method, 'POST')
   })
 
@@ -198,14 +198,14 @@ describe('adaptadores', () => {
     })
     await getConsultation('consultation-uuid')
 
-    assert.equal(requests[0].url, 'http://localhost:3000/api/v1/patients/patient-uuid/record')
-    assert.equal(requests[1].url, 'http://localhost:3000/api/v1/patients/patient-uuid/background')
+    assert.equal(requests[0].url, '/api/v1/patients/patient-uuid/record')
+    assert.equal(requests[1].url, '/api/v1/patients/patient-uuid/background')
     assert.equal(requests[1].options.method, 'PATCH')
     assert.deepEqual(JSON.parse(requests[1].options.body), {
       antecedentesGenerales: { alergias: 'Penicilina', medicos: 'Hipertensión' },
       antecedentesGineco: { gestas: 2, partos: 2, cesareas: 0, abortos: 0, hijosVivos: 2 },
     })
-    assert.equal(requests[2].url, 'http://localhost:3000/api/v1/consultations/consultation-uuid')
+    assert.equal(requests[2].url, '/api/v1/consultations/consultation-uuid')
   })
 
   it('adapta citas y bloques médicos a la zona horaria clínica y calcula esFutura', () => {

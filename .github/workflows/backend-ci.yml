@@ -47,4 +47,5 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run migrate
-      - run: npm test
+      # Esta orden falla si TEST_DATABASE_URL no está disponible; evita omitir integración en CI.
+      - run: npm run test:integration

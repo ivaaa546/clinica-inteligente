@@ -83,6 +83,14 @@ export class AppointmentsRepository {
     return this.db.cita.update({ where: { id }, data: { estado } });
   }
 
+  async updateStateIfCurrent(id: string, expectedStates: EstadoCita[], estado: EstadoCita) {
+    const result = await this.db.cita.updateMany({
+      where: { id, estado: { in: expectedStates } },
+      data: { estado },
+    });
+    return result.count === 1;
+  }
+
   markVideoRevoked(id: string, videoRevocadaEn: Date) {
     return this.db.cita.update({ where: { id }, data: { videoRevocadaEn } });
   }

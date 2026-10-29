@@ -13,7 +13,8 @@
     "start": "node --env-file=.env dist/index.js",
     "migrate": "prisma migrate deploy",
     "seed": "prisma db seed",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:integration": "node -e \"if (!process.env.TEST_DATABASE_URL) { console.error('TEST_DATABASE_URL es obligatoria para las pruebas de integración'); process.exit(1); }\" && vitest run"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

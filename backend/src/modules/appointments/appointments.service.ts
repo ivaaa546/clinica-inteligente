@@ -172,21 +172,21 @@ export class AppointmentsService {
     const appointment = await this.authorizeDoctorAppointment(doctorUserId, appointmentId);
     this.assertState(appointment.estado, ["PENDIENTE"]);
     this.assertFuture(appointment.inicio);
-    return this.changeState(doctorUserId, appointmentId, "ACEPTADA", "CITA_ACEPTADA");
+    return this.changeState(doctorUserId, appointmentId, ["PENDIENTE"], "ACEPTADA", "CITA_ACEPTADA");
   }
 
   async reject(doctorUserId: string, appointmentId: string) {
     const appointment = await this.authorizeDoctorAppointment(doctorUserId, appointmentId);
     this.assertState(appointment.estado, ["PENDIENTE"]);
     this.assertFuture(appointment.inicio);
-    return this.changeState(doctorUserId, appointmentId, "RECHAZADA", "CITA_RECHAZADA");
+    return this.changeState(doctorUserId, appointmentId, ["PENDIENTE"], "RECHAZADA", "CITA_RECHAZADA");
   }
 
   async cancel(actor: { userId: string; role: RolUsuario }, appointmentId: string) {
     const appointment = await this.authorizeActorAppointment(actor, appointmentId);
     this.assertState(appointment.estado, ["PENDIENTE", "ACEPTADA"]);
     this.assertFuture(appointment.inicio);
-    return this.changeState(actor.userId, appointmentId, "CANCELADA", "CITA_CANCELADA");
+    return this.changeState(actor.userId, appointmentId, ["PENDIENTE", "ACEPTADA"], "CANCELADA", "CITA_CANCELADA");
   }
 
   async reschedule(
@@ -202,9 +202,14 @@ export class AppointmentsService {
     try {
       return await this.db.$transaction(async (transaction) => {
         const appointments = new AppointmentsRepository(transaction);
+        // Se vuelve a leer dentro de la transacción para no actuar sobre un estado obsoleto.
+        const currentAppointment = await appointments.findById(appointmentId);
+        if (!currentAppointment || currentAppointment.medicoId !== appointment.medicoId || !["PENDIENTE", "ACEPTADA"].includes(currentAppointment.estado) || currentAppointment.inicio <= new Date()) {
+          throw new Error("La cita ya no puede reprogramarse");
+        }
         const availability = await new AvailabilityRepository(transaction).findById(newAvailabilityId);
 
-        if (!availability || !availability.activa || availability.medicoId !== appointment.medicoId) {
+        if (!availability || !availability.activa || availability.medicoId !== currentAppointment.medicoId) {
           throw new Error("El nuevo bloque no esta disponible para este medico");
         }
         if (availability.inicio <= new Date()) {
@@ -217,13 +222,14 @@ export class AppointmentsService {
           throw new Error("La modalidad no esta habilitada para el nuevo bloque");
         }
 
-        const doctor = await new DoctorsRepository(transaction).findById(appointment.medicoId);
+        const doctor = await new DoctorsRepository(transaction).findById(currentAppointment.medicoId);
         const direccionAtencionPresencial = this.attendanceAddress(modalidad, doctor?.direccionAtencionPresencial);
-        const rescheduled = await appointments.updateState(appointmentId, "REPROGRAMADA");
-        await this.invalidateVirtualAccess(transaction, rescheduled, "CITA_REPROGRAMADA");
+        const changed = await appointments.updateStateIfCurrent(appointmentId, ["PENDIENTE", "ACEPTADA"], "REPROGRAMADA");
+        if (!changed) throw new Error("La cita fue modificada por otra solicitud");
+        await this.invalidateVirtualAccess(transaction, currentAppointment, "CITA_REPROGRAMADA");
         const replacement = await appointments.createRescheduled({
-          pacienteId: appointment.pacienteId,
-          medicoId: appointment.medicoId,
+          pacienteId: currentAppointment.pacienteId,
+          medicoId: currentAppointment.medicoId,
           disponibilidadId: availability.id,
           inicio: availability.inicio,
           fin: availability.fin,
@@ -304,9 +310,19 @@ export class AppointmentsService {
     throw new Error("El usuario no puede gestionar esta cita");
   }
 
-  private changeState(userId: string, appointmentId: string, state: EstadoCita, action: string) {
+  private changeState(
+    userId: string,
+    appointmentId: string,
+    expectedStates: EstadoCita[],
+    state: EstadoCita,
+    action: string,
+  ) {
     return this.db.$transaction(async (transaction) => {
-      const appointment = await new AppointmentsRepository(transaction).updateState(appointmentId, state);
+      const appointments = new AppointmentsRepository(transaction);
+      const changed = await appointments.updateStateIfCurrent(appointmentId, expectedStates, state);
+      if (!changed) throw new Error("La cita fue modificada por otra solicitud");
+      const appointment = await appointments.findById(appointmentId);
+      if (!appointment) throw new Error("Cita no encontrada");
       const causeByState = {
         RECHAZADA: "CITA_RECHAZADA",
         CANCELADA: "CITA_CANCELADA",

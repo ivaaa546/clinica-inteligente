@@ -5,7 +5,8 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: true,
+    // No aceptar encabezados Host arbitrarios: evita exponer el servidor de desarrollo a DNS rebinding.
+    allowedHosts: ['localhost', '127.0.0.1'],
     proxy: {
       '/api/v1': {
         target: 'http://localhost:3000',
