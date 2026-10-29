@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { CircleAlert, Info, Video } from 'lucide-react'
+import { CircleAlert, Info } from 'lucide-react'
 import EstadoCita from '../EstadoCita'
 import ModalidadTag from '../ModalidadTag'
 import { diaSemana, formatearFecha } from '../../lib/fechas'
@@ -28,8 +28,7 @@ export default function CitaSeleccionada({
   const modificable = activa && cita.futura && !ocupado
   const motivo = `No disponible: cita ${cita.estado.toLowerCase()}`
 
-  const virtual = cita.modalidad === 'VIDEOLLAMADA' && cita.estado === 'ACEPTADA'
-  const llamadaFinalizada = cita.llamada === 'FINALIZADA'
+  const virtual = cita.modalidad === 'VIDEOLLAMADA'
 
   return (
     <section className="ag-card ag-cita" aria-labelledby="ag-cita-titulo">
@@ -76,12 +75,7 @@ export default function CitaSeleccionada({
         <button type="button" className="ag-btn ag-btn--primario" disabled title="Solo disponible para citas aceptadas">Registrar consulta</button>
       )}
 
-      {virtual && !llamadaFinalizada && (
-        <Link to={`/medico/citas/${cita.codigo}/llamada`} className="ag-btn ag-btn--borde">
-          <Video size={17} aria-hidden="true" /> {cita.llamada === 'EN_CURSO' ? 'Volver a la videollamada' : 'Iniciar videollamada'}
-        </Link>
-      )}
-      {virtual && llamadaFinalizada && <p className="ag-nota">La videollamada ya finalizó.</p>}
+      {virtual && <p className="ag-nota">La videollamada se habilitará cuando su integración esté verificada.</p>}
 
       <button type="button" className="ag-btn ag-btn--borde" disabled={!modificable} onClick={onCancelar}>Cancelar cita</button>
       {reprogramando ? (

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Plus, Menu, ChevronDown, CalendarDays, Users, LogOut } from 'lucide-react'
-import { cerrarSesion as cerrarSesionApi } from '../services/authService'
 import { obtenerMedicoActual } from '../services/medicoService'
+import { logout } from '../api/auth'
 import type { Medico } from '../types/medico'
 // Comparte estructura y estilos con el layout del paciente (mismas clases `pac__*`),
 // así ambos espacios se ven igual y no se duplica CSS.
@@ -20,7 +20,6 @@ const iniciales = (nombre: string) =>
 const CLAVE_MENU = 'tm:menu-colapsado'
 
 export default function MedicoLayout() {
-  const navigate = useNavigate()
   const { pathname } = useLocation()
   const [medico, setMedico] = useState<Medico | null>(null)
   const [abierto, setAbierto] = useState(false)
@@ -68,7 +67,12 @@ export default function MedicoLayout() {
 
   const cerrarSesion = async () => {
     setAbierto(false)
-    try { await cerrarSesionApi() } finally { navigate('/login') }
+    try {
+      await logout()
+      window.location.assign('/login')
+    } catch {
+      // La sesión local se conserva si el servidor no confirmó el cierre.
+    }
   }
 
   const nombre = medico?.nombre ?? 'Médico'

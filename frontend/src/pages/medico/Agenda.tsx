@@ -80,13 +80,15 @@ export default function Agenda() {
   }
 
   const elegirDestino = (codigo: string, fecha: string, inicio: string) => {
-    if (!datos?.bloques.some((b) => b.fecha === fecha && b.inicio === inicio)) {
+    const bloque = datos?.bloques.find((item) => item.fecha === fecha && item.inicio === inicio)
+    const cita = datos?.citas.find((item) => item.codigo === codigo)
+    if (!bloque || !cita) {
       setError('Elige un bloque disponible: los espacios vacíos todavía no tienen bloque publicado.')
       return
     }
     if (!window.confirm(`¿Reprogramar la cita ${codigo} al ${formatearFecha(fecha)} a las ${inicio}?`)) return
     return ejecutar(async () => {
-      const nueva = await reprogramarCitaMedico(codigo, fecha, inicio)
+      const nueva = await reprogramarCitaMedico(codigo, bloque.id, cita.modalidad)
       setReprogramando(null)
       setLunes(lunesDe(fecha))
       setSeleccion({ tipo: 'cita', codigo: nueva.codigo })
@@ -169,7 +171,11 @@ export default function Agenda() {
           existe={!!bloqueDelForm}
           conCitaActiva={conCitaActiva}
           ocupado={ocupado}
-          onCambio={(cambios) => setForm((actual) => ({ ...actual, ...cambios }))}
+          onCambio={(cambios) => setForm((actual) => ({
+            ...actual,
+            ...cambios,
+            ...(cambios.desde ? { hasta: sumarMinutos(cambios.desde, MINUTOS_BLOQUE) } : {}),
+          }))}
           onGuardar={guardar}
           onNuevo={() => { setSeleccion(null); setError(''); setAviso(''); setForm(formularioInicial()) }}
           onEliminar={eliminar}

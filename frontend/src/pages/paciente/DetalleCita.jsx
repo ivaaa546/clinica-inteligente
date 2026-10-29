@@ -45,9 +45,12 @@ export default function DetalleCita() {
   useEffect(() => {
     if (!cita || !quiere) return
     let vigente = true
-    setCargandoBloques(true)
-    setBloque('')
-    bloquesLibres(cita.medicoId, fecha)
+    void Promise.resolve().then(() => {
+      if (!vigente) return []
+      setCargandoBloques(true)
+      setBloque('')
+      return bloquesLibres(cita.medicoId, fecha)
+    })
       .then((b) => { if (vigente) { setBloques(b); setBloque(b[0] ?? '') } })
       .catch((e) => vigente && setAviso(e.message))
       .finally(() => vigente && setCargandoBloques(false))

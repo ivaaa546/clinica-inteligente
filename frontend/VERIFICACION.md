@@ -70,6 +70,7 @@ Resultado verificado: 7 archivos y 24 pruebas aprobadas. Los datos temporales de
 | T-025 | Búsqueda de agenda, especialidad sin disponibilidad, solicitud, conflicto atómico entre dos pacientes, cancelación, reprogramación y presentación en `America/Guatemala`. |
 | T-026 | Perfil editable soportado, preconsulta propia, inmovilización tras consulta, antecedentes auditados, recetas múltiples y mínima exposición clínica al paciente. |
 | T-027 | Viewports móvil/escritorio, overflow horizontal, navegación por teclado, labels asociados, build/lint/pruebas y CI Linux reproducible. |
+| Agenda médica | Perfil propio, disponibilidad propia, citas propias y transiciones de aceptar, rechazar, cancelar o reprogramar se conectan a la API; la publicación crea un único bloque de 30 minutos por operación. |
 
 Las comprobaciones de navegador se realizaron con Chromium headless y los datos creados para ellas se limpiaron de la base aislada.
 
@@ -83,7 +84,7 @@ Las comprobaciones de navegador se realizaron con Chromium headless y los datos 
 
 Esta entrega no declara terminado todo el MVP ni los portales que no forman parte del frontend paciente. En particular:
 
-- No se implementan portal de médico ni portal administrativo en React.
+- El portal de médico y las salas de videollamada permanecen deshabilitados hasta que sus flujos estén integrados y verificados contra la API; no presentan datos simulados.
 - Recuperación de contraseña, cambio de contraseña y generación/apertura/descarga de PDF no tienen contratos backend disponibles; se muestran como no disponibles y no se simulan.
 - El paciente solo ve el diagnóstico y las recetas devueltas por `GET /prescriptions/me`; no se presenta un expediente clínico completo.
 - No se inventan fechas, médicos, estados, PDFs, recetas ni campos ausentes del contrato.

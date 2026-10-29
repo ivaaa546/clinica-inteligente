@@ -30,6 +30,15 @@ export class AppointmentsRepository {
   listByDoctor(medicoId: string, estado?: EstadoCita) {
     return this.db.cita.findMany({
       where: { medicoId, ...(estado ? { estado } : {}) },
+      include: {
+        paciente: {
+          select: {
+            id: true,
+            usuario: { select: { nombre: true, apellidos: true, telefono: true } },
+          },
+        },
+        consulta: { select: { id: true } },
+      },
       orderBy: { inicio: "asc" },
     });
   }

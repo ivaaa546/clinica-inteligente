@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import './PhoneInput.css'
+import './Phoneinput.css'
 
 const PREFIJO = '+502' // Guatemala
 
@@ -14,7 +14,7 @@ const soloLocales = (texto = '') => {
 const agrupar = (d) => (d.length > 4 ? `${d.slice(0, 4)} ${d.slice(4)}` : d)
 
 /** Lo escrito o pegado -> '+502 4177 3794' (o '' si no hay dígitos). Es lo que se guarda. */
-export const normalizarTelefono = (texto = '') => {
+const normalizarTelefono = (texto = '') => {
   const digitos = soloLocales(texto)
   return digitos ? `${PREFIJO} ${agrupar(digitos)}` : ''
 }

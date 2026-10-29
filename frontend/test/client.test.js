@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict'
 import { afterEach, describe, it } from 'node:test'
 import { login, registerPatient } from '../src/api/auth.js'
-import { requestAppointment, rescheduleAppointment } from '../src/api/appointments.js'
+import { acceptAppointment, requestAppointment, rescheduleAppointment } from '../src/api/appointments.js'
+import { listOwnAvailability, publishAvailability, removeAvailability } from '../src/api/availability.js'
+import { getOwnDoctor } from '../src/api/doctors.js'
 import { ApiError, apiClient } from '../src/api/client.js'
 
 const originalFetch = globalThis.fetch
@@ -117,7 +119,7 @@ describe('adaptadores', () => {
 
     await login({ email: 'patient@example.test', password: 'password-123' })
     await requestAppointment({ medicoId: 'doctor-uuid', disponibilidadId: 'availability-uuid' })
-    await rescheduleAppointment('appointment-uuid', 'new-availability-uuid')
+    await rescheduleAppointment('appointment-uuid', 'new-availability-uuid', 'PRESENCIAL')
 
     assert.deepEqual(JSON.parse(requests[0].options.body), {
       correo: 'patient@example.test',
@@ -129,6 +131,34 @@ describe('adaptadores', () => {
       disponibilidadId: 'availability-uuid',
     })
     assert.equal(requests[2].url, 'http://localhost:3000/api/v1/appointments/appointment-uuid/reschedule')
-    assert.deepEqual(JSON.parse(requests[2].options.body), { nuevaDisponibilidadId: 'new-availability-uuid' })
+    assert.deepEqual(JSON.parse(requests[2].options.body), {
+      nuevaDisponibilidadId: 'new-availability-uuid',
+      modalidad: 'PRESENCIAL',
+    })
+  })
+
+  it('usa los contratos autenticados de agenda médica', async () => {
+    const requests = []
+    globalThis.fetch = async (url, options = {}) => {
+      requests.push({ url, options })
+      return jsonResponse({ id: 'resource-id' })
+    }
+
+    await getOwnDoctor()
+    await listOwnAvailability()
+    await publishAvailability({ inicio: '2026-11-02T15:00:00.000Z', modalidades: ['PRESENCIAL'] })
+    await acceptAppointment('appointment-uuid')
+    await removeAvailability('availability-uuid')
+
+    assert.equal(requests[0].url, 'http://localhost:3000/api/v1/doctors/me')
+    assert.equal(requests[1].url, 'http://localhost:3000/api/v1/availability/me')
+    assert.deepEqual(JSON.parse(requests[2].options.body), {
+      inicio: '2026-11-02T15:00:00.000Z',
+      modalidades: ['PRESENCIAL'],
+    })
+    assert.equal(requests[3].url, 'http://localhost:3000/api/v1/appointments/appointment-uuid/accept')
+    assert.equal(requests[3].options.method, 'PATCH')
+    assert.equal(requests[4].url, 'http://localhost:3000/api/v1/availability/availability-uuid')
+    assert.equal(requests[4].options.method, 'DELETE')
   })
 })

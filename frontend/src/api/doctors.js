@@ -9,3 +9,7 @@ export function listDoctors(especialidadId) {
 export function getDoctor(id) {
   return apiClient(`/doctors/${id}`)
 }
+
+export function getOwnDoctor() {
+  return apiClient('/doctors/me')
+}

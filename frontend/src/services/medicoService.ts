@@ -1,9 +1,12 @@
 import { ApiError, USAR_MOCK, esperar } from './api'
+import { acceptAppointment, cancelAppointment, listOwnAppointments, rejectAppointment, rescheduleAppointment } from '../api/appointments'
+import { listOwnAvailability, publishAvailability, removeAvailability } from '../api/availability'
+import { getOwnDoctor } from '../api/doctors'
 import {
-  ANTECEDENTES, BLOQUES_INICIALES, CITAS_INICIALES, CONSULTAS_INICIALES, GINECO, GINECO_VACIO, MEDICO_ACTUAL, PACIENTES,
+  ANTECEDENTES, CITAS_INICIALES, CONSULTAS_INICIALES, GINECO, GINECO_VACIO, MEDICO_ACTUAL, PACIENTES,
   type CitaMock,
 } from '../pages/medico/datosEjemplo'
-import { diasHabiles, esFutura, franjas, sumarMinutos, MINUTOS_BLOQUE } from '../lib/semana'
+import { diasHabiles, esFutura, sumarMinutos } from '../lib/semana'
 import {
   codigoConsulta, edadTexto, erroresConsulta, fichaSugerida, fichasDisponibles, recetaFinal, recetaValida,
 } from '../lib/consulta'
@@ -11,18 +14,14 @@ import type {
   AgendaSemana, Antecedentes, AntecedentesGineco, BloqueDisponibilidad, CitaAgenda, ConsultaGuardada, ConsultaPrevia,
   ContextoConsulta, Expediente, FechaISO, FormularioConsulta, Medico, NuevoBloque, Paciente, PacienteVinculado,
 } from '../types/medico'
+import { CLINIC_TIMEZONE, clinicDateKey } from '../lib/date'
 
 // ---------- Base de datos falsa en memoria (solo modo mock) ----------
 const citasMock: CitaMock[] = CITAS_INICIALES.map((c) => ({ ...c }))
-let bloquesMock: BloqueDisponibilidad[] = BLOQUES_INICIALES.map((b) => ({ ...b }))
 const consultasMock: ConsultaGuardada[] = structuredClone(CONSULTAS_INICIALES)
 const antecedentesMock: Record<string, Antecedentes> = structuredClone(ANTECEDENTES)
 const ginecoMock: Record<string, AntecedentesGineco> = structuredClone(GINECO)
 const borradoresMock = new Map<string, FormularioConsulta>()
-let contadorCita = 1100
-
-const ACTIVAS = ['PENDIENTE', 'ACEPTADA']
-const inicioDe = (hora: string) => hora.split('–')[0]
 
 /** Todas las funciones usan datos de ejemplo hasta que el backend esté conectado */
 const exigirMock = () => {
@@ -56,36 +55,115 @@ const paraAgenda = (c: CitaMock): CitaAgenda => {
   }
 }
 
-/** Una cita solo se puede decidir o cancelar mientras está activa y no ha llegado su hora */
-const exigirModificable = (cita: CitaMock, permitidos: string[]) => {
-  if (!permitidos.includes(cita.estado)) throw new ApiError(`La cita ya está ${cita.estado.toLowerCase()}.`, 409)
-  if (!esFutura(cita.fecha, cita.hora)) throw new ApiError('La cita ya pasó y no se puede modificar.', 409)
-}
-
 /** Consultas del paciente, de la más reciente a la más antigua */
 const historialDe = (pacienteId: string) =>
   consultasMock.filter((c) => c.paciente.id === pacienteId).sort((a, b) => b.fecha.localeCompare(a.fecha))
 
 // ---------- Perfil ----------
-/** Médico con sesión iniciada. TODO API: GET /auth/me + GET /doctors/me */
+type ApiDoctor = {
+  id: string
+  nombre: string
+  apellidos: string
+  numeroProfesional: string
+  especialidad: { nombre: string }
+}
+
+type ApiAvailability = {
+  id: string
+  inicio: string
+  fin: string
+  activa: boolean
+}
+
+type ApiDoctorAppointment = {
+  id: string
+  disponibilidadId: string
+  inicio: string
+  fin: string
+  estado: CitaAgenda['estado']
+  modalidad: 'PRESENCIAL' | 'VIRTUAL'
+  paciente: { id: string; nombre: string; apellidos: string; telefono: string }
+  consultaId: string | null
+}
+
+const agendaTime = (value: string) => {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: CLINIC_TIMEZONE,
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date)
+  const values = Object.fromEntries(parts.map(({ type, value: part }) => [type, part]))
+  return `${values.hour}:${values.minute}`
+}
+
+const agendaDateTime = (fecha: string, hora: string) => {
+  // Guatemala is the only approved clinic timezone for this MVP and has a fixed UTC-06:00 offset.
+  return new Date(`${fecha}T${hora}:00-06:00`).toISOString()
+}
+
+const toAgendaAppointment = (appointment: ApiDoctorAppointment): CitaAgenda => {
+  const fecha = clinicDateKey(appointment.inicio)
+  const inicio = agendaTime(appointment.inicio)
+  const fin = agendaTime(appointment.fin)
+  if (!fecha || !inicio || !fin) throw new Error('La API devolvió una cita con horario inválido.')
+
+  return {
+    codigo: appointment.id,
+    fecha,
+    hora: `${inicio}–${fin}`,
+    estado: appointment.estado,
+    modalidad: appointment.modalidad === 'VIRTUAL' ? 'VIDEOLLAMADA' : 'PRESENCIAL',
+    paciente: {
+      id: appointment.paciente.id,
+      nombre: `${appointment.paciente.nombre} ${appointment.paciente.apellidos}`,
+      telefono: appointment.paciente.telefono,
+    },
+    futura: new Date(appointment.inicio).getTime() > Date.now(),
+    llamada: 'SIN_INICIAR',
+    puedeConsultar: appointment.estado === 'ACEPTADA' && appointment.consultaId === null,
+    consultaId: appointment.consultaId,
+  }
+}
+
+/** Médico autenticado, obtenido exclusivamente de su perfil propio. */
 export async function obtenerMedicoActual(): Promise<Medico> {
-  exigirMock()
-  await esperar(150)
-  return { ...MEDICO_ACTUAL }
+  const doctor = await getOwnDoctor() as ApiDoctor
+  return {
+    id: doctor.id,
+    nombre: `${doctor.nombre} ${doctor.apellidos}`,
+    iniciales: `${doctor.nombre[0] ?? ''}${doctor.apellidos[0] ?? ''}`.toUpperCase(),
+    especialidad: doctor.especialidad.nombre,
+    numeroProfesional: doctor.numeroProfesional,
+  }
 }
 
 // ---------- Agenda ----------
 /**
- * Bloques y citas de lunes a viernes de la semana que empieza en `lunes`.
- * TODO API: GET /appointments/me  +  GET /availability/doctor/:medicoId
+ * Bloques y citas propias del médico, proyectados en la zona oficial de la clínica.
  */
 export async function listarAgendaSemana(lunes: FechaISO): Promise<AgendaSemana> {
-  exigirMock()
-  await esperar(250)
   const dias = diasHabiles(lunes)
+  const [availability, appointments] = await Promise.all([
+    listOwnAvailability() as Promise<ApiAvailability[]>,
+    listOwnAppointments() as Promise<ApiDoctorAppointment[]>,
+  ])
+
   return {
-    bloques: bloquesMock.filter((b) => dias.includes(b.fecha)).map((b) => ({ ...b })),
-    citas: citasMock.filter((c) => dias.includes(c.fecha)).map(paraAgenda),
+    bloques: availability.flatMap((block) => {
+      const fecha = clinicDateKey(block.inicio)
+      const inicio = agendaTime(block.inicio)
+      const fin = agendaTime(block.fin)
+      return block.activa && fecha && inicio && fin && dias.includes(fecha)
+        ? [{ id: block.id, fecha, inicio, fin }]
+        : []
+    }),
+    citas: appointments
+      .map(toAgendaAppointment)
+      .filter((appointment) => dias.includes(appointment.fecha)),
   }
 }
 
@@ -98,57 +176,29 @@ export async function obtenerCitaMedico(codigo: string): Promise<CitaAgenda> {
 
 /** Acepta una solicitud PENDIENTE. TODO API: PATCH /appointments/:id/accept */
 export async function aceptarCita(codigo: string): Promise<CitaAgenda> {
-  exigirMock()
-  await esperar(300)
-  const cita = buscarCita(codigo)
-  exigirModificable(cita, ['PENDIENTE'])
-  cita.estado = 'ACEPTADA'
-  return paraAgenda(cita)
+  return toAgendaAppointment(await acceptAppointment(codigo) as ApiDoctorAppointment)
 }
 
 /** Rechaza una solicitud PENDIENTE y libera el bloque. TODO API: PATCH /appointments/:id/reject */
 export async function rechazarCita(codigo: string): Promise<CitaAgenda> {
-  exigirMock()
-  await esperar(300)
-  const cita = buscarCita(codigo)
-  exigirModificable(cita, ['PENDIENTE'])
-  cita.estado = 'RECHAZADA'
-  return paraAgenda(cita)
+  return toAgendaAppointment(await rejectAppointment(codigo) as ApiDoctorAppointment)
 }
 
 /** Cancela una cita PENDIENTE o ACEPTADA y libera el bloque. TODO API: PATCH /appointments/:id/cancel */
 export async function cancelarCitaMedico(codigo: string): Promise<CitaAgenda> {
-  exigirMock()
-  await esperar(300)
-  const cita = buscarCita(codigo)
-  exigirModificable(cita, ACTIVAS)
-  cita.estado = 'CANCELADA'
-  return paraAgenda(cita)
+  return toAgendaAppointment(await cancelAppointment(codigo) as ApiDoctorAppointment)
 }
 
 /**
  * Reprograma una cita a otro bloque libre: la original pasa a REPROGRAMADA y se crea una nueva PENDIENTE
  * enlazada a la original (igual que el backend). TODO API: POST /appointments/:id/reschedule { nuevaDisponibilidadId }
  */
-export async function reprogramarCitaMedico(codigo: string, fecha: FechaISO, inicio: string): Promise<CitaAgenda> {
-  exigirMock()
-  await esperar(300)
-  const original = buscarCita(codigo)
-  exigirModificable(original, ACTIVAS)
-
-  const bloque = bloquesMock.find((b) => b.fecha === fecha && b.inicio === inicio)
-  if (!bloque) throw new ApiError('El nuevo bloque no está disponible.', 409)
-  if (!esFutura(fecha, `${inicio}–${bloque.fin}`)) throw new ApiError('El nuevo bloque debe ser futuro.', 409)
-  const ocupado = citasMock.some((c) => c.fecha === fecha && inicioDe(c.hora) === inicio && ACTIVAS.includes(c.estado))
-  if (ocupado) throw new ApiError('El nuevo bloque ya está reservado.', 409)
-
-  original.estado = 'REPROGRAMADA'
-  const nueva: CitaMock = {
-    codigo: `C-${++contadorCita}`, fecha, hora: `${inicio}–${bloque.fin}`, estado: 'PENDIENTE',
-    modalidad: original.modalidad, pacienteId: original.pacienteId, llamada: 'SIN_INICIAR',
-  }
-  citasMock.push(nueva)
-  return paraAgenda(nueva)
+export async function reprogramarCitaMedico(codigo: string, disponibilidadId: string, modalidad: CitaAgenda['modalidad']): Promise<CitaAgenda> {
+  const replacement = await rescheduleAppointment(codigo, disponibilidadId, modalidad === 'VIDEOLLAMADA' ? 'VIRTUAL' : 'PRESENCIAL')
+  const appointments = await listOwnAppointments() as ApiDoctorAppointment[]
+  const created = appointments.find((appointment) => appointment.id === replacement.id)
+  if (!created) throw new Error('La cita reprogramada no está disponible en la agenda.')
+  return toAgendaAppointment(created)
 }
 
 /**
@@ -156,31 +206,25 @@ export async function reprogramarCitaMedico(codigo: string, fecha: FechaISO, ini
  * TODO API: POST /availability  (el backend recibe un bloque por llamada: `inicio` en ISO)
  */
 export async function publicarBloques({ fecha, desde, hasta }: NuevoBloque): Promise<BloqueDisponibilidad[]> {
-  exigirMock()
-  await esperar(300)
-  if (!fecha || !desde || !hasta || hasta <= desde) {
-    throw new ApiError('Indica una fecha y un rango válido: "Hasta" debe ser posterior a "Desde".', 400)
+  if (!fecha || !desde || hasta !== sumarMinutos(desde, 30)) {
+    throw new ApiError('La disponibilidad debe publicarse en un único bloque de 30 minutos.', 400)
   }
-  if (!esFutura(fecha, `${desde}–${hasta}`)) throw new ApiError('No puedes crear bloques en el pasado.', 400)
 
-  const nuevos: BloqueDisponibilidad[] = []
-  for (const inicio of franjas(desde, hasta)) {
-    if (bloquesMock.some((b) => b.fecha === fecha && b.inicio === inicio)) continue
-    nuevos.push({ id: `B-${fecha}-${inicio}`, fecha, inicio, fin: sumarMinutos(inicio, MINUTOS_BLOQUE) })
-  }
-  bloquesMock = [...bloquesMock, ...nuevos]
-  return nuevos.map((b) => ({ ...b }))
+  const created = await publishAvailability({
+    inicio: agendaDateTime(fecha, desde),
+    modalidades: ['PRESENCIAL'],
+  }) as ApiAvailability
+  return [{
+    id: created.id,
+    fecha: clinicDateKey(created.inicio) ?? fecha,
+    inicio: agendaTime(created.inicio),
+    fin: agendaTime(created.fin),
+  }]
 }
 
 /** Elimina un bloque sin cita activa. TODO API: DELETE /availability/:id */
 export async function eliminarBloque(id: string): Promise<void> {
-  exigirMock()
-  await esperar(250)
-  const bloque = bloquesMock.find((b) => b.id === id)
-  if (!bloque) throw new ApiError('No encontramos este bloque.', 404)
-  const ocupado = citasMock.some((c) => c.fecha === bloque.fecha && inicioDe(c.hora) === bloque.inicio && ACTIVAS.includes(c.estado))
-  if (ocupado) throw new ApiError('Un bloque con una cita activa no se puede eliminar.', 409)
-  bloquesMock = bloquesMock.filter((b) => b.id !== id)
+  await removeAvailability(id)
 }
 
 // ---------- Videollamada (sala del médico) ----------

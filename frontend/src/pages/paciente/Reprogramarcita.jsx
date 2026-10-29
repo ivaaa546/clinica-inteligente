@@ -95,7 +95,7 @@ export default function ReprogramarCita() {
     setSuccess(null)
     setIsSubmitting(true)
     try {
-      const replacement = await rescheduleAppointment(id, selectedBlock.id)
+      const replacement = await rescheduleAppointment(id, selectedBlock.id, appointment.modalidad)
       setAppointment((current) => ({ ...current, estado: 'REPROGRAMADA' }))
       setSuccess(replacement)
       setAvailabilityId('')

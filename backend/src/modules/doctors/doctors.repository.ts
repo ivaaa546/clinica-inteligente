@@ -18,7 +18,13 @@ export class DoctorsRepository {
   }
 
   findByUserId(usuarioId: string) {
-    return this.db.medico.findUnique({ where: { usuarioId } });
+    return this.db.medico.findUnique({
+      where: { usuarioId },
+      include: {
+        usuario: { select: { nombre: true, apellidos: true, telefono: true } },
+        especialidad: { select: { id: true, nombre: true } },
+      },
+    });
   }
 
   findPublicById(id: string) {

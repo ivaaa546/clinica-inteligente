@@ -90,7 +90,22 @@ export class AppointmentsService {
     if (!doctor) {
       throw new Error("Perfil de medico no encontrado");
     }
-    return new AppointmentsRepository(this.db).listByDoctor(doctor.id, estado);
+    const appointments = await new AppointmentsRepository(this.db).listByDoctor(doctor.id, estado);
+    return appointments.map((appointment) => ({
+      id: appointment.id,
+      disponibilidadId: appointment.disponibilidadId,
+      inicio: appointment.inicio,
+      fin: appointment.fin,
+      estado: appointment.estado,
+      modalidad: appointment.modalidad,
+      paciente: {
+        id: appointment.paciente.id,
+        nombre: appointment.paciente.usuario.nombre,
+        apellidos: appointment.paciente.usuario.apellidos,
+        telefono: appointment.paciente.usuario.telefono,
+      },
+      consultaId: appointment.consulta?.id ?? null,
+    }));
   }
 
   getById(id: string) {

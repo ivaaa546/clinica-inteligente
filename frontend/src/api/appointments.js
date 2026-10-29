@@ -30,10 +30,18 @@ export function cancelAppointment(id) {
   return apiClient(`/appointments/${id}/cancel`, { method: 'PATCH' })
 }
 
+export function acceptAppointment(id) {
+  return apiClient(`/appointments/${id}/accept`, { method: 'PATCH' })
+}
+
+export function rejectAppointment(id) {
+  return apiClient(`/appointments/${id}/reject`, { method: 'PATCH' })
+}
+
 /** La API devuelve la nueva cita PENDIENTE, sin modificar localmente la cita original. */
-export function rescheduleAppointment(id, nuevaDisponibilidadId) {
+export function rescheduleAppointment(id, nuevaDisponibilidadId, modalidad) {
   return apiClient(`/appointments/${id}/reschedule`, {
     method: 'PATCH',
-    body: { nuevaDisponibilidadId },
+    body: { nuevaDisponibilidadId, modalidad },
   })
 }

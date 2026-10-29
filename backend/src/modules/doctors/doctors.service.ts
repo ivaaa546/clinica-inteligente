@@ -32,8 +32,17 @@ export class DoctorsService {
     return { ...this.publicDoctor(doctor), availability };
   }
 
-  getOwnProfile(userId: string) {
-    return new DoctorsRepository(this.db).findByUserId(userId);
+  async getOwnProfile(userId: string) {
+    const doctor = await new DoctorsRepository(this.db).findByUserId(userId);
+    return doctor && {
+      id: doctor.id,
+      nombre: doctor.usuario.nombre,
+      apellidos: doctor.usuario.apellidos,
+      telefono: doctor.usuario.telefono,
+      numeroProfesional: doctor.numeroProfesional,
+      especialidad: doctor.especialidad,
+      direccionAtencionPresencial: doctor.direccionAtencionPresencial,
+    };
   }
 
   async updateOwnProfile(userId: string, input: DoctorProfileInput) {

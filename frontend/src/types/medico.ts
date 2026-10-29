@@ -9,7 +9,7 @@ export type FechaISO = string
 export type Hora = string
 
 export interface Medico {
-  id: number
+  id: string | number
   nombre: string
   iniciales: string
   especialidad: string
