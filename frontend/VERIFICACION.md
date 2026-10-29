@@ -85,7 +85,7 @@ Las comprobaciones de navegador se realizaron con Chromium headless y los datos 
 
 Esta entrega no declara terminado todo el MVP ni los portales que no forman parte del frontend paciente. En particular:
 
-- El portal de médico y las salas de videollamada permanecen deshabilitados hasta que sus flujos estén integrados y verificados contra la API; no presentan datos simulados.
+- Las salas de videollamada consumen acceso temporal autorizado por el backend y conectan con `livekit-client`; la prueba manual contra LiveKit Cloud sigue pendiente de credenciales, orígenes HTTPS y aprovisionamiento externo por ambiente.
 - Recuperación de contraseña, cambio de contraseña y generación/apertura/descarga de PDF no tienen contratos backend disponibles; se muestran como no disponibles y no se simulan.
 - El paciente solo ve el diagnóstico y las recetas devueltas por `GET /prescriptions/me`; no se presenta un expediente clínico completo.
 - No se inventan fechas, médicos, estados, PDFs, recetas ni campos ausentes del contrato.

@@ -5,6 +5,7 @@ import { acceptAppointment, requestAppointment, rescheduleAppointment } from '..
 import { listOwnAvailability, publishAvailability, removeAvailability } from '../src/api/availability.js'
 import { getOwnDoctor } from '../src/api/doctors.js'
 import { createConsultation } from '../src/api/consultations.js'
+import { requestVideoAccess } from '../src/api/videoCalls.js'
 import { ApiError, apiClient } from '../src/api/client.js'
 
 const originalFetch = globalThis.fetch
@@ -157,6 +158,7 @@ describe('adaptadores', () => {
       diagnostico: 'Diagnóstico',
       recetas: [],
     })
+    await requestVideoAccess('appointment-uuid')
 
     assert.equal(requests[0].url, 'http://localhost:3000/api/v1/doctors/me')
     assert.equal(requests[1].url, 'http://localhost:3000/api/v1/availability/me')
@@ -171,5 +173,7 @@ describe('adaptadores', () => {
     assert.equal(requests[5].url, 'http://localhost:3000/api/v1/consultations')
     assert.equal(requests[5].options.method, 'POST')
     assert.deepEqual(JSON.parse(requests[5].options.body).recetas, [])
+    assert.equal(requests[6].url, 'http://localhost:3000/api/v1/video-calls/appointments/appointment-uuid/access')
+    assert.equal(requests[6].options.method, 'POST')
   })
 })

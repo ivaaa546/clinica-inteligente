@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { CircleAlert, Info } from 'lucide-react'
+import { CircleAlert, Info, Video } from 'lucide-react'
 import EstadoCita from '../EstadoCita'
 import ModalidadTag from '../ModalidadTag'
 import { diaSemana, formatearFecha } from '../../lib/fechas'
@@ -75,7 +75,11 @@ export default function CitaSeleccionada({
         <button type="button" className="ag-btn ag-btn--primario" disabled title="Solo disponible para citas aceptadas">Registrar consulta</button>
       )}
 
-      {virtual && <p className="ag-nota">La videollamada se habilitará cuando su integración esté verificada.</p>}
+      {virtual && cita.estado === 'ACEPTADA' && (
+        <Link to={`/medico/citas/${cita.codigo}/llamada`} className="ag-btn ag-btn--borde">
+          <Video size={17} aria-hidden="true" /> Entrar a videollamada
+        </Link>
+      )}
 
       <button type="button" className="ag-btn ag-btn--borde" disabled={!modificable} onClick={onCancelar}>Cancelar cita</button>
       {reprogramando ? (

@@ -220,6 +220,11 @@ export default function ReprogramarCita() {
 
           <section className="rep-card">
             <h2>Acciones disponibles</h2>
+            {appointment.modalidad === 'VIRTUAL' && appointment.estado === 'ACEPTADA' && (
+              <Link to={`/paciente/citas/${appointment.id}/llamada`} className="rep-btn rep-btn--primary">
+                Entrar a videollamada
+              </Link>
+            )}
             <button type="button" className="rep-btn rep-btn--primary" onClick={() => document.getElementById('reschedule-date')?.focus()} disabled={!canManage || isSubmitting}>
               Reprogramar cita
             </button>

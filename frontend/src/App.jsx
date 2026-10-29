@@ -17,6 +17,8 @@ import MedicoLayout from './layouts/MedicoLayout'
 import AgendaMedico from './pages/medico/Agenda'
 import RegistrarConsulta from './pages/medico/RegistrarConsulta'
 import ConsultaCompletada from './pages/medico/ConsultaCompletada'
+import VideollamadaPaciente from './pages/paciente/Videollamada'
+import VideollamadaMedico from './pages/medico/Videollamada'
 
 export default function App() {
   return (
@@ -28,10 +30,7 @@ export default function App() {
         <Route path="/recuperar" element={<Recuperar />} />
 
         <Route element={<ProtectedRoute role="PACIENTE" />}>
-          <Route
-            path="/paciente/citas/:id/llamada"
-            element={<FeatureUnavailable title="La videollamada aún no está disponible" detail="Esta pantalla no se habilita hasta completar la integración verificada con el proveedor de video." backTo="/paciente/citas" backLabel="Volver a mis citas" />}
-          />
+          <Route path="/paciente/citas/:id/llamada" element={<VideollamadaPaciente />} />
           <Route path="/paciente" element={<PacienteLayout />}>
             <Route index element={<InicioPaciente />} />
             <Route path="citas" element={<MisCitas />} />
@@ -50,6 +49,7 @@ export default function App() {
             <Route path="agenda" element={<AgendaMedico />} />
             <Route path="consulta/:citaCodigo" element={<RegistrarConsulta />} />
             <Route path="consultas/:consultaId" element={<ConsultaCompletada />} />
+            <Route path="citas/:codigo/llamada" element={<VideollamadaMedico />} />
             <Route
               path="*"
               element={<FeatureUnavailable title="Esta sección del portal médico aún no está disponible" detail="Solo la agenda y las transiciones de citas están conectadas y verificadas contra la API." backTo="/medico/agenda" backLabel="Volver a la agenda" />}
