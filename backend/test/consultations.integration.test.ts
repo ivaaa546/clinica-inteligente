@@ -110,7 +110,7 @@ describe.skipIf(!enabled)("cierre de consulta integrado", () => {
           disponibilidadId: disponibilidad.id,
           inicio: disponibilidad.inicio,
           fin: disponibilidad.fin,
-          estado: "ACEPTADA",
+          estado: "ACEPTADA", modalidad: "PRESENCIAL", direccionAtencionPresencial: "Direccion de prueba",
         },
       });
       appointmentIds.push(cita.id);
@@ -142,22 +142,21 @@ describe.skipIf(!enabled)("cierre de consulta integrado", () => {
       where: { id: { in: [patientUserId, doctorUserId] } },
     });
     await prisma.especialidad.delete({ where: { id: specialtyId } });
-    await prisma.$disconnect();
   });
 
-  it("rechaza el cierre si falta un signo vital obligatorio", async () => {
+  it("permite cerrar sin un signo vital y lo normaliza como no medido", async () => {
     const { frecRespiratoria: _missing, ...incompleteVitalSigns } = validVitalSigns;
     const response = await doctorAgent
       .post("/api/v1/consultations")
-      .send({
-        ...consultationPayload(appointmentIds[0]),
-        signosVitales: incompleteVitalSigns,
-      });
+      .send({ ...consultationPayload(appointmentIds[0]), signosVitales: incompleteVitalSigns });
 
-    expect(response.status).toBe(400);
-    expect(response.body.code).toBe("VALIDATION_ERROR");
-    expect(await prisma.consulta.count({ where: { citaId: appointmentIds[0] } })).toBe(0);
-    expect((await prisma.cita.findUniqueOrThrow({ where: { id: appointmentIds[0] } })).estado).toBe("ACEPTADA");
+    expect(response.status).toBe(201);
+    const consultation = await prisma.consulta.findUniqueOrThrow({
+      where: { citaId: appointmentIds[0] }, include: { signosVitales: true, cita: true },
+    });
+    expect(consultation.signosVitales?.frecRespiratoria).toBeNull();
+    expect(consultation.signosVitales?.frecRespiratoriaEstado).toBe("NO_MEDIDO");
+    expect(consultation.cita.estado).toBe("COMPLETADA");
   });
 
   it("rechaza una evaluacion que no corresponde a la ficha declarada", async () => {
@@ -209,6 +208,6 @@ describe.skipIf(!enabled)("cierre de consulta integrado", () => {
       await prisma.auditoria.count({
         where: { usuarioId: doctorUserId, accion: "CONSULTA_CREADA" },
       }),
-    ).toBe(1);
+    ).toBe(2);
   });
 });

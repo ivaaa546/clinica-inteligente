@@ -19,9 +19,21 @@ export class AdminService {
     return { patients, doctors, usersByRole, appointmentsByState, completedConsultations };
   }
 
-  listAppointments(estado?: EstadoCita) {
+  async listAppointments(estado?: EstadoCita) {
     // El listado administrativo contiene agenda y estado, nunca datos clinicos.
-    return new AppointmentsRepository(this.db).listAll(estado);
+    const list = await new AppointmentsRepository(this.db).listAll(estado);
+    return list.map((c) => ({
+      id: c.id,
+      inicio: c.inicio,
+      fin: c.fin,
+      estado: c.estado,
+      modalidad: c.modalidad,
+      pacienteId: c.pacienteId,
+      paciente: `${c.paciente.usuario.nombre} ${c.paciente.usuario.apellidos}`,
+      medicoId: c.medicoId,
+      medico: `${c.medico.usuario.nombre} ${c.medico.usuario.apellidos}`,
+      especialidad: c.medico.especialidad.nombre,
+    }));
   }
 
   cancelAppointment(adminUserId: string, appointmentId: string) {

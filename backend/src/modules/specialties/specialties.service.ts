@@ -9,6 +9,17 @@ export class SpecialtiesService {
     return new SpecialtiesRepository(this.db).listActive();
   }
 
+  async listAdmin() {
+    const list = await new SpecialtiesRepository(this.db).listAll();
+    return list.map((e) => ({
+      id: e.id,
+      nombre: e.nombre,
+      activa: e.activa,
+      medicosActivos: e.medicos.length,
+      medicos: e.medicos.map((m) => `${m.usuario.nombre} ${m.usuario.apellidos}`),
+    }));
+  }
+
   async create(actorId: string, nombre: string) {
     const specialty = await new SpecialtiesRepository(this.db).create({ nombre, activa: true });
     await this.audit(actorId, "ESPECIALIDAD_CREADA", specialty.id);
@@ -23,15 +34,25 @@ export class SpecialtiesService {
 
   async deactivate(actorId: string, id: string) {
     const repository = new SpecialtiesRepository(this.db);
-    const activeDoctors = await repository.countActiveDoctors(id);
-
-    // Una especialidad en uso se conserva para no romper perfiles profesionales existentes.
-    if (activeDoctors > 0) {
-      throw new Error("No se puede desactivar una especialidad usada por medicos activos");
-    }
-
     const specialty = await repository.deactivate(id);
     await this.audit(actorId, "ESPECIALIDAD_DESACTIVADA", id);
+    return specialty;
+  }
+
+  async activate(actorId: string, id: string) {
+    const specialty = await new SpecialtiesRepository(this.db).activate(id);
+    await this.audit(actorId, "ESPECIALIDAD_ACTIVADA", id);
+    return specialty;
+  }
+
+  async delete(actorId: string, id: string) {
+    const repository = new SpecialtiesRepository(this.db);
+    const doctorCount = await this.db.medico.count({ where: { especialidadId: id } });
+    if (doctorCount > 0) {
+      throw new Error("No se puede eliminar una especialidad en uso: desactivala como alternativa");
+    }
+    const specialty = await repository.delete(id);
+    await this.audit(actorId, "ESPECIALIDAD_ELIMINADA", id);
     return specialty;
   }
 

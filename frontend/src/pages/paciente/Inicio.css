@@ -1,0 +1,116 @@
+/* Encabezado */
+.ini-head { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.ini-head h1 { margin: 0 0 9px; font-size: 26px; color: var(--color-text); }
+.ini-head p { margin: 0; font-size: 15px; color: var(--color-muted); }
+.ini-cta {
+  height: 46px; padding: 0 20px; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 9px; flex-shrink: 0;
+  background: linear-gradient(to right, var(--color-primary-dark), var(--color-primary));
+  box-shadow: 0 6px 14px rgba(79, 110, 91, .3);
+}
+.ini-cta:hover { filter: brightness(1.08); }
+
+/* Resumen */
+.ini-summary { display: flex; gap: 24px; align-items: flex-start; }
+
+.ini-next {
+  flex: 1; min-width: 0; padding: 22px; border-radius: 16px; border: 1px solid var(--color-border);
+  background: linear-gradient(to right, #e8f4eb, var(--color-bg));
+  display: flex; flex-direction: column; gap: 16px;
+}
+.ini-next__top { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 700; color: var(--color-primary); }
+.ini-next__info { display: flex; align-items: center; gap: 26px; }
+.ini-date {
+  width: 88px; padding: 14px; border-radius: 8px; background: #fff; border: 1px solid var(--color-border);
+  display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--color-primary);
+}
+.ini-date strong { font-size: 36px; line-height: 1.1; }
+.ini-date span { font-size: 13px; }
+.ini-next__details { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.ini-next__details h2 { margin: 0; font-size: 26px; color: var(--color-text); }
+.ini-next__details p { margin: 0; font-size: 17px; color: var(--color-text); }
+.ini-next__details small { font-size: 14px; color: var(--color-muted); }
+
+.ini-note {
+  padding: 12px 14px; border-radius: 10px; background: #fff; border: 1px solid var(--color-border);
+  display: flex; align-items: center; gap: 10px;
+}
+.ini-note p { margin: 0; font-size: 13px; line-height: 1.4; color: var(--color-primary-dark); }
+.ini-detail {
+  height: 46px; border-radius: 10px; border: 1px solid var(--color-border); background: var(--color-accent);
+  display: grid; place-items: center; font-size: 14px; font-weight: 700; color: var(--color-primary-dark);
+}
+.ini-detail:hover { filter: brightness(.97); }
+
+.ini-shortcuts { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
+.ini-shortcut {
+  padding: 18px; border-radius: 16px; background: #fff; border: 1px solid var(--color-border);
+  display: flex; flex-direction: column; gap: 10px; transition: box-shadow .15s, border-color .15s;
+}
+.ini-shortcut:hover { border-color: var(--color-primary); box-shadow: 0 6px 16px rgba(22, 113, 62, .1); }
+.ini-shortcut > div { display: flex; align-items: center; justify-content: space-between; }
+.ini-shortcut h3 { margin: 0; font-size: 20px; color: var(--color-text); }
+.ini-shortcut p { margin: 0; font-size: 14px; line-height: 1.4; color: var(--color-muted); }
+
+/* Estados */
+.ini-badge {
+  display: inline-block; padding: 6px 11px; border-radius: 100px; font-size: 12px; font-weight: 700;
+}
+.ini-badge--aceptada { background: var(--color-accent); color: var(--color-primary-dark); }
+.ini-badge--pendiente { background: #f5ebcd; color: #856526; }
+.ini-badge--completada { background: #eff7eb; color: var(--color-muted); }
+.ini-next .ini-badge { border: 1px solid var(--color-border); }
+
+/* Tabla de citas */
+.ini-panel {
+  padding: 20px; border-radius: 16px; background: #fff; border: 1px solid var(--color-border);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.ini-panel__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.ini-panel__head h2 { margin: 0; font-size: 21px; color: var(--color-text); }
+.ini-panel__head span { font-size: 13px; color: var(--color-muted-2); }
+
+.ini-table { overflow-x: auto; }
+.ini-row {
+  min-width: 640px; padding: 12px 0; border-top: 1px solid var(--color-border);
+  display: grid; grid-template-columns: 176px 1fr 142px 130px; gap: 20px; align-items: center;
+}
+.ini-row--head {
+  padding: 0 0 12px; border-top: 0; font-size: 11px; font-weight: 700; color: var(--color-muted-2);
+}
+.ini-cell { display: flex; flex-direction: column; gap: 5px; }
+.ini-cell strong { font-size: 15px; color: var(--color-text); }
+.ini-cell span { font-size: 15px; color: var(--color-text); }
+.ini-cell small { font-size: 13px; color: var(--color-muted-2); }
+
+.ini-action {
+  justify-self: start; border: 0; background: none; padding: 0;
+  font-size: 14px; font-weight: 700; color: #123324;
+}
+.ini-action--link { color: var(--color-primary); }
+.ini-action:hover { text-decoration: underline; }
+
+@media (max-width: 1100px) {
+  .ini-summary { flex-direction: column; }
+  .ini-shortcuts { width: 100%; flex-direction: row; }
+  .ini-shortcut { flex: 1; }
+}
+@media (max-width: 640px) {
+  .ini-head { flex-direction: column; align-items: flex-start; }
+  .ini-shortcuts { flex-direction: column; }
+  .ini-next__info { flex-direction: column; align-items: flex-start; }
+  .ini-panel__head { flex-direction: column; align-items: flex-start; }
+}
+
+/* ---- Conexión con servicios / modalidad ---- */
+.ini-error { margin: 0; padding: 10px 14px; border-radius: 8px; background: #fde8e6; font-size: 13px; font-weight: 700; color: #b3261e; }
+.ini-next--empty { align-items: center; justify-content: center; text-align: center; min-height: 190px; }
+.ini-next--empty strong { font-size: 18px; color: var(--color-text); }
+.ini-next--empty p { margin: 0; font-size: 14px; color: var(--color-muted); }
+.ini-all { font-size: 14px; font-weight: 700; color: var(--color-primary); }
+.ini-empty { margin: 0; padding: 16px 0; font-size: 14px; color: var(--color-muted-2); }
+.ini-row { grid-template-columns: 176px 1fr 160px 190px; }
+.ini-state { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.ini-actions { display: flex; align-items: center; gap: 16px; }
+a.ini-action { text-decoration: none; }
+.ini-next__details .modalidad { margin-top: 2px; }

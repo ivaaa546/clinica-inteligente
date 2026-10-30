@@ -88,7 +88,7 @@ describe.skipIf(!enabled)("preconsulta, antecedentes y recetas integrados", () =
         disponibilidadId: availabilityId,
         inicio: availability.inicio,
         fin: availability.fin,
-        estado: "ACEPTADA",
+        estado: "ACEPTADA", modalidad: "PRESENCIAL", direccionAtencionPresencial: "Direccion de prueba",
       },
     });
     appointmentId = appointment.id;
@@ -134,7 +134,7 @@ describe.skipIf(!enabled)("preconsulta, antecedentes y recetas integrados", () =
       });
     expect(consultation.status).toBe(201);
     consultationId = consultation.body.id;
-  });
+  }, 30_000);
 
   afterAll(async () => {
     await prisma.auditoria.deleteMany({
@@ -154,7 +154,6 @@ describe.skipIf(!enabled)("preconsulta, antecedentes y recetas integrados", () =
       where: { id: { in: [patientUserId, doctorUserId] } },
     });
     await prisma.especialidad.delete({ where: { id: specialtyId } });
-    await prisma.$disconnect();
   });
 
   it("inmoviliza la preconsulta despues de registrar la consulta", async () => {

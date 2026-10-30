@@ -7,6 +7,7 @@ import { DoctorsRepository } from "./doctors.repository.js";
 export type DoctorProfileInput = {
   numeroProfesional?: string;
   especialidadId?: string;
+  direccionAtencionPresencial?: string | null;
 };
 
 export class DoctorsService {
@@ -31,8 +32,17 @@ export class DoctorsService {
     return { ...this.publicDoctor(doctor), availability };
   }
 
-  getOwnProfile(userId: string) {
-    return new DoctorsRepository(this.db).findByUserId(userId);
+  async getOwnProfile(userId: string) {
+    const doctor = await new DoctorsRepository(this.db).findByUserId(userId);
+    return doctor && {
+      id: doctor.id,
+      nombre: doctor.usuario.nombre,
+      apellidos: doctor.usuario.apellidos,
+      telefono: doctor.usuario.telefono,
+      numeroProfesional: doctor.numeroProfesional,
+      especialidad: doctor.especialidad,
+      direccionAtencionPresencial: doctor.direccionAtencionPresencial,
+    };
   }
 
   async updateOwnProfile(userId: string, input: DoctorProfileInput) {
@@ -50,14 +60,34 @@ export class DoctorsService {
       }
     }
 
-    await doctors.updateProfile(doctor.id, input);
-    await new AuditService(this.db).record({
-      usuarioId: userId,
-      accion: "PERFIL_MEDICO_ACTUALIZADO",
-      entidad: "Medico",
-      entidadId: doctor.id,
-      detalle: { campos: Object.keys(input).join(",") },
-    });
+    const { direccionAtencionPresencial, ...profileInput } = input;
+    const normalizedAddress = direccionAtencionPresencial?.trim() || null;
+    if (direccionAtencionPresencial !== undefined && direccionAtencionPresencial !== null && !normalizedAddress) {
+      throw new Error("La direccion de atencion presencial no puede estar vacia");
+    }
+
+    if (Object.keys(profileInput).length) {
+      await doctors.updateProfile(doctor.id, profileInput);
+      await new AuditService(this.db).record({
+        usuarioId: userId,
+        accion: "PERFIL_MEDICO_ACTUALIZADO",
+        entidad: "Medico",
+        entidadId: doctor.id,
+        detalle: { campos: Object.keys(profileInput).join(",") },
+      });
+    }
+
+    if (direccionAtencionPresencial !== undefined) {
+      await doctors.updateAttendanceAddress(doctor.id, normalizedAddress);
+      // Solo registra si hay configuracion; nunca persiste la direccion en la auditoria.
+      await new AuditService(this.db).record({
+        usuarioId: userId,
+        accion: "DIRECCION_PRESENCIAL_ACTUALIZADA",
+        entidad: "Medico",
+        entidadId: doctor.id,
+        detalle: { configurada: normalizedAddress !== null },
+      });
+    }
 
     const updated = await doctors.findPublicById(doctor.id);
     if (!updated) {
@@ -70,6 +100,7 @@ export class DoctorsService {
   private publicDoctor(doctor: {
     id: string;
     numeroProfesional: string;
+    direccionAtencionPresencial: string | null;
     usuario: { nombre: string; apellidos: string; telefono: string };
     especialidad: { id: string; nombre: string };
   }) {
@@ -80,6 +111,7 @@ export class DoctorsService {
       apellidos: doctor.usuario.apellidos,
       telefono: doctor.usuario.telefono,
       numeroProfesional: doctor.numeroProfesional,
+      direccionAtencionPresencial: doctor.direccionAtencionPresencial,
       especialidad: doctor.especialidad,
     };
   }

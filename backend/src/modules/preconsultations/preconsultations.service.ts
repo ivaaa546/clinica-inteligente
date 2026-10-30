@@ -9,6 +9,7 @@ import { PreconsultationsRepository } from "./preconsultations.repository.js";
 export type PreconsultationInput = {
   motivoConsulta: string;
   antecedentesIniciales?: Prisma.InputJsonValue;
+  signosVitales?: Prisma.InputJsonValue;
 };
 
 export class PreconsultationsService {
@@ -22,6 +23,7 @@ export class PreconsultationsService {
       citaId: appointment.id,
       motivoConsulta: input.motivoConsulta,
       antecedentesIniciales: input.antecedentesIniciales,
+      signosVitales: input.signosVitales,
     });
 
     await new AuditService(this.db).record({

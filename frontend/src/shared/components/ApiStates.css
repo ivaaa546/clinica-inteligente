@@ -1,0 +1,89 @@
+.api-state {
+  width: 100%;
+  padding: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--color-text);
+}
+
+.api-state h2,
+.api-state p {
+  margin: 0;
+}
+
+.api-state h2 {
+  font-size: 18px;
+}
+
+.api-state p {
+  margin-top: 8px;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.api-state--loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.api-state--loading p {
+  margin: 0;
+}
+
+.api-state__spinner {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  border: 3px solid var(--color-soft);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: api-state-spin 0.8s linear infinite;
+}
+
+.api-state--empty {
+  text-align: center;
+  background: var(--color-bg);
+}
+
+.api-state--error {
+  border-color: #e7c5c5;
+  background: #fffafa;
+}
+
+.api-state--error h2 {
+  color: #8a3131;
+}
+
+.api-state__retry {
+  min-height: 40px;
+  margin-top: 16px;
+  padding: 0 16px;
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--color-primary-dark);
+  font-weight: 700;
+}
+
+.api-state__retry:hover {
+  background: var(--color-soft);
+}
+
+.api-state__retry:focus-visible {
+  outline: 3px solid rgba(22, 113, 62, 0.3);
+  outline-offset: 2px;
+}
+
+@keyframes api-state-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .api-state__spinner {
+    animation-duration: 2s;
+  }
+}

@@ -3,10 +3,11 @@ import { Router } from "express";
 import { prisma } from "../../lib/prisma.js";
 import { requireAuth } from "../../middleware/auth.middleware.js";
 import { requireRoles } from "../../middleware/role.middleware.js";
-import { createConsultation, getAppointmentConsultation, getConsultation } from "./consultations.controller.js";
+import { createConsultation, getAppointmentConsultation, getConsultation, listOwnHistory } from "./consultations.controller.js";
 
 export const consultationsRouter = Router();
 // Solo los médicos autenticados llegan a las operaciones clínicas.
 consultationsRouter.post("/", requireAuth(prisma), requireRoles(RolUsuario.MEDICO), createConsultation);
+consultationsRouter.get("/me/history", requireAuth(prisma), requireRoles(RolUsuario.PACIENTE), listOwnHistory);
 consultationsRouter.get("/appointment/:citaId", requireAuth(prisma), requireRoles(RolUsuario.MEDICO), getAppointmentConsultation);
 consultationsRouter.get("/:id", requireAuth(prisma), requireRoles(RolUsuario.MEDICO), getConsultation);

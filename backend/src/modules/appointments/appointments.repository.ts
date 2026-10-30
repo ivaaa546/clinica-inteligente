@@ -10,7 +10,17 @@ export class AppointmentsRepository {
   findById(id: string) {
     return this.db.cita.findUnique({
       where: { id },
-      include: { paciente: true, medico: true, disponibilidad: true, preconsulta: true, consulta: true },
+      include: {
+        paciente: {
+          include: {
+            usuario: { select: { nombre: true, apellidos: true, correo: true, telefono: true } },
+          },
+        },
+        medico: true,
+        disponibilidad: true,
+        preconsulta: true,
+        consulta: true,
+      },
     });
   }
 
@@ -23,21 +33,45 @@ export class AppointmentsRepository {
   listByPatient(pacienteId: string, estado?: EstadoCita) {
     return this.db.cita.findMany({
       where: { pacienteId, ...(estado ? { estado } : {}) },
-      orderBy: { inicio: "desc" },
+      orderBy: { creadoEn: "desc" },
     });
   }
 
   listByDoctor(medicoId: string, estado?: EstadoCita) {
     return this.db.cita.findMany({
       where: { medicoId, ...(estado ? { estado } : {}) },
-      orderBy: { inicio: "asc" },
+      include: {
+        paciente: {
+          select: {
+            id: true,
+            usuario: { select: { nombre: true, apellidos: true, telefono: true } },
+          },
+        },
+        consulta: { select: { id: true } },
+      },
+      orderBy: { creadoEn: "desc" },
     });
   }
 
   listAll(estado?: EstadoCita) {
     return this.db.cita.findMany({
       where: estado ? { estado } : undefined,
-      orderBy: { inicio: "asc" },
+      include: {
+        paciente: { include: { usuario: true } },
+        medico: { include: { usuario: true, especialidad: true } },
+      },
+      orderBy: { inicio: "desc" },
+    });
+  }
+
+  listExpiredAcceptedVirtual(now: Date) {
+    return this.db.cita.findMany({
+      where: {
+        modalidad: "VIRTUAL",
+        estado: "ACEPTADA",
+        fin: { lte: now },
+        videoRevocadaEn: null,
+      },
     });
   }
 
@@ -51,6 +85,18 @@ export class AppointmentsRepository {
 
   updateState(id: string, estado: EstadoCita) {
     return this.db.cita.update({ where: { id }, data: { estado } });
+  }
+
+  async updateStateIfCurrent(id: string, expectedStates: EstadoCita[], estado: EstadoCita) {
+    const result = await this.db.cita.updateMany({
+      where: { id, estado: { in: expectedStates } },
+      data: { estado },
+    });
+    return result.count === 1;
+  }
+
+  markVideoRevoked(id: string, videoRevocadaEn: Date) {
+    return this.db.cita.update({ where: { id }, data: { videoRevocadaEn } });
   }
 
   createRescheduled(data: Prisma.CitaUncheckedCreateInput) {

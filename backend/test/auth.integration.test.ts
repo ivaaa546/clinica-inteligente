@@ -24,7 +24,6 @@ describe.skipIf(!hasTestDatabase)("autenticacion integrada", () => {
       await prisma.paciente.deleteMany({ where: { usuarioId: userId } });
       await prisma.usuario.delete({ where: { id: userId } });
     }
-    await prisma.$disconnect();
   });
 
   it("registra un paciente con hash Argon2id y sin exponer secretos", async () => {

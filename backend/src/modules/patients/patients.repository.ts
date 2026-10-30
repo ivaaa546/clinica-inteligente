@@ -28,7 +28,15 @@ export class PatientsRepository {
         antecedentesGenerales: true,
         antecedentesGineco: true,
         citas: {
-          include: { consulta: { include: { recetas: true } } },
+          include: {
+            consulta: { include: { recetas: true } },
+            medico: {
+              include: {
+                usuario: { select: { nombre: true, apellidos: true } },
+                especialidad: { select: { nombre: true } },
+              },
+            },
+          },
           orderBy: { inicio: "desc" },
         },
       },

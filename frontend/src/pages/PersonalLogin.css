@@ -1,0 +1,9 @@
+.pl-area { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--color-primary); }
+.pl-olvido { display: flex; justify-content: flex-end; }
+.pl-nota { margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--color-bg); display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-muted); }
+.pl-sesion { margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--color-soft); font-size: 13px; color: var(--color-primary-dark); }
+.pl-sesion a { font-weight: 700; text-decoration: underline; }
+.pl-error { margin: 0; padding: 10px 14px; border-radius: 8px; border: 1px solid #f0d28a; background: #fff7e1; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #8a5a00; }
+.pl-pie { text-align: center; font-size: 13px; color: var(--color-muted); }
+.pl-pie p { margin: 0 0 2px; }
+.pl-pie strong { color: var(--color-primary-dark); }

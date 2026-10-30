@@ -2,6 +2,15 @@ import { Prisma, PrismaClient } from "@prisma/client";
 
 type DbClient = PrismaClient | Prisma.TransactionClient;
 
+// La proyección pública permite previsualizar la dirección presencial, no datos de cuenta sensibles.
+const publicDoctorSelect = {
+  id: true,
+  numeroProfesional: true,
+  direccionAtencionPresencial: true,
+  usuario: { select: { nombre: true, apellidos: true, telefono: true } },
+  especialidad: { select: { id: true, nombre: true } },
+} satisfies Prisma.MedicoSelect;
+
 export class DoctorsRepository {
   constructor(private readonly db: DbClient) {}
 
@@ -10,13 +19,19 @@ export class DoctorsRepository {
   }
 
   findByUserId(usuarioId: string) {
-    return this.db.medico.findUnique({ where: { usuarioId } });
+    return this.db.medico.findUnique({
+      where: { usuarioId },
+      include: {
+        usuario: { select: { nombre: true, apellidos: true, telefono: true } },
+        especialidad: { select: { id: true, nombre: true } },
+      },
+    });
   }
 
   findPublicById(id: string) {
     return this.db.medico.findFirst({
       where: { id, usuario: { activo: true }, especialidad: { activa: true } },
-      include: { usuario: true, especialidad: true },
+      select: publicDoctorSelect,
     });
   }
 
@@ -26,7 +41,7 @@ export class DoctorsRepository {
         usuario: { activo: true },
         especialidad: { activa: true, ...(especialidadId ? { id: especialidadId } : {}) },
       },
-      include: { usuario: true, especialidad: true },
+      select: publicDoctorSelect,
       orderBy: { creadoEn: "asc" },
     });
   }
@@ -37,5 +52,9 @@ export class DoctorsRepository {
 
   updateProfile(id: string, data: Prisma.MedicoUpdateInput) {
     return this.db.medico.update({ where: { id }, data });
+  }
+
+  updateAttendanceAddress(id: string, direccionAtencionPresencial: string | null) {
+    return this.db.medico.update({ where: { id }, data: { direccionAtencionPresencial } });
   }
 }

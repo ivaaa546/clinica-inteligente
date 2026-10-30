@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { ModalidadAtencion, Prisma, PrismaClient } from "@prisma/client";
 
 type DbClient = PrismaClient | Prisma.TransactionClient;
 
@@ -26,8 +26,25 @@ export class AvailabilityRepository {
     });
   }
 
+  findByDoctorAndStart(medicoId: string, inicio: Date) {
+    return this.db.disponibilidad.findUnique({
+      where: { medicoId_inicio: { medicoId, inicio } },
+    });
+  }
+
+  reactivate(id: string, modalidades: ModalidadAtencion[]) {
+    return this.db.disponibilidad.update({
+      where: { id },
+      data: { activa: true, modalidades },
+    });
+  }
+
   create(data: Prisma.DisponibilidadUncheckedCreateInput) {
     return this.db.disponibilidad.create({ data });
+  }
+
+  updateModalities(id: string, modalidades: ModalidadAtencion[]) {
+    return this.db.disponibilidad.update({ where: { id }, data: { modalidades } });
   }
 
   deactivate(id: string) {

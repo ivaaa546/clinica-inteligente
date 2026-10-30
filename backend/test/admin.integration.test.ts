@@ -102,7 +102,7 @@ describe.skipIf(!enabled)("administracion integrada", () => {
         disponibilidadId: availabilityId,
         inicio: availability.inicio,
         fin: availability.fin,
-        estado: "COMPLETADA",
+        estado: "COMPLETADA", modalidad: "PRESENCIAL", direccionAtencionPresencial: "Direccion de prueba",
       },
     });
     appointmentId = appointment.id;
@@ -121,11 +121,17 @@ describe.skipIf(!enabled)("administracion integrada", () => {
       data: {
         consultaId: consultationId,
         pesoLb: 150,
+        pesoLbEstado: "MEDIDO",
         tallaCm: 170,
+        tallaCmEstado: "MEDIDO",
         temperatura: 36.5,
+        temperaturaEstado: "MEDIDO",
         presionArterial: "120/80",
+        presionArterialEstado: "MEDIDO",
         frecCardiaca: 70,
+        frecCardiacaEstado: "MEDIDO",
         frecRespiratoria: 16,
+        frecRespiratoriaEstado: "MEDIDO",
       },
     });
     prescriptionId = (
@@ -163,7 +169,6 @@ describe.skipIf(!enabled)("administracion integrada", () => {
       where: { id: { in: [adminUserId, patientUserId, doctorUserId] } },
     });
     await prisma.especialidad.delete({ where: { id: specialtyId } });
-    await prisma.$disconnect();
   });
 
   it("entrega solo las metricas agregadas aprobadas", async () => {

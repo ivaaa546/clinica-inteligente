@@ -15,6 +15,24 @@ const envSchema = z.object({
   ARGON2_MEMORY_COST: z.coerce.number().int().positive().default(65536),
   ARGON2_PARALLELISM: z.coerce.number().int().positive().default(1),
   CLINIC_TIMEZONE: z.string().default("America/Guatemala"),
+  LIVEKIT_URL: z.string().url("LIVEKIT_URL debe ser una URL valida").optional(),
+  LIVEKIT_API_KEY: z.string().min(1, "LIVEKIT_API_KEY es obligatoria").optional(),
+  LIVEKIT_API_SECRET: z
+    .string()
+    .min(1, "LIVEKIT_API_SECRET es obligatoria")
+    .optional(),
+}).superRefine((value, context) => {
+  if (value.NODE_ENV === "test") return;
+
+  for (const key of ["LIVEKIT_URL", "LIVEKIT_API_KEY", "LIVEKIT_API_SECRET"] as const) {
+    if (!value[key]) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [key],
+        message: `${key} es obligatoria fuera de pruebas`,
+      });
+    }
+  }
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
@@ -49,4 +67,9 @@ export const env = {
     parallelism: parsedEnv.data.ARGON2_PARALLELISM,
   },
   clinicTimezone: parsedEnv.data.CLINIC_TIMEZONE,
+  livekit: {
+    url: parsedEnv.data.LIVEKIT_URL,
+    apiKey: parsedEnv.data.LIVEKIT_API_KEY,
+    apiSecret: parsedEnv.data.LIVEKIT_API_SECRET,
+  },
 } as const;

@@ -10,10 +10,11 @@
     "build": "prisma generate && tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "dev": "npm run build && node --env-file=.env --watch dist/index.js",
-    "start": "node --env-file=.env dist/index.js",
+    "start": "node dist/index.js",
     "migrate": "prisma migrate deploy",
     "seed": "prisma db seed",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:integration": "node -e \"if (!process.env.TEST_DATABASE_URL) { console.error('TEST_DATABASE_URL es obligatoria para las pruebas de integración'); process.exit(1); }\" && vitest run"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -39,6 +40,7 @@
     "express": "^4.22.3",
     "express-session": "^1.19.0",
     "helmet": "^8.3.0",
+    "livekit-server-sdk": "^2.19.2",
     "pg": "^8.23.1",
     "prisma": "^5.22.0",
     "zod": "^3.25.76"

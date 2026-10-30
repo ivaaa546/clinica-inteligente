@@ -11,7 +11,11 @@ export const corsMiddleware: RequestHandler = (request, response, next) => {
     return;
   }
 
-  if (!allowedOrigins.includes(origin)) {
+  const isAllowed =
+    allowedOrigins.includes(origin) ||
+    (process.env.NODE_ENV !== "production" && (origin.endsWith(".trycloudflare.com") || origin.includes("localhost")));
+
+  if (!isAllowed) {
     response.status(403).json({ error: "Origen no permitido", code: "CORS_ORIGIN_DENIED" });
     return;
   }

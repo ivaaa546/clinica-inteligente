@@ -1,0 +1,59 @@
+.vc {
+  height: 100vh; height: 100dvh; display: flex; flex-direction: column;
+  background: #0f1f17; color: #fff;
+}
+.vc--center { align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px; }
+.vc--center p { margin: 0; max-width: 460px; font-size: 16px; line-height: 1.5; color: #d3e7d9; }
+.vc-link { font-weight: 700; color: #9fe0b6; }
+
+.vc-top { height: 64px; padding: 0 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+.vc-brand { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; }
+.vc-brand span { width: 32px; height: 32px; border-radius: 10px; background: var(--color-primary); display: grid; place-items: center; }
+.vc-info { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.vc-info strong { font-size: 15px; }
+.vc-info small { font-size: 12px; color: #a9c4b3; }
+.vc-timer { min-width: 64px; text-align: right; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #9fe0b6; }
+
+.vc-stage { flex: 1; min-height: 0; position: relative; padding: 20px 28px; display: flex; }
+.vc-remote {
+  flex: 1; position: relative; border-radius: 20px; background: #16281f; border: 1px solid rgba(255, 255, 255, .06);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 20px;
+}
+.vc-remote__avatar { width: 96px; height: 96px; border-radius: 50%; background: #1f3a2b; border: 2px solid var(--color-primary); display: grid; place-items: center; font-size: 34px; font-weight: 700; color: #d3e7d9; }
+.vc-remote strong { font-size: 20px; }
+.vc-remote p { margin: 0; font-size: 14px; color: #a9c4b3; }
+.vc-remote__media { position: absolute; inset: 20px 28px; }
+.vc-remote__media:empty { display: none; }
+.vc-remote__media video { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
+.vc-remote__media audio { display: none; }
+
+.vc-self {
+  position: absolute; right: 48px; bottom: 40px; width: 240px; height: 150px; border-radius: 14px; overflow: hidden;
+  background: #1f3a2b; border: 2px solid rgba(255, 255, 255, .18); box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+}
+.vc-self video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.vc-self video.is-off { visibility: hidden; }
+.vc-self__off { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #a9c4b3; }
+.vc-self__tag { position: absolute; left: 10px; bottom: 8px; padding: 2px 8px; border-radius: 100px; background: rgba(0, 0, 0, .5); font-size: 12px; font-weight: 700; }
+
+.vc-alert { position: absolute; left: 50%; top: 32px; transform: translateX(-50%); margin: 0; max-width: 90%; padding: 10px 14px; border-radius: 10px; background: #3a2a14; border: 1px solid #7a5a1e; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #f2d9a3; }
+
+.vc-controls { height: 88px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 16px; border-top: 1px solid rgba(255, 255, 255, .08); }
+.vc-btn {
+  height: 52px; min-width: 52px; padding: 0 16px; border-radius: 100px; border: 0; background: #22402f; color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 700;
+}
+.vc-btn:hover:not(:disabled) { background: #2c5139; }
+.vc-btn:disabled { opacity: .4; cursor: not-allowed; }
+.vc-btn.is-off { background: #fff; color: #0f1f17; }
+.vc-btn--leave { background: #c8372d; padding: 0 22px; }
+.vc-btn--leave:hover:not(:disabled) { background: #a92d25; }
+
+@media (max-width: 720px) {
+  .vc-top { padding: 0 16px; }
+  .vc-stage { padding: 12px; }
+  .vc-self { right: 24px; bottom: 24px; width: 140px; height: 96px; }
+}
+
+.vc-btn--ghost { background: transparent; border: 1px solid rgba(255, 255, 255, .3); padding: 0 20px; }
+.vc-btn--ghost:hover:not(:disabled) { background: rgba(255, 255, 255, .1); }

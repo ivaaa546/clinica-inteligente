@@ -1,9 +1,20 @@
-import { Prisma, PrismaClient, TipoFichaClinica } from "@prisma/client";
+import {
+  EstadoSignoVital,
+  ModalidadAtencion,
+  Prisma,
+  PrismaClient,
+  TipoFichaClinica,
+} from "@prisma/client";
 import { z } from "zod";
 import { AppointmentsRepository } from "../appointments/appointments.repository.js";
 import { AuditService } from "../audit/audit.service.js";
 import { DoctorsRepository } from "../doctors/doctors.repository.js";
+import { VideoRevocationRepository } from "../video-calls/video-revocation.repository.js";
+import { PrescriptionsRepository } from "../prescriptions/prescriptions.repository.js";
+import { PatientsRepository } from "../patients/patients.repository.js";
 import { ConsultationsRepository } from "./consultations.repository.js";
+
+type VitalSignInput<T> = T | { estado?: EstadoSignoVital; valor?: T | null };
 
 export type ConsultationInput = {
   citaId: string;
@@ -13,14 +24,22 @@ export type ConsultationInput = {
   evaluacionClinica?: Prisma.InputJsonValue;
   diagnostico: string;
   observaciones?: string;
-  signosVitales: {
-    pesoLb: number;
-    tallaCm: number;
-    temperatura: number;
-    presionArterial: string;
-    frecCardiaca: number;
-    frecRespiratoria: number;
+  signosVitales?: {
+    pesoLb?: VitalSignInput<number>;
+    tallaCm?: VitalSignInput<number>;
+    temperatura?: VitalSignInput<number>;
+    presionArterial?: VitalSignInput<string>;
+    frecCardiaca?: VitalSignInput<number>;
+    frecRespiratoria?: VitalSignInput<number>;
   };
+  recetas: Array<{
+    medicamento: string;
+    dosis: string;
+    via: string;
+    frecuencia: string;
+    duracion: string;
+    indicaciones: string;
+  }>;
 };
 
 const evaluationSchemas = {
@@ -82,11 +101,26 @@ export class ConsultationsService {
 
       await consultations.createVitalSigns({
         consultaId: consultation.id,
-        ...input.signosVitales,
+        ...this.normalizeVitalSigns(input.signosVitales),
       });
-      await appointments.updateState(input.citaId, "COMPLETADA");
+      const prescriptions = new PrescriptionsRepository(transaction);
+      for (const receta of input.recetas) {
+        const created = await prescriptions.create({ consultaId: consultation.id, ...receta });
+        await new AuditService(transaction).record({
+          usuarioId: doctorUserId,
+          accion: "RECETA_CREADA",
+          entidad: "Receta",
+          entidadId: created.id,
+        });
+      }
+      const completedAppointment = await appointments.updateState(input.citaId, "COMPLETADA");
+      if (completedAppointment.modalidad === ModalidadAtencion.VIRTUAL) {
+        const now = new Date();
+        await appointments.markVideoRevoked(input.citaId, now);
+        await new VideoRevocationRepository(transaction).enqueue(input.citaId, "CITA_COMPLETADA", now);
+      }
 
-      // Consulta, signos, estado y auditoria se confirman como una sola operacion.
+      // Consulta, signos, estado, revocacion y auditoria se confirman como una sola operacion.
       await new AuditService(transaction).record({
         usuarioId: doctorUserId,
         accion: "CONSULTA_CREADA",
@@ -99,6 +133,38 @@ export class ConsultationsService {
     });
   }
 
+  private normalizeVitalSigns(signs: ConsultationInput["signosVitales"]) {
+    return {
+      ...this.normalizeVitalSign(signs?.pesoLb, "pesoLb", (value) => this.validNumber(value)),
+      ...this.normalizeVitalSign(signs?.tallaCm, "tallaCm", (value) => this.validNumber(value)),
+      ...this.normalizeVitalSign(signs?.temperatura, "temperatura", (value) => this.validNumber(value)),
+      ...this.normalizeVitalSign(signs?.presionArterial, "presionArterial", (value) => /^\d{2,3}\/\d{2,3}$/.test(value)),
+      ...this.normalizeVitalSign(signs?.frecCardiaca, "frecCardiaca", (value) => this.validNumber(value)),
+      ...this.normalizeVitalSign(signs?.frecRespiratoria, "frecRespiratoria", (value) => this.validNumber(value)),
+    };
+  }
+
+  private normalizeVitalSign<T extends number | string>(
+    input: VitalSignInput<T> | undefined,
+    field: string,
+    isValid: (value: T) => boolean,
+  ) {
+    const state = typeof input === "object" && input !== null ? input.estado ?? EstadoSignoVital.MEDIDO : input === undefined ? EstadoSignoVital.NO_MEDIDO : EstadoSignoVital.MEDIDO;
+    const value = typeof input === "object" && input !== null ? input.valor : input;
+    if (state === EstadoSignoVital.NO_MEDIDO) {
+      if (value !== undefined && value !== null) throw new Error(`${field} no puede tener valor si no fue medido`);
+      return { [field]: null, [`${field}Estado`]: state };
+    }
+    if (value === undefined || value === null || !isValid(value)) {
+      throw new Error(`${field} tiene un formato incompatible con su estado`);
+    }
+    return { [field]: value, [`${field}Estado`]: state };
+  }
+
+  private validNumber(value: number) {
+    return Number.isFinite(value) && value > 0;
+  }
+
   private validateEvaluation(type: TipoFichaClinica, evaluation?: Prisma.InputJsonValue) {
     if (evaluation === undefined) {
       return undefined;
@@ -109,6 +175,13 @@ export class ConsultationsService {
       throw new Error(`La evaluacion clinica no cumple el contrato de la ficha ${type}`);
     }
     return result.data;
+  }
+
+  async listForPatient(patientUserId: string) {
+    const patient = await new PatientsRepository(this.db).findByUserId(patientUserId);
+    if (!patient) throw new Error("Perfil de paciente no encontrado");
+    // Proyección segura: no expone observaciones internas ni evaluación clínica del médico.
+    return new ConsultationsRepository(this.db).listSafeByPatient(patient.id);
   }
 
   getById(doctorUserId: string, id: string) {

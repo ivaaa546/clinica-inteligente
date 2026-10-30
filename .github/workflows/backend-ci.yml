@@ -1,10 +1,17 @@
 name: Backend CI
 
 on:
+  workflow_call:
   push:
     branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
   pull_request:
     branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
 
 jobs:
   test:
@@ -31,7 +38,7 @@ jobs:
       TEST_DATABASE_URL: postgresql://clinica:clinica_test@localhost:5432/clinica_inteligente_test?schema=public
       SESSION_SECRET: test-session-secret-with-at-least-32-chars
       NODE_ENV: test
-      CLINIC_TIMEZONE: America/Tegucigalpa
+      CLINIC_TIMEZONE: America/Guatemala
       CORS_ORIGINS: http://localhost:5173
       ARGON2_TIME_COST: 1
       ARGON2_MEMORY_COST: 16384
@@ -45,6 +52,8 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
+      - run: npm run typecheck
       - run: npm run build
       - run: npm run migrate
-      - run: npm test
+      # Esta orden falla si TEST_DATABASE_URL no está disponible; evita omitir integración en CI.
+      - run: npm run test:integration
