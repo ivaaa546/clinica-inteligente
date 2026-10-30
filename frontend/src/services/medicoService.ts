@@ -1,6 +1,6 @@
 import { ApiError } from '../shared/api/client'
-import { acceptAppointment, cancelAppointment, getAppointment, listOwnAppointments, rejectAppointment, rescheduleAppointment } from '../api/appointments'
-import { listOwnAvailability, publishAvailability, removeAvailability } from '../api/availability'
+import { acceptAppointment, cancelAppointment, getAppointment, listOwnAppointments, rejectAppointment, rescheduleAppointment } from '../features/citas/api/appointments'
+import { listOwnAvailability, publishAvailability, removeAvailability } from '../features/disponibilidad/api/availability'
 import { getOwnDoctor } from '../api/doctors'
 import { getPatientRecord, updateBackground } from '../api/patients'
 import { createConsultation, getConsultation } from '../api/consultations'

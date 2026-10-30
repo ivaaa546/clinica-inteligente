@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict'
 import { afterEach, describe, it } from 'node:test'
 import { login, registerPatient } from '../src/features/auth/api/auth.js'
-import { acceptAppointment, requestAppointment, rescheduleAppointment } from '../src/api/appointments.js'
-import { listOwnAvailability, publishAvailability, removeAvailability, updateAvailability } from '../src/api/availability.js'
+import { acceptAppointment, requestAppointment, rescheduleAppointment } from '../src/features/citas/api/appointments.js'
+import { listOwnAvailability, publishAvailability, removeAvailability, updateAvailability } from '../src/features/disponibilidad/api/availability.js'
 import { getOwnDoctor } from '../src/api/doctors.js'
 import { createConsultation, getConsultation } from '../src/api/consultations.js'
 import { getPatientRecord, updateBackground } from '../src/api/patients.js'
 import { requestVideoAccess } from '../src/api/videoCalls.js'
-import { toMedicalAgendaAppointment, toMedicalAvailabilityBlock, uniqueLinkedPatients } from '../src/adapters/medical.ts'
+import { toMedicalAgendaAppointment, toMedicalAvailabilityBlock, uniqueLinkedPatients } from '../src/features/disponibilidad/adapters/medical.ts'
 import { ApiError, apiClient } from '../src/shared/api/client.ts'
 
 const originalFetch = globalThis.fetch

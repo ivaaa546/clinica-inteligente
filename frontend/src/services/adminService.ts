@@ -23,7 +23,7 @@ import {
   listAdminAppointments,
   cancelAdminAppointment,
 } from '../api/admin'
-import type { EstadoCita, Modalidad } from '../types/cita'
+import type { EstadoCita, Modalidad } from '../shared/types/cita'
 import type {
   CitaAdmin, DatosCuenta, EspecialidadAdmin, Hueco, Metricas, NuevoMedico, PeriodoMetricas, Usuario,
 } from '../types/admin'

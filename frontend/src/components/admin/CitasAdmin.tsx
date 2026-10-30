@@ -7,7 +7,7 @@ import {
 import { diaSemana, formatearFecha } from '../../shared/lib/fechas'
 import { normalizar } from '../../shared/lib/texto'
 import type { CitaAdmin, Hueco } from '../../types/admin'
-import type { EstadoCita as Estado } from '../../types/cita'
+import type { EstadoCita as Estado } from '../../shared/types/cita'
 import '../medico/medico.css'
 import './CitasAdmin.css'
 

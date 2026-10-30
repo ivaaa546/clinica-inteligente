@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus, Info, ClipboardList, FileText, ArrowUpRight } from 'lucide-react'
-import { listOwnAppointments } from '../../api/appointments.js'
-import { getDoctor } from '../../api/doctors.js'
+import { usePatientAppointments } from '../../features/citas/hooks/usePatientAppointments.js'
 import ApiError from '../../shared/components/ApiError.jsx'
 import EmptyState from '../../shared/components/EmptyState.jsx'
 import LoadingState from '../../shared/components/LoadingState.jsx'
@@ -71,36 +70,8 @@ function AppointmentRow({ appointment, doctor, now }) {
 
 export default function InicioPaciente({ soloCitas = false }) {
   const { user } = useAuth()
-  const [appointments, setAppointments] = useState([])
-  const [doctors, setDoctors] = useState({})
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { appointments, doctors, loading, error } = usePatientAppointments()
   const [now] = useState(() => Date.now())
-
-  useEffect(() => {
-    let active = true
-    void Promise.resolve().then(() => {
-      if (!active) return
-      setError(null)
-    })
-
-    listOwnAppointments()
-      .then(async (items) => {
-        if (!active) return
-        const values = Array.isArray(items) ? items : []
-        setAppointments(values)
-        const doctorIds = [...new Set(values.map((appointment) => appointment.medicoId).filter(Boolean))]
-        const results = await Promise.allSettled(doctorIds.map(async (id) => [id, await getDoctor(id)]))
-        if (!active) return
-        setDoctors(Object.fromEntries(results
-          .filter((result) => result.status === 'fulfilled' && result.value[1])
-          .map((result) => result.value)))
-      })
-      .catch((requestError) => active && setError(requestError))
-      .finally(() => active && setLoading(false))
-
-    return () => { active = false }
-  }, [])
 
   // La lista prioriza la cita creada más recientemente, independientemente de su fecha de atención.
   const orderedAppointments = useMemo(() => [...appointments].sort(

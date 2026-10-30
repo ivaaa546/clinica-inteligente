@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
 import { Info, Video } from 'lucide-react'
-import EstadoCita from '../EstadoCita'
-import ModalidadTag from '../ModalidadTag'
-import { diaSemana, formatearFecha } from '../../shared/lib/fechas'
-import type { CitaAgenda } from '../../types/medico'
+import EstadoCita from '../../../components/EstadoCita'
+import ModalidadTag from '../../../components/ModalidadTag'
+import { diaSemana, formatearFecha } from '../../../shared/lib/fechas'
+import type { CitaAgenda } from '../../../types/medico'
 
 interface Props {
   cita: CitaAgenda

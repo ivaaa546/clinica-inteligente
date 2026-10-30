@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
-import AgendaSemana, { type SeleccionAgenda } from '../../components/medico/AgendaSemana'
-import BloqueDisponible from '../../components/medico/BloqueDisponible'
-import CitaSeleccionada from '../../components/medico/CitaSeleccionada'
+import { useMemo, useState } from 'react'
+import AgendaSemana, { type SeleccionAgenda } from '../../features/disponibilidad/components/AgendaSemana'
+import BloqueDisponible from '../../features/disponibilidad/components/BloqueDisponible'
+import CitaSeleccionada from '../../features/disponibilidad/components/CitaSeleccionada'
 import {
-  cancelarCitaMedico, eliminarBloque, listarAgendaSemana, publicarBloques, reprogramarCitaMedico,
+  cancelarCitaMedico, eliminarBloque, publicarBloques, reprogramarCitaMedico,
 } from '../../services/medicoService'
+import { useMedicalAgenda } from '../../features/disponibilidad/hooks/useMedicalAgenda'
 import { formatearFecha, proximoDiaHabil } from '../../shared/lib/fechas'
 import { diasHabiles, lunesDe, slotKey, sumarDias, sumarMinutos, MINUTOS_BLOQUE } from '../../shared/lib/semana'
-import type { AgendaSemana as DatosSemana, FechaISO, NuevoBloque } from '../../types/medico'
+import type { FechaISO, NuevoBloque } from '../../types/medico'
 import './Agenda.css'
 
 const ACTIVAS = ['PENDIENTE', 'ACEPTADA']
@@ -16,26 +17,15 @@ const formularioInicial = (): NuevoBloque => ({ fecha: proximoDiaHabil(), desde:
 
 export default function Agenda() {
   const [lunes, setLunes] = useState<FechaISO>(() => lunesDe(proximoDiaHabil()))
-  const [datos, setDatos] = useState<(DatosSemana & { lunes: FechaISO }) | null>(null)
-  const [version, setVersion] = useState(0) // se incrementa para volver a pedir la agenda tras un cambio
+  const { datos, error, setError, cargando, recargar } = useMedicalAgenda(lunes)
   const [seleccion, setSeleccion] = useState<SeleccionAgenda>(null)
   const [form, setForm] = useState<NuevoBloque>(formularioInicial)
   const [ocupado, setOcupado] = useState(false)
-  const [error, setError] = useState('')
   const [aviso, setAviso] = useState('')
   /** Código de la cita que se está reprogramando (se elige el bloque nuevo en la cuadrícula) */
   const [reprogramando, setReprogramando] = useState<string | null>(null)
 
-  useEffect(() => {
-    let vigente = true
-    listarAgendaSemana(lunes)
-      .then((agenda) => { if (vigente) { setDatos({ lunes, ...agenda }); setError('') } })
-      .catch((e: Error) => { if (vigente) setError(e.message) })
-    return () => { vigente = false }
-  }, [lunes, version])
-
   const dias = useMemo(() => diasHabiles(lunes), [lunes])
-  const cargando = datos?.lunes !== lunes && !error
 
   const citaSeleccionada = seleccion?.tipo === 'cita' ? datos?.citas.find((c) => c.codigo === seleccion.codigo) : undefined
   const bloqueDelForm = datos?.bloques.find((b) => b.fecha === form.fecha && b.inicio === form.desde)
@@ -71,7 +61,7 @@ export default function Agenda() {
     setAviso('')
     try {
       setAviso(await accion())
-      setVersion((v) => v + 1)
+      recargar()
     } catch (e) {
       setError((e as Error).message)
     } finally {

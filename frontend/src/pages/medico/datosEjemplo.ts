@@ -4,7 +4,7 @@ import { MEDICOS } from '../paciente/datosEjemplo'
 import { proximoDiaHabil } from '../../shared/lib/fechas'
 import { diasHabiles, franjas, lunesDe, sumarDias, sumarMinutos } from '../../shared/lib/semana'
 import { formularioVacio } from '../../shared/lib/consulta'
-import type { EstadoCita, Modalidad } from '../../types/cita'
+import type { EstadoCita, Modalidad } from '../../shared/types/cita'
 import type {
   Antecedentes, AntecedentesGineco, ConsultaGuardada, EstadoLlamada, Medicamento, Medico, Paciente,
 } from '../../types/medico'
