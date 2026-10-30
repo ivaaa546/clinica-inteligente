@@ -1,7 +1,7 @@
 import { Plus, Info } from 'lucide-react'
 import { MEDICAMENTO_VACIO, VIAS, filaRecetaCompleta, filaRecetaVacia } from '../../../shared/lib/consulta'
-import type { Medicamento } from '../../../types/medico'
-import '../../../components/medico/medico.css'
+import type { Medicamento } from '../../../shared/types/medico'
+import '../../../shared/styles/medical.css'
 import './RecetaEditor.css'
 
 interface Props {

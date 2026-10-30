@@ -13,8 +13,8 @@ import {
 } from '../../shared/lib/consulta'
 import type {
   AntecedentesGineco, ContextoConsulta, FormularioConsulta, SignosVitales, TipoFicha,
-} from '../../types/medico'
-import '../../components/medico/medico.css'
+} from '../../shared/types/medico'
+import '../../shared/styles/medical.css'
 import './RegistrarConsulta.css'
 
 interface Textos {

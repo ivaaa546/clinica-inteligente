@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react'
-import type { NuevoBloque } from '../../../types/medico'
+import type { NuevoBloque } from '../../../shared/types/medico'
 
 interface Props {
   form: NuevoBloque

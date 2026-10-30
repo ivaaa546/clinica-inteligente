@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { listarAgendaSemana } from '../../../services/medicoService'
-import type { AgendaSemana, FechaISO } from '../../../types/medico'
+import type { AgendaSemana, FechaISO } from '../../../shared/types/medico'
 
 /** Carga la agenda propia del médico y permite invalidarla tras una mutación. */
 export function useMedicalAgenda(lunes: FechaISO) {

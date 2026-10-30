@@ -1,4 +1,4 @@
-import type { Rol } from '../../../types/auth'
+import type { Rol } from '../../../shared/types/auth'
 
 export const ACCESS_BY_ROLE: Record<Rol, string> = {
   PACIENTE: '/login',

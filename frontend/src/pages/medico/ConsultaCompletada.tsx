@@ -3,8 +3,8 @@ import { CircleCheck, Download, Info, Link2, Plus, Printer } from 'lucide-react'
 import EstadoCita from '../../components/EstadoCita'
 import { useCompletedConsultation } from '../../features/consultas/hooks/useCompletedConsultation'
 import { formatearFecha, mesMayusculas } from '../../shared/lib/fechas'
-import type { Medicamento } from '../../types/medico'
-import '../../components/medico/medico.css'
+import type { Medicamento } from '../../shared/types/medico'
+import '../../shared/styles/medical.css'
 import './ConsultaCompletada.css'
 
 /** '2026-10-19' -> '19 de octubre de 2026' */

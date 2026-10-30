@@ -11,7 +11,7 @@ import {
 import type {
   AgendaSemana, Antecedentes, AntecedentesGineco, BloqueDisponibilidad, CitaAgenda, ConsultaGuardada, ConsultaPrevia,
   ContextoConsulta, Expediente, FechaISO, FormularioConsulta, Medico, NuevoBloque, Paciente, PacienteVinculado, PreconsultaPaciente,
-} from '../types/medico'
+} from '../shared/types/medico'
 import { CLINIC_TIMEZONE, clinicDateKey } from '../shared/lib/date'
 
 

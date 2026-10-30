@@ -1,4 +1,4 @@
-import type { EstadoCita, Modalidad } from '../shared/types/cita'
+import type { EstadoCita, Modalidad } from './cita'
 
 export type TipoFicha = 'ADULTO' | 'PRENATAL' | 'NEONATO'
 export type EstadoLlamada = 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADA'

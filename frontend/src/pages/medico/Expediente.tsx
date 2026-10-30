@@ -6,8 +6,8 @@ import { useMedicalRecord } from '../../features/expedientes/hooks/useMedicalRec
 import { guardarAntecedentes, guardarGineco } from '../../services/medicoService'
 import { formatearFecha, hoyISO } from '../../shared/lib/fechas'
 import { edadTexto } from '../../shared/lib/consulta'
-import type { Antecedentes, AntecedentesGineco, Expediente as DatosExpediente } from '../../types/medico'
-import '../../components/medico/medico.css'
+import type { Antecedentes, AntecedentesGineco, Expediente as DatosExpediente } from '../../shared/types/medico'
+import '../../shared/styles/medical.css'
 import './Expediente.css'
 
 const CAMPOS_ANTECEDENTES: { clave: keyof Antecedentes; etiqueta: string }[] = [

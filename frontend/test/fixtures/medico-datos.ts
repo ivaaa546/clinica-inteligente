@@ -1,13 +1,13 @@
-// TODO: todo esto es SOLO para maquetar. Con USAR_MOCK = false ya no se usa.
-// Las fechas de la agenda se calculan respecto a la semana actual para que siempre haya datos que mostrar.
-import { MEDICOS } from '../paciente/datosEjemplo'
-import { proximoDiaHabil } from '../../shared/lib/fechas'
-import { diasHabiles, franjas, lunesDe, sumarDias, sumarMinutos } from '../../shared/lib/semana'
-import { formularioVacio } from '../../shared/lib/consulta'
-import type { EstadoCita, Modalidad } from '../../shared/types/cita'
+// Fixture de pruebas para adaptadores y componentes clínicos.
+// Las fechas se calculan respecto a la semana actual para mantener escenarios estables.
+import { MEDICOS } from './paciente-datos.js'
+import { proximoDiaHabil } from '../../src/shared/lib/fechas'
+import { diasHabiles, franjas, lunesDe, sumarDias, sumarMinutos } from '../../src/shared/lib/semana'
+import { formularioVacio } from '../../src/shared/lib/consulta'
+import type { EstadoCita, Modalidad } from '../../src/shared/types/cita'
 import type {
   Antecedentes, AntecedentesGineco, ConsultaGuardada, EstadoLlamada, Medicamento, Medico, Paciente,
-} from '../../types/medico'
+} from '../../src/shared/types/medico'
 
 /** Médico que ha iniciado sesión (Dra. Elena Torres, igual que en el Figma) */
 export const MEDICO_ACTUAL: Medico = MEDICOS[0]

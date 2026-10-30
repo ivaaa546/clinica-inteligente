@@ -4,8 +4,8 @@ import {
   actualizarEspecialidad, crearEspecialidad, eliminarEspecialidad, listarEspecialidades,
 } from '../../services/adminService'
 import { normalizar } from '../../shared/lib/texto'
-import type { EspecialidadAdmin } from '../../types/admin'
-import '../../components/medico/medico.css'
+import type { EspecialidadAdmin } from '../../shared/types/admin'
+import '../../shared/styles/medical.css'
 import './admin.css'
 
 type FiltroEstado = 'TODAS' | 'ACTIVAS' | 'INACTIVAS'

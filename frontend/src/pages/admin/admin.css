@@ -1,4 +1,4 @@
-/* Estilos compartidos de las pantallas del administrador. Prefijo `ad-` (se apoya en components/medico/medico.css) */
+/* Estilos compartidos de las pantallas del administrador. Prefijo `ad-` (se apoya en shared/styles/medical.css) */
 .ad-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .ad-head h1 { margin: 0 0 6px; font-size: 28px; line-height: 1.25; color: var(--color-text); }
 .ad-head p { margin: 0; font-size: 15px; color: var(--color-muted); }

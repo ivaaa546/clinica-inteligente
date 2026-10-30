@@ -1,4 +1,4 @@
-import type { EstadoCita, Modalidad } from '../shared/types/cita'
+import type { EstadoCita, Modalidad } from './cita'
 import type { FechaISO } from './medico'
 
 export type RolUsuario = 'PACIENTE' | 'MEDICO' | 'ADMINISTRADOR'

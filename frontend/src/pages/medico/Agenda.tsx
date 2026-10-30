@@ -8,7 +8,7 @@ import {
 import { useMedicalAgenda } from '../../features/disponibilidad/hooks/useMedicalAgenda'
 import { formatearFecha, proximoDiaHabil } from '../../shared/lib/fechas'
 import { diasHabiles, lunesDe, slotKey, sumarDias, sumarMinutos, MINUTOS_BLOQUE } from '../../shared/lib/semana'
-import type { FechaISO, NuevoBloque } from '../../types/medico'
+import type { FechaISO, NuevoBloque } from '../../shared/types/medico'
 import './Agenda.css'
 
 const ACTIVAS = ['PENDIENTE', 'ACEPTADA']

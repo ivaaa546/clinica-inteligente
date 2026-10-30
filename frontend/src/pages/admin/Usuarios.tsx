@@ -5,8 +5,8 @@ import CitasAdmin from '../../components/admin/CitasAdmin'
 import { cambiarEstadoUsuario, enviarRecuperacion, listarUsuarios, nombreCompleto } from '../../services/adminService'
 import { useSesion } from '../../features/auth/hooks/useSesion'
 import { normalizar } from '../../shared/lib/texto'
-import type { RolUsuario, Usuario } from '../../types/admin'
-import '../../components/medico/medico.css'
+import type { RolUsuario, Usuario } from '../../shared/types/admin'
+import '../../shared/styles/medical.css'
 import './admin.css'
 
 type FiltroRol = 'TODOS' | RolUsuario

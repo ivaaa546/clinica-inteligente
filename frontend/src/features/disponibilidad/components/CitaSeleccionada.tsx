@@ -3,7 +3,7 @@ import { Info, Video } from 'lucide-react'
 import EstadoCita from '../../../components/EstadoCita'
 import ModalidadTag from '../../../components/ModalidadTag'
 import { diaSemana, formatearFecha } from '../../../shared/lib/fechas'
-import type { CitaAgenda } from '../../../types/medico'
+import type { CitaAgenda } from '../../../shared/types/medico'
 
 interface Props {
   cita: CitaAgenda

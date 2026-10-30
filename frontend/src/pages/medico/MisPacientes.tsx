@@ -4,7 +4,7 @@ import { Info, Search } from 'lucide-react'
 import { listarPacientes } from '../../services/medicoService'
 import { formatearFecha, hoyISO } from '../../shared/lib/fechas'
 import { edadTexto } from '../../shared/lib/consulta'
-import type { PacienteVinculado } from '../../types/medico'
+import type { PacienteVinculado } from '../../shared/types/medico'
 import './MisPacientes.css'
 
 /** Minúsculas y sin tildes: "Lucía" coincide con "lucia" */

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { obtenerConsulta } from '../../../services/medicoService'
-import type { ConsultaGuardada } from '../../../types/medico'
+import type { ConsultaGuardada } from '../../../shared/types/medico'
 
 /** Consulta completada autorizada para el médico que la registró. */
 export function useCompletedConsultation(consultationId: string) {

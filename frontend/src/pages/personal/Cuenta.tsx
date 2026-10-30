@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom'
 import { Check, Eye, EyeOff, Info, Mail } from 'lucide-react'
 import { useSesion } from '../../features/auth/hooks/useSesion'
 import { actualizarPerfilPersonal, obtenerPerfilPersonal } from '../../services/personalService'
-import { cambiarPassword } from '../../services/perfilService'
-import type { PerfilPersonal } from '../../types/admin'
-import '../../components/medico/medico.css'
+import { changePassword } from '../../features/cuenta/api/account'
+import type { PerfilPersonal } from '../../shared/types/admin'
+import '../../shared/styles/medical.css'
 import './Cuenta.css'
 
 interface Props {
@@ -73,7 +73,7 @@ export default function Cuenta({ volverA }: Props) {
 
     setGuardando(true)
     try {
-      if (quiereCambiarClave) await cambiarPassword({ actual: claves.actual, nueva: claves.nueva })
+      if (quiereCambiarClave) await changePassword({ actual: claves.actual, nueva: claves.nueva })
       const actualizado = await actualizarPerfilPersonal(user, datos)
       setPerfil(actualizado)
       setClaves(CLAVES_VACIAS)

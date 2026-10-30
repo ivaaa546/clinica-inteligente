@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { obtenerExpediente, obtenerMedicoActual } from '../../../services/medicoService'
-import type { Expediente, Medico } from '../../../types/medico'
+import type { Expediente, Medico } from '../../../shared/types/medico'
 
 /** Carga únicamente el expediente autorizado por la relación médico-paciente. */
 export function useMedicalRecord(patientId: string) {

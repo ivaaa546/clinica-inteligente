@@ -2,8 +2,8 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, CircleCheck, Eye, EyeOff, Info, Lock, Mail, Plus } from 'lucide-react'
 import { crearMedico, listarEspecialidades } from '../../services/adminService'
-import type { EspecialidadAdmin, NuevoMedico } from '../../types/admin'
-import '../../components/medico/medico.css'
+import type { EspecialidadAdmin, NuevoMedico } from '../../shared/types/admin'
+import '../../shared/styles/medical.css'
 import './admin.css'
 
 const VACIO: NuevoMedico = {

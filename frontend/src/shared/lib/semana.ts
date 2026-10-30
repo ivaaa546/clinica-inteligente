@@ -1,6 +1,6 @@
 // Utilidades de calendario para la agenda del médico (complementa a lib/fechas.js)
 import { mesMayusculas, separarBloque } from './fechas'
-import type { FechaISO, Hora } from '../../types/medico'
+import type { FechaISO, Hora } from '../types/medico'
 
 export const MINUTOS_BLOQUE = 30
 

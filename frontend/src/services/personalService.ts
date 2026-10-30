@@ -1,45 +1,35 @@
-import { ApiError, USAR_MOCK, esperar } from '../shared/api/client'
-import { buscarPorCorreoMock, crearUsuarioTemporalMock, nombreEspecialidadMock } from './adminService'
+import { ApiError } from '../shared/api/client'
 import { getUser, updateUser } from '../api/users'
-import type { DatosCuenta, PerfilPersonal } from '../types/admin'
-import type { SessionUser } from '../types/auth'
+import type { DatosCuenta, PerfilPersonal } from '../shared/types/admin'
+import type { SessionUser } from '../shared/types/auth'
 
-// La sesión (quién inició sesión) es la real: `useSesion()`. Aquí solo está el perfil de "Mi cuenta".
+// La sesión es real; este servicio solo adapta el perfil administrativo de la cuenta.
+type ApiPersonalUser = {
+  id: string
+  nombre: string
+  apellidos?: string
+  correo: string
+  telefono?: string
+  rol: SessionUser['rol']
+  especialidad?: { nombre: string } | null
+  especialidadId?: string | null
+  numeroProfesional?: string | null
+}
 
-const aPerfil = (u: ReturnType<typeof crearUsuarioTemporalMock>): PerfilPersonal => ({
-  id: u.id, nombre: u.nombre, apellidos: u.apellidos, correo: u.correo, telefono: u.telefono, rol: u.rol,
-  especialidad: u.especialidadId ? nombreEspecialidadMock(u.especialidadId) : null, numeroProfesional: u.numeroProfesional,
+const aPerfil = (u: ApiPersonalUser): PerfilPersonal => ({
+  id: u.id,
+  nombre: u.nombre,
+  apellidos: u.apellidos ?? '',
+  correo: u.correo,
+  telefono: u.telefono ?? '',
+  rol: u.rol,
+  especialidad: u.especialidad?.nombre ?? null,
+  numeroProfesional: u.numeroProfesional ?? null,
 })
 
-/**
- * Datos de la cuenta con sesión iniciada (médico o administrador).
- */
 export async function obtenerPerfilPersonal(sesion: SessionUser): Promise<PerfilPersonal> {
-  if (USAR_MOCK) {
-    await esperar(200)
-    return aPerfil(buscarPorCorreoMock(sesion.correo) ?? crearUsuarioTemporalMock(sesion))
-  }
   try {
-    const u = await getUser(sesion.id) as {
-      id: string
-      nombre: string
-      apellidos?: string
-      correo: string
-      telefono?: string
-      rol: SessionUser['rol']
-      especialidadId?: string | null
-      numeroProfesional?: string | null
-    }
-    return {
-      id: u.id,
-      nombre: u.nombre,
-      apellidos: u.apellidos ?? '',
-      correo: u.correo,
-      telefono: u.telefono ?? '',
-      rol: u.rol,
-      especialidad: null,
-      numeroProfesional: u.numeroProfesional ?? null,
-    }
+    return aPerfil(await getUser(sesion.id) as ApiPersonalUser)
   } catch {
     const [nombre, ...resto] = (sesion.nombre || '').trim().split(/\s+/)
     return {
@@ -55,41 +45,13 @@ export async function obtenerPerfilPersonal(sesion: SessionUser): Promise<Perfil
   }
 }
 
-/** Solo nombre, apellidos y teléfono; el correo no cambia. */
 export async function actualizarPerfilPersonal(sesion: SessionUser, datos: Omit<DatosCuenta, 'correo'>): Promise<PerfilPersonal> {
-  if (USAR_MOCK) {
-    await esperar(300)
-    if (!datos.nombre.trim() || !datos.apellidos.trim() || !datos.telefono.trim()) {
-      throw new ApiError('Nombre, apellidos y teléfono son obligatorios.', 400)
-    }
-    const u = buscarPorCorreoMock(sesion.correo) ?? crearUsuarioTemporalMock(sesion)
-    Object.assign(u, { nombre: datos.nombre.trim(), apellidos: datos.apellidos.trim(), telefono: datos.telefono.trim() })
-    return aPerfil(u)
-  }
   if (!datos.nombre.trim() || !datos.apellidos.trim() || !datos.telefono.trim()) {
     throw new ApiError('Nombre, apellidos y teléfono son obligatorios.', 400)
   }
-  const u = await updateUser(sesion.id, {
+  return aPerfil(await updateUser(sesion.id, {
     nombre: datos.nombre.trim(),
     apellidos: datos.apellidos.trim(),
     telefono: datos.telefono.trim(),
-  }) as {
-    id: string
-    nombre: string
-    apellidos?: string
-    correo: string
-    telefono?: string
-    rol: SessionUser['rol']
-    numeroProfesional?: string | null
-  }
-  return {
-    id: u.id,
-    nombre: u.nombre,
-    apellidos: u.apellidos ?? datos.apellidos.trim(),
-    correo: u.correo,
-    telefono: u.telefono ?? datos.telefono.trim(),
-    rol: u.rol,
-    especialidad: null,
-    numeroProfesional: u.numeroProfesional ?? null,
-  }
+  }) as ApiPersonalUser)
 }

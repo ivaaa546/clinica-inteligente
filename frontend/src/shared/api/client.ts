@@ -113,10 +113,6 @@ export function apiClient<T = unknown>(path: string, options: RequestOptions = {
   return execute(path, { ...options, baseUrl: API_BASE_URL }) as Promise<T>
 }
 
-/** Compatibilidad temporal para servicios que aún no fueron migrados a features. */
-export const USAR_MOCK = false
-export const esperar = (ms = 300): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
-
 export async function request<T = unknown>(ruta: string, options: { method?: string; body?: unknown } = {}): Promise<T> {
   const baseUrl = (viteEnv.VITE_API_URL || 'http://localhost:3000/api').replace(/\/$/, '')
   try {

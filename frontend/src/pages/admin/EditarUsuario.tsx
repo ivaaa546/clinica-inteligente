@@ -3,8 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Check, Info, Mail } from 'lucide-react'
 import { actualizarUsuario, cambiarEstadoUsuario, obtenerUsuario } from '../../services/adminService'
 import { useSesion } from '../../features/auth/hooks/useSesion'
-import type { RolUsuario, Usuario } from '../../types/admin'
-import '../../components/medico/medico.css'
+import type { RolUsuario, Usuario } from '../../shared/types/admin'
+import '../../shared/styles/medical.css'
 import './admin.css'
 
 const ROL_TEXTO: Record<RolUsuario, string> = { PACIENTE: 'Paciente', MEDICO: 'Médico', ADMINISTRADOR: 'Administrador' }
