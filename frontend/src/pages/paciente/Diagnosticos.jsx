@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Info, FileText, Printer, Download } from 'lucide-react'
-import { listOwnPrescriptions } from '../../api/prescriptions.js'
+import { useOwnPrescriptions } from '../../features/recetas/hooks/useOwnPrescriptions.js'
 import ApiError from '../../shared/components/ApiError.jsx'
 import EmptyState from '../../shared/components/EmptyState.jsx'
 import LoadingState from '../../shared/components/LoadingState.jsx'
@@ -54,25 +54,8 @@ function Receta({ receta }) {
 
 export default function Diagnosticos() {
   const { user } = useAuth()
-  const [prescriptions, setPrescriptions] = useState([])
+  const { prescriptions, loading, error } = useOwnPrescriptions()
   const [selectedId, setSelectedId] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  useEffect(() => {
-    let active = true
-    listOwnPrescriptions()
-      .then((items) => {
-        if (!active) return
-        const values = Array.isArray(items) ? items : []
-        setPrescriptions(values)
-        setSelectedId(values[0]?.id || null)
-      })
-      .catch((requestError) => active && setError(requestError))
-      .finally(() => active && setLoading(false))
-
-    return () => { active = false }
-  }, [])
 
   const selected = prescriptions.find((prescription) => prescription.id === selectedId) || prescriptions[0]
 

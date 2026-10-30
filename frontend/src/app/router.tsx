@@ -30,8 +30,7 @@ import Citas from '../pages/admin/Citas'
 import Metricas from '../pages/admin/Metricas'
 import CuentaPersonal from '../pages/personal/Cuenta'
 
-const VideollamadaPaciente = lazy(() => import('../pages/paciente/Videollamada'))
-const VideollamadaMedico = lazy(() => import('../pages/medico/Videollamada'))
+const VideoCallPage = lazy(() => import('../features/videollamada/components/VideoCallPage'))
 
 function UnavailableRoute() {
   return <FeatureUnavailable title="Página no encontrada" detail="La ruta solicitada no forma parte de la plataforma." backTo="/" backLabel="Volver al inicio" />
@@ -56,7 +55,7 @@ export default function AppRouter() {
         <Route path="/acceso-personal" element={<PersonalLogin />} />
 
         <Route element={<ProtectedRoute role="PACIENTE" />}>
-          <Route path="/paciente/citas/:id/llamada" element={<VideollamadaPaciente />} />
+          <Route path="/paciente/citas/:id/llamada" element={<VideoCallPage portal="paciente" />} />
           <Route path="/paciente" element={<PacienteLayout />}>
             <Route index element={<InicioPaciente />} />
             <Route path="citas" element={<MisCitas />} />
@@ -79,7 +78,7 @@ export default function AppRouter() {
             <Route path="pacientes/:pacienteId" element={<ExpedienteMedico />} />
             <Route path="consulta/:citaCodigo" element={<RegistrarConsulta />} />
             <Route path="consultas/:consultaId" element={<ConsultaCompletada />} />
-            <Route path="citas/:codigo/llamada" element={<VideollamadaMedico />} />
+            <Route path="citas/:codigo/llamada" element={<VideoCallPage portal="medico" />} />
             <Route path="cuenta" element={<CuentaPersonal volverA="/medico/agenda" />} />
             <Route path="*" element={<UnavailableRoute />} />
           </Route>

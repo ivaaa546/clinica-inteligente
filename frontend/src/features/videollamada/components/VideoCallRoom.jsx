@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Info, LogOut, Mic, MicOff, Plus, Video, VideoOff } from 'lucide-react'
 import { requestVideoAccess } from '../api/videoCalls.js'
-import '../pages/paciente/Videollamada.css'
+import './Videollamada.css'
 
 const formatDuration = (seconds) => `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
 

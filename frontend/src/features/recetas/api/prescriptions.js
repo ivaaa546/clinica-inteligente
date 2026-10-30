@@ -1,4 +1,4 @@
-import { apiClient } from '../shared/api/client.ts'
+import { apiClient } from '../../../shared/api/client.ts'
 
 /**
  * La proyección paciente incluye receta y diagnóstico. No incorpora fecha, estado,

@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Info } from 'lucide-react'
 import EstadoCita from '../../components/EstadoCita'
-import GinecoCampos from '../../components/medico/GinecoCampos'
-import RecetaEditor from '../../components/medico/RecetaEditor'
+import GinecoCampos from '../../features/expedientes/components/GinecoCampos'
+import RecetaEditor from '../../features/recetas/components/RecetaEditor'
 import {
   guardarGineco, obtenerContextoConsulta, registrarConsulta,
 } from '../../services/medicoService'

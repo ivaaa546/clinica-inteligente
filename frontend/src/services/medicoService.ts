@@ -2,8 +2,8 @@ import { ApiError } from '../shared/api/client'
 import { acceptAppointment, cancelAppointment, getAppointment, listOwnAppointments, rejectAppointment, rescheduleAppointment } from '../features/citas/api/appointments'
 import { listOwnAvailability, publishAvailability, removeAvailability } from '../features/disponibilidad/api/availability'
 import { getOwnDoctor } from '../api/doctors'
-import { getPatientRecord, updateBackground } from '../api/patients'
-import { createConsultation, getConsultation } from '../api/consultations'
+import { getPatientRecord, updateBackground } from '../features/expedientes/api/expedientes'
+import { createConsultation, getConsultation } from '../features/consultas/api/consultations'
 import { diasHabiles, sumarMinutos } from '../shared/lib/semana'
 import {
   aNumero, edadTexto, erroresConsulta, fichaSugerida, fichasDisponibles, formularioVacio, recetaFinal, recetaValida,

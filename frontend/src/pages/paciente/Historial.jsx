@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useClinicalHistory } from '../../features/consultas/hooks/useClinicalHistory.js'
 import { ClipboardList, Stethoscope } from 'lucide-react'
-import { listOwnClinicalHistory } from '../../api/consultations.js'
 import ApiError from '../../shared/components/ApiError.jsx'
 import EmptyState from '../../shared/components/EmptyState.jsx'
 import LoadingState from '../../shared/components/LoadingState.jsx'
@@ -13,18 +12,7 @@ const VITALS = [
 ]
 
 export default function Historial() {
-  const [consultations, setConsultations] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  useEffect(() => {
-    let active = true
-    listOwnClinicalHistory()
-      .then((items) => active && setConsultations(Array.isArray(items) ? items : []))
-      .catch((requestError) => active && setError(requestError))
-      .finally(() => active && setLoading(false))
-    return () => { active = false }
-  }, [])
+  const { consultations, loading, error } = useClinicalHistory()
 
   return (
     <>

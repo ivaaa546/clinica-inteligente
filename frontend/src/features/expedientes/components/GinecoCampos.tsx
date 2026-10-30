@@ -1,5 +1,5 @@
-import type { AntecedentesGineco } from '../../types/medico'
-import './medico.css'
+import type { AntecedentesGineco } from '../../../types/medico'
+import '../../../components/medico/medico.css'
 
 interface Props {
   valor: AntecedentesGineco

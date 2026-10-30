@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowRight, Info } from 'lucide-react'
-import GinecoCampos from '../../components/medico/GinecoCampos'
-import { guardarAntecedentes, guardarGineco, obtenerExpediente, obtenerMedicoActual } from '../../services/medicoService'
+import GinecoCampos from '../../features/expedientes/components/GinecoCampos'
+import { useMedicalRecord } from '../../features/expedientes/hooks/useMedicalRecord'
+import { guardarAntecedentes, guardarGineco } from '../../services/medicoService'
 import { formatearFecha, hoyISO } from '../../shared/lib/fechas'
 import { edadTexto } from '../../shared/lib/consulta'
-import type { Antecedentes, AntecedentesGineco, Expediente as DatosExpediente, Medico } from '../../types/medico'
+import type { Antecedentes, AntecedentesGineco, Expediente as DatosExpediente } from '../../types/medico'
 import '../../components/medico/medico.css'
 import './Expediente.css'
 
@@ -24,8 +25,7 @@ const sexoTexto = (sexo: 'M' | 'F' | 'NO_ESPECIFICADO') => ({
 
 export default function Expediente() {
   const { pacienteId = '' } = useParams()
-  const [datos, setDatos] = useState<{ expediente: DatosExpediente; medico: Medico } | null>(null)
-  const [error, setError] = useState('')
+  const { data: datos, error, setData: setDatos } = useMedicalRecord(pacienteId)
 
   const [editandoAnt, setEditandoAnt] = useState(false)
   const [formAnt, setFormAnt] = useState<Antecedentes | null>(null)
@@ -34,14 +34,6 @@ export default function Expediente() {
   const [ocupado, setOcupado] = useState(false)
   const [errorAccion, setErrorAccion] = useState('')
   const [aviso, setAviso] = useState('')
-
-  useEffect(() => {
-    let vigente = true
-    Promise.all([obtenerExpediente(pacienteId), obtenerMedicoActual()])
-      .then(([expediente, medico]) => { if (vigente) setDatos({ expediente, medico }) })
-      .catch((e: Error) => { if (vigente) setError(e.message) })
-    return () => { vigente = false }
-  }, [pacienteId])
 
   if (error) {
     return (

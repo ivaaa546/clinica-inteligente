@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { CircleCheck, Download, Info, Link2, Plus, Printer } from 'lucide-react'
 import EstadoCita from '../../components/EstadoCita'
-import { obtenerConsulta } from '../../services/medicoService'
+import { useCompletedConsultation } from '../../features/consultas/hooks/useCompletedConsultation'
 import { formatearFecha, mesMayusculas } from '../../shared/lib/fechas'
-import type { ConsultaGuardada, Medicamento } from '../../types/medico'
+import type { Medicamento } from '../../types/medico'
 import '../../components/medico/medico.css'
 import './ConsultaCompletada.css'
 
@@ -20,16 +19,7 @@ const SIGNOS_VITALES = [
 
 export default function ConsultaCompletada() {
   const { consultaId = '' } = useParams()
-  const [consulta, setConsulta] = useState<ConsultaGuardada | null>(null)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    let vigente = true
-    obtenerConsulta(consultaId)
-      .then((c) => { if (vigente) setConsulta(c) })
-      .catch((e: Error) => { if (vigente) setError(e.message) })
-    return () => { vigente = false }
-  }, [consultaId])
+  const { consultation: consulta, error } = useCompletedConsultation(consultaId)
 
   if (error) {
     return (
