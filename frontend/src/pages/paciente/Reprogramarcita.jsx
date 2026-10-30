@@ -6,7 +6,7 @@ import { cancelAppointment, getAppointment, rescheduleAppointment } from '../../
 import { createPreconsultation, updatePreconsultation } from '../../api/preconsultations.js'
 import { getDoctor } from '../../api/doctors.js'
 import ApiError from '../../shared/components/ApiError.jsx'
-import LoadingState from '../../components/LoadingState.jsx'
+import LoadingState from '../../shared/components/LoadingState.jsx'
 import { clinicDateKey, formatClinicDate, formatClinicTime } from '../../shared/lib/date.js'
 import './Reprogramarcita.css'
 

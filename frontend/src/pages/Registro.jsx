@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { registerPatient } from '../api/auth.js'
+import { registerPatient } from '../features/auth/api/auth.js'
 import {
   Plus, HeartHandshake, Sprout, Mail, Eye, EyeOff, CalendarDays, ArrowRight,
 } from 'lucide-react'

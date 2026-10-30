@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { Plus, ChevronDown, House, CalendarDays, ClipboardList, FileText, User, Lock, LogOut } from 'lucide-react'
 import ApiError from '../shared/components/ApiError.jsx'
-import { useAuth } from '../auth/useAuth.js'
+import { useAuth } from '../features/auth/hooks/useAuth.js'
 import './PacienteLayout.css'
 
 const SECCIONES = [

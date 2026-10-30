@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, Eye, EyeOff, Info, Mail } from 'lucide-react'
-import { useSesion } from '../../auth/useSesion'
+import { useSesion } from '../../features/auth/hooks/useSesion'
 import { actualizarPerfilPersonal, obtenerPerfilPersonal } from '../../services/personalService'
 import { cambiarPassword } from '../../services/perfilService'
 import type { PerfilPersonal } from '../../types/admin'

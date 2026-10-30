@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { Save } from 'lucide-react'
 import { getOwnPatientProfile, updateOwnPatientProfile } from '../../api/patients.js'
 import ApiError from '../../shared/components/ApiError.jsx'
-import LoadingState from '../../components/LoadingState.jsx'
+import LoadingState from '../../shared/components/LoadingState.jsx'
 import { formatBirthDate } from '../../shared/lib/date.js'
-import { useAuth } from '../../auth/useAuth.js'
+import { useAuth } from '../../features/auth/hooks/useAuth.js'
 import './CuentaPaciente.css'
 
 const SEX_LABELS = { M: 'Masculino', F: 'Femenino', NO_ESPECIFICADO: 'No especificado' }

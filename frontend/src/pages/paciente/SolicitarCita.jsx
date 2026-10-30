@@ -6,10 +6,10 @@ import { requestAppointment } from '../../api/appointments.js'
 import { listDoctors } from '../../api/doctors.js'
 import { listSpecialties } from '../../api/specialties.js'
 import ApiError from '../../shared/components/ApiError.jsx'
-import EmptyState from '../../components/EmptyState.jsx'
-import LoadingState from '../../components/LoadingState.jsx'
+import EmptyState from '../../shared/components/EmptyState.jsx'
+import LoadingState from '../../shared/components/LoadingState.jsx'
 import { clinicDateKey, formatClinicDate, formatClinicTime } from '../../shared/lib/date.js'
-import { useAuth } from '../../auth/useAuth.js'
+import { useAuth } from '../../features/auth/hooks/useAuth.js'
 import './SolicitarCita.css'
 
 const hoy = () => clinicDateKey(new Date())

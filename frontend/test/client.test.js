@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { afterEach, describe, it } from 'node:test'
-import { login, registerPatient } from '../src/api/auth.js'
+import { login, registerPatient } from '../src/features/auth/api/auth.js'
 import { acceptAppointment, requestAppointment, rescheduleAppointment } from '../src/api/appointments.js'
 import { listOwnAvailability, publishAvailability, removeAvailability, updateAvailability } from '../src/api/availability.js'
 import { getOwnDoctor } from '../src/api/doctors.js'

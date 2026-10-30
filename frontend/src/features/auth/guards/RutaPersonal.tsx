@@ -1,7 +1,7 @@
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
-import ApiError from '../shared/components/ApiError.jsx'
-import LoadingState from './LoadingState.jsx'
-import { useSesion } from '../auth/useSesion'
+import ApiError from '../../../shared/components/ApiError.jsx'
+import LoadingState from '../../../shared/components/LoadingState.jsx'
+import { useSesion } from '../hooks/useSesion'
 import './RutaPersonal.css'
 
 interface Props {

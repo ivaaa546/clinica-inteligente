@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../auth/useAuth.js'
+import { useAuth } from '../features/auth/hooks/useAuth.js'
+import { patientLoginDestination } from '../features/auth/guards/routePolicy'
 import {
   Plus, HeartHandshake, Sprout, Calendar, FileText, Pill,
   Mail, Eye, EyeOff, ArrowRight, UserPlus,
@@ -33,15 +34,8 @@ export default function Login() {
 
     try {
       const session = await login({ email, password })
-      const destinations = {
-        PACIENTE: '/paciente',
-        MEDICO: '/medico/agenda',
-        ADMINISTRADOR: '/admin/usuarios',
-      }
-      const destination = destinations[session?.rol] || '/login'
-      const requestedPath = location.state?.from
-      const canRestorePatientPath = session?.rol === 'PACIENTE' && requestedPath?.startsWith('/paciente')
-      navigate(canRestorePatientPath ? requestedPath : destination, { replace: true })
+      const destination = patientLoginDestination(session?.rol, location.state?.from)
+      navigate(destination, { replace: true })
     } catch (error) {
       setErrorMessage(error?.isNetworkError
         ? 'No fue posible conectar con el servicio. Verificá tu conexión e intentá nuevamente.'

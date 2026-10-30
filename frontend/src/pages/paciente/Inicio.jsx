@@ -4,10 +4,10 @@ import { Plus, Info, ClipboardList, FileText, ArrowUpRight } from 'lucide-react'
 import { listOwnAppointments } from '../../api/appointments.js'
 import { getDoctor } from '../../api/doctors.js'
 import ApiError from '../../shared/components/ApiError.jsx'
-import EmptyState from '../../components/EmptyState.jsx'
-import LoadingState from '../../components/LoadingState.jsx'
+import EmptyState from '../../shared/components/EmptyState.jsx'
+import LoadingState from '../../shared/components/LoadingState.jsx'
 import { CLINIC_TIMEZONE, formatClinicDate, formatClinicTime } from '../../shared/lib/date.js'
-import { useAuth } from '../../auth/useAuth.js'
+import { useAuth } from '../../features/auth/hooks/useAuth.js'
 import './Inicio.css'
 
 const STATUS_LABELS = {

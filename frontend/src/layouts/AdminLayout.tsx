@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Plus, Menu, ChevronDown, Users, Briefcase, CalendarDays, BarChart3, Info, LogOut, UserCog } from 'lucide-react'
-import { useSesion } from '../auth/useSesion'
+import { useSesion } from '../features/auth/hooks/useSesion'
 // Misma estructura que los demás espacios (clases `esp__*`) con ajustes propios del administrador
 import './EspacioLayout.css'
 import './AdminLayout.css'

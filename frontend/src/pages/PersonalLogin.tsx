@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Plus, Lock, Stethoscope, Mail, Eye, EyeOff, ArrowRight, Info } from 'lucide-react'
-import { useSesion } from '../auth/useSesion'
+import { useSesion } from '../features/auth/hooks/useSesion'
+import { personalLoginDestination } from '../features/auth/guards/routePolicy'
 import { esCorreo } from '../shared/lib/texto'
 // Misma estructura visual que el login de pacientes: se reutilizan sus estilos
 import './Login.css'
@@ -40,8 +41,7 @@ export default function PersonalLogin() {
       }
       // Si venía de una pantalla protegida de su propio espacio, vuelve a ella
       const desde = (ubicacion.state as { from?: string } | null)?.from
-      const prefijo = sesion.rol === 'MEDICO' ? '/medico' : '/admin'
-      navigate(desde && desde.startsWith(prefijo) ? desde : INICIO[sesion.rol], { replace: true })
+      navigate(personalLoginDestination(sesion.rol, desde), { replace: true })
     } catch (err) {
       const sinConexion = (err as { isNetworkError?: boolean }).isNetworkError
       setError(sinConexion ? 'No fue posible conectar con el servicio. Verifica tu conexión e inténtalo nuevamente.' : MENSAJE_CREDENCIALES)

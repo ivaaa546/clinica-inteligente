@@ -1,23 +1,13 @@
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
-import ApiError from '../shared/components/ApiError.jsx'
-import LoadingState from '../components/LoadingState.jsx'
-import { useAuth } from './useAuth.js'
+import ApiError from '../../../shared/components/ApiError.jsx'
+import LoadingState from '../../../shared/components/LoadingState.jsx'
+import { useAuth } from '../hooks/useAuth.js'
 import './ProtectedRoute.css'
 
-const ACCESS_BY_ROLE = {
-  PACIENTE: '/login',
-  MEDICO: '/acceso-personal',
-  ADMINISTRADOR: '/acceso-personal',
-}
-
-const HOME_BY_ROLE = {
-  PACIENTE: '/paciente',
-  MEDICO: '/medico/agenda',
-  ADMINISTRADOR: '/admin/usuarios',
-}
+import { accessRouteFor, homeRouteFor, requestedPathFor } from './routePolicy'
 
 function RoleUnavailable({ actualRole, requiredRole }) {
-  const home = HOME_BY_ROLE[actualRole] || '/'
+  const home = homeRouteFor(actualRole)
 
   return (
     <main className="route-state" aria-labelledby="role-unavailable-title">
@@ -47,8 +37,8 @@ export default function ProtectedRoute({ role }) {
   }
 
   if (!user) {
-    const accessRoute = ACCESS_BY_ROLE[role] || '/login'
-    const from = `${location.pathname}${location.search}${location.hash}`
+    const accessRoute = accessRouteFor(role)
+    const from = requestedPathFor(location)
     return <Navigate to={accessRoute} replace state={{ from }} />
   }
 

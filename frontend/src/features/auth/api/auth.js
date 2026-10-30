@@ -1,4 +1,4 @@
-import { apiClient } from '../shared/api/client.ts'
+import { apiClient } from '../../../shared/api/client.ts'
 
 const SEX_BY_LABEL = {
   Masculino: 'M',

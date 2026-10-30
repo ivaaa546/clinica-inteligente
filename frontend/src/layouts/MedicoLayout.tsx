@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Plus, Menu, ChevronDown, CalendarDays, Users, LogOut, UserCog } from 'lucide-react'
-import { useSesion } from '../auth/useSesion'
+import { useSesion } from '../features/auth/hooks/useSesion'
 // Estructura y estilos compartidos con el panel del administrador (clases `esp__*`).
 // Es independiente del layout del paciente.
 import './EspacioLayout.css'
