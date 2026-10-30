@@ -17,7 +17,7 @@ En Vercel cree los entornos `staging` y `production`. En cada uno configure:
 
 | Variable | Valor |
 | --- | --- |
-| `VITE_API_URL` | URL HTTPS pública de la API del mismo ambiente, con `/api/v1`. |
+| `VITE_API_URL` | `/api/v1` si Vercel reenvía la API mediante rewrite; nunca una URL con secretos. |
 | `VITE_CLINIC_TIMEZONE` | `America/Guatemala`. |
 
 En los secretos de cada GitHub Environment configure:
@@ -29,6 +29,12 @@ En los secretos de cada GitHub Environment configure:
 | `VERCEL_PROJECT_ID` | Identificador del proyecto Vercel. |
 
 El workflow usa `--target=staging` para `develop`; cree ese Custom Environment en Vercel antes del primer despliegue.
+
+### Sin dominio propio
+
+Cuando frontend y backend usan los dominios administrados `vercel.app` y `onrender.com`, las cookies `SameSite=Strict` no pueden funcionar entre ambos sitios. En ese caso, configure `VITE_API_URL=/api/v1` y agregue en `frontend/vercel.json` un rewrite de `/api/v1/:path*` a la API de Render. El navegador mantiene así un único origen Vercel y Vercel reenvía la petición al backend.
+
+El rewrite actual apunta al servicio de staging `https://clinica-inteligente-xyds.onrender.com`. Antes de crear producción, sustituya ese destino por una API de producción independiente o use un dominio propio con subdominios.
 
 ## Render
 
