@@ -4,7 +4,8 @@ import {
   CalendarCheck, FolderHeart, Mail, Phone, MapPin,
 } from 'lucide-react'
 import './Home.css'
-import { getClinicAddress } from '../services/clinicSettings'
+
+const CLINIC_ADDRESS = 'Oficina Central Barrio El Calvario, San Juan Chamelco, Alta Verapaz'
 
 const NAV = [
   { label: 'Inicio', href: '#inicio', active: true },
@@ -165,7 +166,7 @@ export default function Home() {
           {CONTACTO.map(({ icon: Icon, titulo, texto }) => (
             <div className="channel" key={titulo}>
               <Icon size={22} color="#16713e" />
-              <div><strong>{titulo}</strong><span>{titulo === 'Dirección' ? getClinicAddress() : texto}</span></div>
+              <div><strong>{titulo}</strong><span>{titulo === 'Dirección' ? CLINIC_ADDRESS : texto}</span></div>
             </div>
           ))}
         </div>

@@ -33,11 +33,15 @@ export default function Login() {
 
     try {
       const session = await login({ email, password })
-      if (session?.rol === 'MEDICO') {
-        navigate('/medico/agenda', { replace: true })
-      } else {
-        navigate('/paciente', { replace: true })
+      const destinations = {
+        PACIENTE: '/paciente',
+        MEDICO: '/medico/agenda',
+        ADMINISTRADOR: '/admin/usuarios',
       }
+      const destination = destinations[session?.rol] || '/login'
+      const requestedPath = location.state?.from
+      const canRestorePatientPath = session?.rol === 'PACIENTE' && requestedPath?.startsWith('/paciente')
+      navigate(canRestorePatientPath ? requestedPath : destination, { replace: true })
     } catch (error) {
       setErrorMessage(error?.isNetworkError
         ? 'No fue posible conectar con el servicio. Verificá tu conexión e intentá nuevamente.'

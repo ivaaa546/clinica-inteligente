@@ -28,7 +28,6 @@ import EditarUsuario from './pages/admin/EditarUsuario'
 import Especialidades from './pages/admin/Especialidades'
 import Citas from './pages/admin/Citas'
 import Metricas from './pages/admin/Metricas'
-import ConfiguracionClinica from './pages/admin/ConfiguracionClinica'
 import CuentaPersonal from './pages/personal/Cuenta'
 
 const VideollamadaPaciente = lazy(() => import('./pages/paciente/Videollamada'))
@@ -40,6 +39,10 @@ function UnavailableRoute() {
 
 function LoadingRoute() {
   return <p role="status">Cargando…</p>
+}
+
+function UnavailableFeatureRoute({ title, detail }) {
+  return <FeatureUnavailable title={title} detail={detail} backTo="/" backLabel="Volver al inicio" />
 }
 
 export default function App() {
@@ -92,11 +95,13 @@ export default function App() {
             <Route path="especialidades" element={<Especialidades />} />
             <Route path="citas" element={<Citas />} />
             <Route path="metricas" element={<Metricas />} />
-            <Route path="configuracion" element={<ConfiguracionClinica />} />
             <Route path="cuenta" element={<CuentaPersonal volverA="/admin/usuarios" />} />
             <Route path="*" element={<UnavailableRoute />} />
           </Route>
         </Route>
+
+        <Route path="/privacidad" element={<UnavailableFeatureRoute title="Aviso de privacidad no disponible" detail="Esta información aún no forma parte de la versión publicada." />} />
+        <Route path="/soporte" element={<UnavailableFeatureRoute title="Soporte técnico no disponible" detail="El canal de soporte aún no está habilitado en esta versión." />} />
 
         <Route path="*" element={<UnavailableRoute />} />
         </Routes>

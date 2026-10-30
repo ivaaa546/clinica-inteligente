@@ -1,20 +1,34 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 import ApiError from '../components/ApiError.jsx'
 import LoadingState from '../components/LoadingState.jsx'
 import { useAuth } from './useAuth.js'
 import './ProtectedRoute.css'
 
-function RoleUnavailable({ role }) {
+const ACCESS_BY_ROLE = {
+  PACIENTE: '/login',
+  MEDICO: '/acceso-personal',
+  ADMINISTRADOR: '/acceso-personal',
+}
+
+const HOME_BY_ROLE = {
+  PACIENTE: '/paciente',
+  MEDICO: '/medico/agenda',
+  ADMINISTRADOR: '/admin/usuarios',
+}
+
+function RoleUnavailable({ actualRole, requiredRole }) {
+  const home = HOME_BY_ROLE[actualRole] || '/'
+
   return (
     <main className="route-state" aria-labelledby="role-unavailable-title">
       <section className="route-state__panel">
         <p className="eyebrow">ACCESO RESTRINGIDO</p>
         <h1 id="role-unavailable-title">Este espacio no está disponible para tu rol</h1>
         <p>
-          Tu cuenta tiene el rol <strong>{role}</strong>. El portal de paciente solo está
-          disponible para cuentas con rol PACIENTE.
+          Tu cuenta tiene el rol <strong>{actualRole}</strong>, pero esta sección requiere
+          <strong> {requiredRole}</strong>.
         </p>
-        <a className="route-state__link" href="/">Volver al inicio</a>
+        <Link className="route-state__link" to={home}>Ir a mi espacio</Link>
       </section>
     </main>
   )
@@ -33,11 +47,13 @@ export default function ProtectedRoute({ role }) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+    const accessRoute = ACCESS_BY_ROLE[role] || '/login'
+    const from = `${location.pathname}${location.search}${location.hash}`
+    return <Navigate to={accessRoute} replace state={{ from }} />
   }
 
   if (role && user.rol !== role) {
-    return <RoleUnavailable role={user.rol} />
+    return <RoleUnavailable actualRole={user.rol} requiredRole={role} />
   }
 
   return <Outlet />
