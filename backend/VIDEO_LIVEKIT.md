@@ -50,6 +50,8 @@ npm run build
 npm start
 ```
 
+En proveedores como Render, las variables se inyectan en el proceso y no existe un archivo `.env`; `npm start` las consume directamente. Para desarrollo local, `npm run dev` mantiene la carga desde `.env`.
+
 El proceso del servidor ejecuta cada minuto el cierre de ventana de las citas virtuales aceptadas que ya terminaron. Encola una revocación persistente y el procesador expulsa/revoca a Paciente y Médico mediante LiveKit. Cancelar, rechazar, reprogramar o completar una cita virtual también encola una revocación dentro de la transacción local.
 
 La cola persiste reintentos con demora exponencial. Puede haber un retraso si LiveKit Cloud o la conexión saliente están caídos; mientras tanto el backend no emite accesos nuevos para una cita invalidada. Mantenga el proceso del backend en ejecución y supervise sus errores. Un reinicio recupera las tareas pendientes; no se debe borrar la tabla de revocaciones para “destrabar” trabajo.
