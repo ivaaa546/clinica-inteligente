@@ -35,13 +35,13 @@ describe.skipIf(!enabled)("ciclo de citas integrado", () => {
   afterAll(async () => {
     await prisma.auditoria.deleteMany({ where: { usuarioId: { in: [patientUserId, doctorUserId] } } });
     await prisma.tareaRevocacionVideo.deleteMany({ where: { cita: { medicoId: doctorId } } });
+    await prisma.preconsulta.deleteMany({ where: { cita: { medicoId: doctorId } } });
     await prisma.cita.deleteMany({ where: { medicoId: doctorId } });
     await prisma.disponibilidad.deleteMany({ where: { medicoId: doctorId } });
     await prisma.medico.deleteMany({ where: { id: doctorId } });
     await prisma.paciente.deleteMany({ where: { id: patientId } });
     await prisma.usuario.deleteMany({ where: { id: { in: [patientUserId, doctorUserId] } } });
     await prisma.especialidad.deleteMany({ where: { id: specialtyId } });
-    await prisma.$disconnect();
   });
 
   const createAvailability = async (doctorAgent: request.SuperAgentTest, minutesFromNow: number) => {

@@ -154,7 +154,6 @@ describe.skipIf(!enabled)("preconsulta, antecedentes y recetas integrados", () =
       where: { id: { in: [patientUserId, doctorUserId] } },
     });
     await prisma.especialidad.delete({ where: { id: specialtyId } });
-    await prisma.$disconnect();
   });
 
   it("inmoviliza la preconsulta despues de registrar la consulta", async () => {

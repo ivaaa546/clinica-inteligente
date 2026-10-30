@@ -1,9 +1,7 @@
-import { afterAll, describe, expect, it } from "vitest";
-import { PrismaClient } from "@prisma/client";
+import { describe, expect, it } from "vitest";
+import { prisma } from "../src/lib/prisma.js";
 
 const enabled = Boolean(process.env.TEST_DATABASE_URL);
-const prisma = new PrismaClient();
-
 describe.runIf(enabled)("migraciones de modalidad y revocacion", () => {
   it("instala restricciones e indices para agenda, signos y revocacion", async () => {
     const constraints = await prisma.$queryRaw<Array<{ conname: string }>>`
@@ -33,5 +31,3 @@ describe.runIf(enabled)("migraciones de modalidad y revocacion", () => {
     ]);
   });
 });
-
-afterAll(async () => prisma.$disconnect());

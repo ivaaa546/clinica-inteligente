@@ -169,7 +169,6 @@ describe.skipIf(!enabled)("administracion integrada", () => {
       where: { id: { in: [adminUserId, patientUserId, doctorUserId] } },
     });
     await prisma.especialidad.delete({ where: { id: specialtyId } });
-    await prisma.$disconnect();
   });
 
   it("entrega solo las metricas agregadas aprobadas", async () => {

@@ -67,7 +67,6 @@ describe.skipIf(!enabled)("autorizacion clinica integrada", () => {
     await prisma.auditoria.deleteMany({ where: { usuario: { correo: { in: [patientEmail, doctorEmail, adminEmail, otherPatientEmail, otherDoctorEmail] } } } });
     await prisma.usuario.deleteMany({ where: { correo: { in: [patientEmail, doctorEmail, adminEmail, otherPatientEmail, otherDoctorEmail] } } });
     await prisma.especialidad.deleteMany({ where: { id: specialtyId } });
-    await prisma.$disconnect();
   });
 
   const login = async (email: string) => {

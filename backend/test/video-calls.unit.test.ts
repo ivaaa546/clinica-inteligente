@@ -96,11 +96,11 @@ describe.skipIf(!enabled)("emisor y revocador de videollamadas", () => {
     await prisma.paciente.deleteMany({ where: { usuarioId: { in: [patientUserId, thirdPartyUserId] } } });
     await prisma.usuario.deleteMany({ where: { id: { in: [patientUserId, doctorUserId, thirdPartyUserId, adminUserId] } } });
     await prisma.especialidad.deleteMany({ where: { id: specialtyId } });
-    await prisma.$disconnect();
   });
 
   async function createAppointment(estado: EstadoCita, inicio = new Date(now.getTime() + 60_000), modalidad: "VIRTUAL" | "PRESENCIAL" = "VIRTUAL") {
-    const scheduledStart = new Date(inicio.getTime() + appointmentSequence++);
+    const nextTestSlot = now.getTime() + (appointmentSequence++ + 1) * 31 * 60_000;
+    const scheduledStart = new Date(Math.max(inicio.getTime(), nextTestSlot));
     const availability = await prisma.disponibilidad.create({ data: { medicoId: doctorId, inicio: scheduledStart, fin: new Date(scheduledStart.getTime() + 30 * 60_000), modalidades: [modalidad] } });
     const appointment = await prisma.cita.create({ data: {
       pacienteId: patientId, medicoId: doctorId, disponibilidadId: availability.id, inicio: scheduledStart, fin: availability.fin, estado, modalidad,

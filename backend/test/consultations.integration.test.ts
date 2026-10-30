@@ -142,7 +142,6 @@ describe.skipIf(!enabled)("cierre de consulta integrado", () => {
       where: { id: { in: [patientUserId, doctorUserId] } },
     });
     await prisma.especialidad.delete({ where: { id: specialtyId } });
-    await prisma.$disconnect();
   });
 
   it("permite cerrar sin un signo vital y lo normaliza como no medido", async () => {
