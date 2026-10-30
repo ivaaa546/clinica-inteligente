@@ -1,6 +1,6 @@
 // Reglas de la ficha de consulta compartidas por la pantalla y el servicio (así no se duplican)
 import { aFecha } from './fechas'
-import type { DisponibilidadFicha, FechaISO, FormularioConsulta, Medicamento, Paciente, TipoFicha } from '../types/medico'
+import type { DisponibilidadFicha, FechaISO, FormularioConsulta, Medicamento, Paciente, TipoFicha } from '../../types/medico'
 
 export const VIAS = ['Oral', 'Intravenosa', 'Intramuscular', 'Subcutánea', 'Tópica', 'Inhalatoria', 'Oftálmica', 'Rectal'] as const
 

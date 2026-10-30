@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Info, FileText, Printer, Download } from 'lucide-react'
 import { listOwnPrescriptions } from '../../api/prescriptions.js'
-import ApiError from '../../components/ApiError.jsx'
+import ApiError from '../../shared/components/ApiError.jsx'
 import EmptyState from '../../components/EmptyState.jsx'
 import LoadingState from '../../components/LoadingState.jsx'
 import { useAuth } from '../../auth/useAuth.js'

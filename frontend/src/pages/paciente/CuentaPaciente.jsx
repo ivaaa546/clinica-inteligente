@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Save } from 'lucide-react'
 import { getOwnPatientProfile, updateOwnPatientProfile } from '../../api/patients.js'
-import ApiError from '../../components/ApiError.jsx'
+import ApiError from '../../shared/components/ApiError.jsx'
 import LoadingState from '../../components/LoadingState.jsx'
-import { formatBirthDate } from '../../lib/date.js'
+import { formatBirthDate } from '../../shared/lib/date.js'
 import { useAuth } from '../../auth/useAuth.js'
 import './CuentaPaciente.css'
 

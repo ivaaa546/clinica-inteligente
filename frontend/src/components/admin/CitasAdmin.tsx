@@ -4,8 +4,8 @@ import EstadoCita from '../EstadoCita'
 import {
   cancelarCitaAdmin, listarCitasAdmin, listarHuecosCita, reprogramarCitaAdmin,
 } from '../../services/adminService'
-import { diaSemana, formatearFecha } from '../../lib/fechas'
-import { normalizar } from '../../lib/texto'
+import { diaSemana, formatearFecha } from '../../shared/lib/fechas'
+import { normalizar } from '../../shared/lib/texto'
 import type { CitaAdmin, Hueco } from '../../types/admin'
 import type { EstadoCita as Estado } from '../../types/cita'
 import '../medico/medico.css'

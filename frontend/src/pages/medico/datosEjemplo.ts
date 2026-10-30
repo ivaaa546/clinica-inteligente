@@ -1,9 +1,9 @@
 // TODO: todo esto es SOLO para maquetar. Con USAR_MOCK = false ya no se usa.
 // Las fechas de la agenda se calculan respecto a la semana actual para que siempre haya datos que mostrar.
 import { MEDICOS } from '../paciente/datosEjemplo'
-import { proximoDiaHabil } from '../../lib/fechas'
-import { diasHabiles, franjas, lunesDe, sumarDias, sumarMinutos } from '../../lib/semana'
-import { formularioVacio } from '../../lib/consulta'
+import { proximoDiaHabil } from '../../shared/lib/fechas'
+import { diasHabiles, franjas, lunesDe, sumarDias, sumarMinutos } from '../../shared/lib/semana'
+import { formularioVacio } from '../../shared/lib/consulta'
 import type { EstadoCita, Modalidad } from '../../types/cita'
 import type {
   Antecedentes, AntecedentesGineco, ConsultaGuardada, EstadoLlamada, Medicamento, Medico, Paciente,

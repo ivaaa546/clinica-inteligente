@@ -1,18 +1,18 @@
-import { ApiError } from './api'
+import { ApiError } from '../shared/api/client'
 import { acceptAppointment, cancelAppointment, getAppointment, listOwnAppointments, rejectAppointment, rescheduleAppointment } from '../api/appointments'
 import { listOwnAvailability, publishAvailability, removeAvailability } from '../api/availability'
 import { getOwnDoctor } from '../api/doctors'
 import { getPatientRecord, updateBackground } from '../api/patients'
 import { createConsultation, getConsultation } from '../api/consultations'
-import { diasHabiles, sumarMinutos } from '../lib/semana'
+import { diasHabiles, sumarMinutos } from '../shared/lib/semana'
 import {
   aNumero, edadTexto, erroresConsulta, fichaSugerida, fichasDisponibles, formularioVacio, recetaFinal, recetaValida,
-} from '../lib/consulta'
+} from '../shared/lib/consulta'
 import type {
   AgendaSemana, Antecedentes, AntecedentesGineco, BloqueDisponibilidad, CitaAgenda, ConsultaGuardada, ConsultaPrevia,
   ContextoConsulta, Expediente, FechaISO, FormularioConsulta, Medico, NuevoBloque, Paciente, PacienteVinculado, PreconsultaPaciente,
 } from '../types/medico'
-import { CLINIC_TIMEZONE, clinicDateKey } from '../lib/date'
+import { CLINIC_TIMEZONE, clinicDateKey } from '../shared/lib/date'
 
 
 // ---------- Perfil ----------
@@ -148,7 +148,7 @@ export async function cancelarCitaMedico(codigo: string): Promise<CitaAgenda> {
  * enlazada a la original (igual que el backend). TODO API: POST /appointments/:id/reschedule { nuevaDisponibilidadId }
  */
 export async function reprogramarCitaMedico(codigo: string, disponibilidadId: string, modalidad: CitaAgenda['modalidad']): Promise<CitaAgenda> {
-  const replacement = await rescheduleAppointment(codigo, disponibilidadId, modalidad === 'VIDEOLLAMADA' ? 'VIRTUAL' : 'PRESENCIAL')
+  const replacement = await rescheduleAppointment(codigo, disponibilidadId, modalidad === 'VIDEOLLAMADA' ? 'VIRTUAL' : 'PRESENCIAL') as ApiDoctorAppointment
   const appointments = await listOwnAppointments() as ApiDoctorAppointment[]
   const created = appointments.find((appointment) => appointment.id === replacement.id)
   if (!created) throw new Error('La cita reprogramada no está disponible en la agenda.')

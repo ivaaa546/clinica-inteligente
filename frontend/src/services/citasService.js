@@ -1,4 +1,4 @@
-import { ApiError, USAR_MOCK, esperar, request } from './api'
+import { ApiError, USAR_MOCK, esperar, request } from '../shared/api/client'
 import { CITAS, MEDICOS } from '../pages/paciente/datosEjemplo'
 
 const ACTIVAS = ['PENDIENTE', 'ACEPTADA']

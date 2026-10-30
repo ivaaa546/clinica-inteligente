@@ -1,5 +1,5 @@
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
-import ApiError from '../components/ApiError.jsx'
+import ApiError from '../shared/components/ApiError.jsx'
 import LoadingState from '../components/LoadingState.jsx'
 import { useAuth } from './useAuth.js'
 import './ProtectedRoute.css'

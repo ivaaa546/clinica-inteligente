@@ -1,4 +1,4 @@
-import './ApiStates.css'
+import '../shared/components/ApiStates.css'
 
 export default function EmptyState({ title = 'No hay información disponible', message }) {
   return (

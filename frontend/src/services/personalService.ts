@@ -1,4 +1,4 @@
-import { ApiError, USAR_MOCK, esperar } from './api'
+import { ApiError, USAR_MOCK, esperar } from '../shared/api/client'
 import { buscarPorCorreoMock, crearUsuarioTemporalMock, nombreEspecialidadMock } from './adminService'
 import { getUser, updateUser } from '../api/users'
 import type { DatosCuenta, PerfilPersonal } from '../types/admin'

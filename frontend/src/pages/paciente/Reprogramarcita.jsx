@@ -5,9 +5,9 @@ import { listDoctorAvailability } from '../../api/availability.js'
 import { cancelAppointment, getAppointment, rescheduleAppointment } from '../../api/appointments.js'
 import { createPreconsultation, updatePreconsultation } from '../../api/preconsultations.js'
 import { getDoctor } from '../../api/doctors.js'
-import ApiError from '../../components/ApiError.jsx'
+import ApiError from '../../shared/components/ApiError.jsx'
 import LoadingState from '../../components/LoadingState.jsx'
-import { clinicDateKey, formatClinicDate, formatClinicTime } from '../../lib/date.js'
+import { clinicDateKey, formatClinicDate, formatClinicTime } from '../../shared/lib/date.js'
 import './Reprogramarcita.css'
 
 const ACTIVE_STATES = new Set(['PENDIENTE', 'ACEPTADA'])

@@ -1,37 +1,37 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import Home from './pages/Home'
-import Login from './pages/Login'
-import Registro from './pages/Registro'
-import Recuperar from './pages/Recuperar'
-import PersonalLogin from './pages/PersonalLogin'
-import PacienteLayout from './layouts/PacienteLayout'
-import InicioPaciente from './pages/paciente/Inicio'
-import MisCitas from './pages/paciente/MisCitas'
-import SolicitarCita from './pages/paciente/SolicitarCita'
-import Diagnosticos from './pages/paciente/Diagnosticos'
-import Historial from './pages/paciente/Historial'
-import CuentaPaciente from './pages/paciente/CuentaPaciente'
-import ProtectedRoute from './auth/ProtectedRoute.jsx'
-import ReprogramarCita from './pages/paciente/Reprogramarcita'
-import FeatureUnavailable from './pages/FeatureUnavailable'
-import MedicoLayout from './layouts/MedicoLayout'
-import AgendaMedico from './pages/medico/Agenda'
-import MisPacientes from './pages/medico/MisPacientes'
-import ExpedienteMedico from './pages/medico/Expediente'
-import RegistrarConsulta from './pages/medico/RegistrarConsulta'
-import ConsultaCompletada from './pages/medico/ConsultaCompletada'
-import AdminLayout from './layouts/AdminLayout'
-import Usuarios from './pages/admin/Usuarios'
-import CrearMedico from './pages/admin/CrearMedico'
-import EditarUsuario from './pages/admin/EditarUsuario'
-import Especialidades from './pages/admin/Especialidades'
-import Citas from './pages/admin/Citas'
-import Metricas from './pages/admin/Metricas'
-import CuentaPersonal from './pages/personal/Cuenta'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import Home from '../pages/Home'
+import Login from '../pages/Login'
+import Registro from '../pages/Registro'
+import Recuperar from '../pages/Recuperar'
+import PersonalLogin from '../pages/PersonalLogin'
+import PacienteLayout from '../layouts/PacienteLayout'
+import InicioPaciente from '../pages/paciente/Inicio'
+import MisCitas from '../pages/paciente/MisCitas'
+import SolicitarCita from '../pages/paciente/SolicitarCita'
+import Diagnosticos from '../pages/paciente/Diagnosticos'
+import Historial from '../pages/paciente/Historial'
+import CuentaPaciente from '../pages/paciente/CuentaPaciente'
+import ProtectedRoute from '../auth/ProtectedRoute.jsx'
+import ReprogramarCita from '../pages/paciente/Reprogramarcita'
+import FeatureUnavailable from '../pages/FeatureUnavailable'
+import MedicoLayout from '../layouts/MedicoLayout'
+import AgendaMedico from '../pages/medico/Agenda'
+import MisPacientes from '../pages/medico/MisPacientes'
+import ExpedienteMedico from '../pages/medico/Expediente'
+import RegistrarConsulta from '../pages/medico/RegistrarConsulta'
+import ConsultaCompletada from '../pages/medico/ConsultaCompletada'
+import AdminLayout from '../layouts/AdminLayout'
+import Usuarios from '../pages/admin/Usuarios'
+import CrearMedico from '../pages/admin/CrearMedico'
+import EditarUsuario from '../pages/admin/EditarUsuario'
+import Especialidades from '../pages/admin/Especialidades'
+import Citas from '../pages/admin/Citas'
+import Metricas from '../pages/admin/Metricas'
+import CuentaPersonal from '../pages/personal/Cuenta'
 
-const VideollamadaPaciente = lazy(() => import('./pages/paciente/Videollamada'))
-const VideollamadaMedico = lazy(() => import('./pages/medico/Videollamada'))
+const VideollamadaPaciente = lazy(() => import('../pages/paciente/Videollamada'))
+const VideollamadaMedico = lazy(() => import('../pages/medico/Videollamada'))
 
 function UnavailableRoute() {
   return <FeatureUnavailable title="Página no encontrada" detail="La ruta solicitada no forma parte de la plataforma." backTo="/" backLabel="Volver al inicio" />
@@ -41,15 +41,14 @@ function LoadingRoute() {
   return <p role="status">Cargando…</p>
 }
 
-function UnavailableFeatureRoute({ title, detail }) {
+function UnavailableFeatureRoute({ title, detail }: { title: string; detail: string }) {
   return <FeatureUnavailable title={title} detail={detail} backTo="/" backLabel="Volver al inicio" />
 }
 
-export default function App() {
+export default function AppRouter() {
   return (
-    <BrowserRouter>
-      <Suspense fallback={<LoadingRoute />}>
-        <Routes>
+    <Suspense fallback={<LoadingRoute />}>
+      <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
@@ -102,10 +101,8 @@ export default function App() {
 
         <Route path="/privacidad" element={<UnavailableFeatureRoute title="Aviso de privacidad no disponible" detail="Esta información aún no forma parte de la versión publicada." />} />
         <Route path="/soporte" element={<UnavailableFeatureRoute title="Soporte técnico no disponible" detail="El canal de soporte aún no está habilitado en esta versión." />} />
-
         <Route path="*" element={<UnavailableRoute />} />
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
+      </Routes>
+    </Suspense>
   )
 }

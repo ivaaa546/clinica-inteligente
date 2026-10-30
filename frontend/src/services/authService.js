@@ -1,4 +1,4 @@
-import { ApiError, USAR_MOCK, esperar, request } from './api'
+import { ApiError, USAR_MOCK, esperar, request } from '../shared/api/client'
 
 /** TODO API: POST /auth/login. La respuesta trae el rol para redirigir (PACIENTE / MEDICO / ADMINISTRADOR). */
 export async function iniciarSesion({ email, password }) {

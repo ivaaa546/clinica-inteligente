@@ -3,7 +3,7 @@ import { Info, Lock, Plus } from 'lucide-react'
 import {
   actualizarEspecialidad, crearEspecialidad, eliminarEspecialidad, listarEspecialidades,
 } from '../../services/adminService'
-import { normalizar } from '../../lib/texto'
+import { normalizar } from '../../shared/lib/texto'
 import type { EspecialidadAdmin } from '../../types/admin'
 import '../../components/medico/medico.css'
 import './admin.css'

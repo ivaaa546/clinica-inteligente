@@ -7,10 +7,10 @@ import RecetaEditor from '../../components/medico/RecetaEditor'
 import {
   guardarGineco, obtenerContextoConsulta, registrarConsulta,
 } from '../../services/medicoService'
-import { diaSemana, formatearFecha } from '../../lib/fechas'
+import { diaSemana, formatearFecha } from '../../shared/lib/fechas'
 import {
   TIPOS_FICHA, erroresConsulta, formularioVacio, recetaValida, resumenFaltantes, type CampoConsulta,
-} from '../../lib/consulta'
+} from '../../shared/lib/consulta'
 import type {
   AntecedentesGineco, ContextoConsulta, FormularioConsulta, SignosVitales, TipoFicha,
 } from '../../types/medico'

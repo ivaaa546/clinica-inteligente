@@ -1,4 +1,4 @@
-import { apiClient } from './client.js'
+import { apiClient } from '../shared/api/client.ts'
 
 /** El backend autoriza la cita y emite un JWT temporal; no se persiste en navegador. */
 export function requestVideoAccess(appointmentId) {

@@ -1,4 +1,4 @@
-import { apiClient } from './client.js'
+import { apiClient } from '../shared/api/client.ts'
 
 /**
  * Conserva los UUID e instantes ISO devueltos por la API.

@@ -1,4 +1,4 @@
-import { apiClient } from './client.js'
+import { apiClient } from '../shared/api/client.ts'
 
 export function createConsultation(payload) {
   return apiClient('/consultations', { method: 'POST', body: payload })

@@ -1,4 +1,4 @@
-import { clinicDateKey, formatClinicTime } from '../lib/date.js'
+import { clinicDateKey, formatClinicTime } from '../shared/lib/date.js'
 
 export type AppointmentStatus = 'PENDIENTE' | 'ACEPTADA' | 'RECHAZADA' | 'CANCELADA' | 'REPROGRAMADA' | 'COMPLETADA'
 export type AppointmentModality = 'PRESENCIAL' | 'VIRTUAL'

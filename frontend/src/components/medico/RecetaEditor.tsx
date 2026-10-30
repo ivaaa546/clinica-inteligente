@@ -1,5 +1,5 @@
 import { Plus, Info } from 'lucide-react'
-import { MEDICAMENTO_VACIO, VIAS, filaRecetaCompleta, filaRecetaVacia } from '../../lib/consulta'
+import { MEDICAMENTO_VACIO, VIAS, filaRecetaCompleta, filaRecetaVacia } from '../../shared/lib/consulta'
 import type { Medicamento } from '../../types/medico'
 import './medico.css'
 import './RecetaEditor.css'

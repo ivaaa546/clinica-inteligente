@@ -1,4 +1,4 @@
-import './ApiStates.css'
+import '../shared/components/ApiStates.css'
 
 export default function LoadingState({ message = 'Cargando información…' }) {
   return (

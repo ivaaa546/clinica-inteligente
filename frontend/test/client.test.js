@@ -8,7 +8,7 @@ import { createConsultation, getConsultation } from '../src/api/consultations.js
 import { getPatientRecord, updateBackground } from '../src/api/patients.js'
 import { requestVideoAccess } from '../src/api/videoCalls.js'
 import { toMedicalAgendaAppointment, toMedicalAvailabilityBlock, uniqueLinkedPatients } from '../src/adapters/medical.ts'
-import { ApiError, apiClient } from '../src/api/client.js'
+import { ApiError, apiClient } from '../src/shared/api/client.ts'
 
 const originalFetch = globalThis.fetch
 

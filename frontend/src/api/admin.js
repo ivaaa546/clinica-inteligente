@@ -1,4 +1,4 @@
-import { apiClient } from './client.js'
+import { apiClient } from '../shared/api/client.ts'
 
 export function getAdminMetrics() {
   return apiClient('/admin/metrics')

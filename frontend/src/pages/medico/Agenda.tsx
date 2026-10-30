@@ -5,8 +5,8 @@ import CitaSeleccionada from '../../components/medico/CitaSeleccionada'
 import {
   cancelarCitaMedico, eliminarBloque, listarAgendaSemana, publicarBloques, reprogramarCitaMedico,
 } from '../../services/medicoService'
-import { formatearFecha, proximoDiaHabil } from '../../lib/fechas'
-import { diasHabiles, lunesDe, slotKey, sumarDias, sumarMinutos, MINUTOS_BLOQUE } from '../../lib/semana'
+import { formatearFecha, proximoDiaHabil } from '../../shared/lib/fechas'
+import { diasHabiles, lunesDe, slotKey, sumarDias, sumarMinutos, MINUTOS_BLOQUE } from '../../shared/lib/semana'
 import type { AgendaSemana as DatosSemana, FechaISO, NuevoBloque } from '../../types/medico'
 import './Agenda.css'
 

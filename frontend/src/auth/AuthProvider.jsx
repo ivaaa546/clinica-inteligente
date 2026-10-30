@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getCurrentSession, login as loginRequest, logout as logoutRequest } from '../api/auth.js'
-import { ApiError, setUnauthorizedHandler } from '../api/client.js'
+import { ApiError, setUnauthorizedHandler } from '../shared/api/client'
 import { AuthContext } from './AuthContext.js'
 
 export function AuthProvider({ children }) {

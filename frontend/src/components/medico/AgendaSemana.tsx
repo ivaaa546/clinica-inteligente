@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
-import { diaSemana, formatearFecha, separarBloque } from '../../lib/fechas'
-import { etiquetaSemana, franjas, slotKey, sumarMinutos, MINUTOS_BLOQUE } from '../../lib/semana'
+import { diaSemana, formatearFecha, separarBloque } from '../../shared/lib/fechas'
+import { etiquetaSemana, franjas, slotKey, sumarMinutos, MINUTOS_BLOQUE } from '../../shared/lib/semana'
 import type { BloqueDisponibilidad, CitaAgenda, FechaISO } from '../../types/medico'
 
 export type SeleccionAgenda =

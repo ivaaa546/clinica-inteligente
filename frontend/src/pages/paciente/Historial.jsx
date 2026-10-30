@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { ClipboardList, Stethoscope } from 'lucide-react'
 import { listOwnClinicalHistory } from '../../api/consultations.js'
-import ApiError from '../../components/ApiError.jsx'
+import ApiError from '../../shared/components/ApiError.jsx'
 import EmptyState from '../../components/EmptyState.jsx'
 import LoadingState from '../../components/LoadingState.jsx'
-import { formatClinicDate } from '../../lib/date.js'
+import { formatClinicDate } from '../../shared/lib/date.js'
 import './Diagnosticos.css'
 
 const VITALS = [

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Plus, Lock, Stethoscope, Mail, Eye, EyeOff, ArrowRight, Info } from 'lucide-react'
 import { useSesion } from '../auth/useSesion'
-import { esCorreo } from '../lib/texto'
+import { esCorreo } from '../shared/lib/texto'
 // Misma estructura visual que el login de pacientes: se reutilizan sus estilos
 import './Login.css'
 import './PersonalLogin.css'

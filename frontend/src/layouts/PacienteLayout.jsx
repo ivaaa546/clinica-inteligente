@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { Plus, ChevronDown, House, CalendarDays, ClipboardList, FileText, User, Lock, LogOut } from 'lucide-react'
-import ApiError from '../components/ApiError.jsx'
+import ApiError from '../shared/components/ApiError.jsx'
 import { useAuth } from '../auth/useAuth.js'
 import './PacienteLayout.css'
 

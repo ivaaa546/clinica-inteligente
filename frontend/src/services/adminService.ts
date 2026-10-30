@@ -1,7 +1,7 @@
-import { ApiError, USAR_MOCK, esperar } from './api'
-import { formatearFecha, hoyISO, proximoDiaHabil } from '../lib/fechas'
-import { diasHabiles, esFutura, franjas, lunesDe, sumarDias, sumarMinutos } from '../lib/semana'
-import { esCorreo, normalizar } from '../lib/texto'
+import { ApiError, USAR_MOCK, esperar } from '../shared/api/client'
+import { formatearFecha, hoyISO, proximoDiaHabil } from '../shared/lib/fechas'
+import { diasHabiles, esFutura, franjas, lunesDe, sumarDias, sumarMinutos } from '../shared/lib/semana'
+import { esCorreo, normalizar } from '../shared/lib/texto'
 import {
   listUsers as listUsersApi,
   getUser as getUserApi,

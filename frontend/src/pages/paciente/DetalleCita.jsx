@@ -5,7 +5,7 @@ import EstadoCita from '../../components/EstadoCita'
 import ModalidadTag from '../../components/ModalidadTag'
 import { PACIENTE } from './datosEjemplo'
 import { bloquesLibres, cancelarCita, obtenerCita, reprogramarCita } from '../../services/citasService'
-import { diaLargo, formatearFecha, hoyISO, proximoDiaHabil, separarBloque } from '../../lib/fechas'
+import { diaLargo, formatearFecha, hoyISO, proximoDiaHabil, separarBloque } from '../../shared/lib/fechas'
 import './DetalleCita.css'
 
 const ACTIVAS = ['PENDIENTE', 'ACEPTADA']
