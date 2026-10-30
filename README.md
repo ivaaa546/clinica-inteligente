@@ -44,3 +44,5 @@ Las pruebas de integración del backend requieren `TEST_DATABASE_URL` y se ejecu
 ## Documentación
 
 El índice completo está en [docs/indice.md](docs/indice.md). Para configurar y operar las modalidades presencial/virtual y LiveKit Cloud, consulta [backend/VIDEO_LIVEKIT.md](backend/VIDEO_LIVEKIT.md).
+
+La configuración de CI/CD para Vercel y Render está documentada en [docs/despliegue-vercel-render.md](docs/despliegue-vercel-render.md).
