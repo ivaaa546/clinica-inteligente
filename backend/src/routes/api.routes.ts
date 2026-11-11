@@ -10,6 +10,7 @@ import { preconsultationsRouter } from "../modules/preconsultations/preconsultat
 import { prescriptionsRouter } from "../modules/prescriptions/prescriptions.routes.js";
 import { specialtiesRouter } from "../modules/specialties/specialties.routes.js";
 import { usersRouter } from "../modules/users/users.routes.js";
+import { devicesRouter } from "../modules/vital-signs/vital-signs.routes.js";
 import { videoCallsRouter } from "../modules/video-calls/video-calls.routes.js";
 
 export const apiRouter = Router();
@@ -27,3 +28,4 @@ apiRouter.use("/consultations", consultationsRouter);
 apiRouter.use("/prescriptions", prescriptionsRouter);
 apiRouter.use("/admin", adminRouter);
 apiRouter.use("/video-calls", videoCallsRouter);
+apiRouter.use("/devices", devicesRouter);

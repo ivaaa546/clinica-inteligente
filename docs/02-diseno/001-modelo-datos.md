@@ -188,6 +188,21 @@ Captura las métricas físicas en el momento de la consulta.
 | creado_en | Obligatorio. |
 | actualizado_en | Obligatorio. |
 
+### Lectura_Signos_Vitales
+
+Lectura de frecuencia cardíaca enviada por un dispositivo (ESP32) para una Cita. Es independiente de Signos_Vitales, que se registra al cerrar la Consulta.
+
+| Atributo | Regla |
+|---|---|
+| id | Identificador unico. |
+| cita_id | Obligatorio, unico y referencia a Cita. |
+| frec_cardiaca | Entero positivo (latidos por minuto). |
+| dispositivo_id | Opcional; identificador del dispositivo emisor. |
+| medido_en | Opcional; instante de la medicion. |
+| creado_en, actualizado_en | Obligatorios. |
+
+Se expone con `GET`/`PUT /api/v1/devices/appointments/:citaId/vital-signs`, autenticado con el header `x-device-key`. `PUT` hace upsert y exige una Cita en estado ACEPTADA sin Consulta registrada.
+
 ### Receta
 
 Representa una indicacion medica simple asociada a una Consulta.

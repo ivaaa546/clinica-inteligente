@@ -21,10 +21,11 @@ const envSchema = z.object({
     .string()
     .min(1, "LIVEKIT_API_SECRET es obligatoria")
     .optional(),
+  DEVICE_API_KEY: z.string().min(32, "DEVICE_API_KEY debe tener al menos 32 caracteres").optional(),
 }).superRefine((value, context) => {
   if (value.NODE_ENV === "test") return;
 
-  for (const key of ["LIVEKIT_URL", "LIVEKIT_API_KEY", "LIVEKIT_API_SECRET"] as const) {
+  for (const key of ["LIVEKIT_URL", "LIVEKIT_API_KEY", "LIVEKIT_API_SECRET", "DEVICE_API_KEY"] as const) {
     if (!value[key]) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
@@ -71,5 +72,8 @@ export const env = {
     url: parsedEnv.data.LIVEKIT_URL,
     apiKey: parsedEnv.data.LIVEKIT_API_KEY,
     apiSecret: parsedEnv.data.LIVEKIT_API_SECRET,
+  },
+  device: {
+    apiKey: parsedEnv.data.DEVICE_API_KEY,
   },
 } as const;

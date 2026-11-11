@@ -5,3 +5,4 @@ process.env.NODE_ENV = "test";
 process.env.LIVEKIT_URL = process.env.LIVEKIT_URL ?? "https://test.livekit.invalid";
 process.env.LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY ?? "test-livekit-api-key";
 process.env.LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET ?? "test-livekit-api-secret";
+process.env.DEVICE_API_KEY = process.env.DEVICE_API_KEY ?? "test-device-api-key-with-at-least-32-chars";

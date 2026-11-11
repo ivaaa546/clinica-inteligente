@@ -195,6 +195,7 @@ model Cita {
   reprogramaciones            Cita[]                 @relation("Reprogramacion")
   preconsulta                 Preconsulta?
   consulta                    Consulta?
+  lecturaSignosVitales        LecturaSignosVitales?
   tareasRevocacionVideo       TareaRevocacionVideo[]
 
   @@index([medicoId, inicio, estado])
@@ -249,6 +250,20 @@ model TareaRevocacionVideo {
   @@index([estado, proximoIntentoEn])
   @@index([citaId, causa, estado])
   @@map("tarea_revocacion_video")
+}
+
+// Lectura de frecuencia cardíaca enviada por un dispositivo (ESP32), una por cita.
+model LecturaSignosVitales {
+  id               String   @id @default(uuid()) @db.Uuid
+  citaId           String   @unique @map("cita_id") @db.Uuid
+  frecCardiaca     Int?     @map("frec_cardiaca")
+  dispositivoId    String?  @map("dispositivo_id") @db.VarChar(100)
+  medidoEn         DateTime? @map("medido_en") @db.Timestamptz(6)
+  creadoEn         DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn    DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+  cita             Cita     @relation(fields: [citaId], references: [id])
+
+  @@map("lectura_signos_vitales")
 }
 
 model SignosVitales {
