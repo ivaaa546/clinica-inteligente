@@ -1,11 +1,18 @@
 import { Link } from 'react-router-dom'
 import {
-  Plus, Video, HeartHandshake, FileText, Pill,
+  Video, HeartHandshake, FileText, Pill,
   CalendarCheck, FolderHeart, Mail, Phone, MapPin,
 } from 'lucide-react'
 import './Home.css'
+import logoMediQuetzal from '../assets/MediQuetzalbueno.png'
+import fotoInicio1 from '../assets/home/1.jpg'
+import fotoInicio2 from '../assets/home/2.jpg'
+import fotoInicio3 from '../assets/home/3.jpg'
+import fotoInicio4 from '../assets/home/4.jpg'
+import fotoEquipo from '../assets/home/5.jpg'
 
 const CLINIC_ADDRESS = 'Oficina Central Barrio El Calvario, San Juan Chamelco, Alta Verapaz'
+const FOTOS_INICIO = [fotoInicio1, fotoInicio2, fotoInicio3, fotoInicio4]
 
 const NAV = [
   { label: 'Inicio', href: '#inicio', active: true },
@@ -43,7 +50,7 @@ const FAQ = [
 ]
 
 const CONTACTO = [
-  { icon: Mail, titulo: 'Correo de contacto', texto: 'tilinesmedicos@medicinaumg.com' },
+  { icon: Mail, titulo: 'Correo de contacto', texto: 'contacto@mediquetzal.com' },
   { icon: Phone, titulo: 'Teléfono', texto: '+502 4935 2697' },
   { icon: MapPin, titulo: 'Dirección', texto: null },
 ]
@@ -51,9 +58,9 @@ const CONTACTO = [
 function Brand() {
   return (
     <Link to="/" className="brand">
-      <span className="brand__emblem"><Plus size={22} color="#fff" /></span>
+      <span className="brand__emblem"><img src={logoMediQuetzal} alt="Logo MediQuetzal" /></span>
       <span className="brand__text">
-        <strong>TilinesMédicos</strong>
+        <strong>MediQuetzal</strong>
         <small>PLATAFORMA MÉDICA</small>
       </span>
     </Link>
@@ -95,7 +102,21 @@ export default function Home() {
             <span>Registra tu cuenta como paciente</span>
           </div>
         </div>
-        <div className="photo-slot photo-slot--hero">Foto de consulta médica · por agregar</div>
+        <div
+          className="photo-slot photo-slot--hero hero-gallery"
+          role="img"
+          aria-label="Atención médica y equipo de MediQuetzal"
+        >
+          {FOTOS_INICIO.map((foto, indice) => (
+            <img
+              key={foto}
+              src={foto}
+              alt=""
+              aria-hidden="true"
+              className={`hero-gallery__image hero-gallery__image--${indice + 1}`}
+            />
+          ))}
+        </div>
       </section>
 
       <section id="servicios" className="block">
@@ -125,11 +146,13 @@ export default function Home() {
       </section>
 
       <section id="nosotros" className="block about">
-        <div className="photo-slot photo-slot--about">Foto del equipo médico · por agregar</div>
+        <div className="photo-slot photo-slot--about about__photo">
+          <img src={fotoEquipo} alt="Equipo médico de MediQuetzal" />
+        </div>
         <div className="about__text">
           <SectionHead eyebrow="NOSOTROS" titulo="Gestión de citas médicas con claridad" />
           <p>
-            TilinesMédicos ayuda a pacientes a solicitar citas, revisar el estado de su
+            MediQuetzal ayuda a pacientes a solicitar citas, revisar el estado de su
             solicitud y consultar diagnósticos y recetas de forma simple y organizada.
           </p>
           <p className="about__focus"><span />Un espacio para gestionar tu atención médica.</p>
@@ -173,23 +196,8 @@ export default function Home() {
       </section>
 
       <footer className="home__footer">
-        <div className="invite">
-          <div>
-            <h2>Da el primer paso para gestionar tus citas.</h2>
-            <p>Crea tu cuenta y solicita tu cita médica.</p>
-          </div>
-          <Link to="/registro" className="btn-solid">Crear cuenta →</Link>
-        </div>
-        <div className="footer__row">
-          <Brand />
-          <nav className="footer__links">
-            <a href="#servicios">Servicios</a><span>·</span>
-            <a href="#contacto">Contacto</a><span>·</span>
-            <Link to="/privacidad">Aviso de privacidad</Link>
-          </nav>
-        </div>
-        <hr />
-        <small>© 2026 TilinesMédicos</small>
+        <small>© 2026 MediQuetzal</small>
+        <Link to="/privacidad">Aviso de privacidad</Link>
       </footer>
     </div>
   )

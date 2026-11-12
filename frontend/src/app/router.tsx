@@ -5,15 +5,16 @@ import Login from '../pages/Login'
 import Registro from '../pages/Registro'
 import Recuperar from '../pages/Recuperar'
 import PersonalLogin from '../pages/PersonalLogin'
+import CambiarPassword from '../pages/CambiarPassword'
 import PacienteLayout from '../layouts/PacienteLayout'
 import InicioPaciente from '../pages/paciente/Inicio'
 import MisCitas from '../pages/paciente/MisCitas'
 import SolicitarCita from '../pages/paciente/SolicitarCita'
-import Diagnosticos from '../pages/paciente/Diagnosticos'
 import Historial from '../pages/paciente/Historial'
+import Recetas from '../pages/paciente/Recetas'
+import DetalleCita from '../pages/paciente/DetalleCita'
 import CuentaPaciente from '../pages/paciente/CuentaPaciente'
 import ProtectedRoute from '../features/auth/guards/ProtectedRoute.jsx'
-import ReprogramarCita from '../pages/paciente/Reprogramarcita'
 import FeatureUnavailable from '../pages/FeatureUnavailable'
 import MedicoLayout from '../layouts/MedicoLayout'
 import AgendaMedico from '../pages/medico/Agenda'
@@ -60,17 +61,18 @@ export default function AppRouter() {
             <Route index element={<InicioPaciente />} />
             <Route path="citas" element={<MisCitas />} />
             <Route path="citas/solicitar" element={<SolicitarCita />} />
-            <Route path="citas/:id" element={<ReprogramarCita />} />
-            <Route path="citas/:id/reprogramar" element={<ReprogramarCita />} />
+            <Route path="citas/:id" element={<DetalleCita />} />
+            <Route path="citas/:id/reprogramar" element={<DetalleCita />} />
             <Route path="historial" element={<Historial />} />
-            <Route path="recetas" element={<Diagnosticos />} />
+            <Route path="recetas" element={<Recetas />} />
             <Route path="cuenta" element={<CuentaPaciente />} />
-            <Route path="cambiar-password" element={<FeatureUnavailable title="El cambio de contraseña no está disponible" detail="Esta acción no cuenta con una capacidad aprobada en esta versión." backTo="/paciente/cuenta" backLabel="Volver a mi cuenta" />} />
+            <Route path="cambiar-password" element={<CambiarPassword volverA="/paciente/cuenta" />} />
             <Route path="*" element={<UnavailableRoute />} />
           </Route>
         </Route>
 
         <Route element={<ProtectedRoute role="MEDICO" />}>
+          <Route path="/medico/citas/:codigo/llamada" element={<VideoCallPage portal="medico" />} />
           <Route path="/medico" element={<MedicoLayout />}>
             <Route index element={<Navigate to="agenda" replace />} />
             <Route path="agenda" element={<AgendaMedico />} />
@@ -78,8 +80,8 @@ export default function AppRouter() {
             <Route path="pacientes/:pacienteId" element={<ExpedienteMedico />} />
             <Route path="consulta/:citaCodigo" element={<RegistrarConsulta />} />
             <Route path="consultas/:consultaId" element={<ConsultaCompletada />} />
-            <Route path="citas/:codigo/llamada" element={<VideoCallPage portal="medico" />} />
             <Route path="cuenta" element={<CuentaPersonal volverA="/medico/agenda" />} />
+            <Route path="cambiar-password" element={<CambiarPassword volverA="/medico/cuenta" />} />
             <Route path="*" element={<UnavailableRoute />} />
           </Route>
         </Route>
@@ -94,6 +96,7 @@ export default function AppRouter() {
             <Route path="citas" element={<Citas />} />
             <Route path="metricas" element={<Metricas />} />
             <Route path="cuenta" element={<CuentaPersonal volverA="/admin/usuarios" />} />
+            <Route path="cambiar-password" element={<CambiarPassword volverA="/admin/cuenta" />} />
             <Route path="*" element={<UnavailableRoute />} />
           </Route>
         </Route>

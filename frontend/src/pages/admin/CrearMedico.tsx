@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, CircleCheck, Eye, EyeOff, Info, Lock, Mail, Plus } from 'lucide-react'
+import PhoneInput from '../../components/PhoneInput'
 import { crearMedico, listarEspecialidades } from '../../services/adminService'
 import type { EspecialidadAdmin, NuevoMedico } from '../../shared/types/admin'
 import '../../shared/styles/medical.css'
@@ -80,7 +81,7 @@ export default function CrearMedico() {
           <p className="md-ayuda">Todos los campos marcados con * son obligatorios. El administrador debe validar la información antes de crear la cuenta.</p>
         </div>
 
-        {texto('nombre', 'Nombre')}
+        {texto('nombre', 'Nombres')}
         {texto('apellidos', 'Apellidos')}
         <div className="md-campo">
           <label htmlFor="cm-correo">Correo electrónico único *</label>
@@ -89,7 +90,12 @@ export default function CrearMedico() {
             <Mail size={16} aria-hidden="true" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#4f6e5b' }} />
           </span>
         </div>
-        {texto('telefono', 'Teléfono', { tipo: 'tel', placeholder: '+502 0000 0000' })}
+        <div className="md-campo">
+          <label htmlFor="cm-telefono">Teléfono *</label>
+          <span className="ad-phone">
+            <PhoneInput id="cm-telefono" value={form.telefono} onChange={(e: { target: { value: string } }) => cambiar('telefono', e.target.value)} required />
+          </span>
+        </div>
         {clave('contrasena', 'Contraseña inicial')}
         {clave('confirmar', 'Confirmar contraseña')}
 

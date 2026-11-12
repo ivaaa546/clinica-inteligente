@@ -9,7 +9,8 @@
 .cc-marca { display: inline-flex; align-items: center; gap: 10px; }
 .cc-marca strong { display: block; font-size: 17px; color: var(--color-text); }
 .cc-marca small { display: block; font-size: 9px; letter-spacing: .06em; color: var(--color-primary); }
-.cc-marca__icono { width: 34px; height: 34px; border-radius: 10px; background: var(--color-primary); display: grid; place-items: center; }
+.cc-marca__icono { width: 40px; height: 40px; border-radius: 10px; background: #fff; border: 1px solid var(--color-border); display: grid; place-items: center; }
+.cc-marca__icono img { width: 36px; height: 36px; object-fit: contain; }
 .cc-receta h2 { margin: 0 0 4px; font-size: 26px; }
 
 .cc-dato { display: flex; flex-direction: column; gap: 4px; }

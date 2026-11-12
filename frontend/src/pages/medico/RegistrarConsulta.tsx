@@ -60,8 +60,8 @@ const TEXTOS: Record<TipoFicha, Textos> = {
 const SIGNOS: { clave: keyof SignosVitales; etiqueta: string; placeholder: string; modo: 'decimal' | 'numeric' | 'text' }[] = [
   { clave: 'peso', etiqueta: 'Peso (lb)', placeholder: 'Ej. 150', modo: 'decimal' },
   { clave: 'talla', etiqueta: 'Talla (cm)', placeholder: 'Ej. 170', modo: 'decimal' },
-  { clave: 'temperatura', etiqueta: 'Temperatura (°C)', placeholder: 'Ej. 36.7', modo: 'decimal' },
-  { clave: 'presion', etiqueta: 'Presión arterial (mmHg)', placeholder: 'Ej. 120/80', modo: 'text' },
+  { clave: 'temperatura', etiqueta: 'Temperatura (°C)', placeholder: 'Ej. 38.2', modo: 'decimal' },
+  { clave: 'presion', etiqueta: 'Presión arterial (mmHg)', placeholder: 'Ej. 135/90', modo: 'text' },
   { clave: 'fc', etiqueta: 'Frec. cardíaca / min', placeholder: 'Ej. 74', modo: 'numeric' },
   { clave: 'fr', etiqueta: 'Frec. respiratoria / min', placeholder: 'Ej. 16', modo: 'numeric' },
 ]
@@ -142,7 +142,17 @@ export default function RegistrarConsulta() {
     : 'El registro y las recetas se guardarán juntos.'
 
   const completar = async () => {
-    if (!completo) return
+    if (!completo) {
+      const camposInvalidos = Object.keys(errores) as CampoConsulta[]
+      setTocados(new Set(camposInvalidos))
+      setErrorAccion(Object.keys(errores).length > 0
+        ? resumenFaltantes(errores, 'la consulta')
+        : 'La receta está incompleta. Completa sus seis campos o quita el medicamento.')
+      window.requestAnimationFrame(() => {
+        document.querySelector<HTMLElement>('.rc-layout .is-error, .re__fila .is-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      })
+      return
+    }
     if (!window.confirm('¿Completar la consulta? Una vez completada ya no se podrá editar.')) return
     setOcupado(true); setErrorAccion(''); setAviso('')
     try {
@@ -319,7 +329,7 @@ export default function RegistrarConsulta() {
                 </div>
               ))}
             </div>
-            <p className="md-aviso"><Info size={15} aria-hidden="true" /> Completa los campos requeridos según la ficha seleccionada antes de finalizar.</p>
+            <p className="md-aviso"><Info size={15} aria-hidden="true" /> Los ejemplos solo muestran el formato. Registra el valor real del paciente, aunque sea anormal; si no se tomó, selecciona “No medido”.</p>
           </section>
 
           {form.tipoFicha === 'PRENATAL' && gineco ? (
@@ -352,7 +362,7 @@ export default function RegistrarConsulta() {
         </div>
         <div className="md-acciones">
           <button type="button" className="md-btn md-btn--borde" disabled title="Los borradores clínicos no están disponibles todavía">Guardar evolución (no disponible)</button>
-          <button type="button" className="md-btn md-btn--primario" onClick={completar} disabled={ocupado || !completo}>Guardar y completar consulta</button>
+          <button type="button" className="md-btn md-btn--primario" onClick={completar} disabled={ocupado}>Guardar y completar consulta</button>
         </div>
       </section>
     </>

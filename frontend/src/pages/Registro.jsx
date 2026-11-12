@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { registerPatient } from '../features/auth/api/auth.js'
 import {
-  Plus, HeartHandshake, Sprout, Mail, Eye, EyeOff, CalendarDays, ArrowRight,
+  Mail, Eye, EyeOff, CalendarDays, ArrowRight,
 } from 'lucide-react'
+import PhoneInput from '../components/PhoneInput'
 import './Login.css'      // reutiliza cabecera, panel verde y campos
 import './Registro.css'
+import logoMediQuetzal from '../assets/MediQuetzalbueno.png'
 
 const INICIAL = {
   email: '', password: '', confirmar: '',
@@ -99,43 +101,32 @@ export default function Registro() {
     <div className="login">
       <header className="login__header">
         <Link to="/" className="brand">
-          <span className="brand__emblem"><Plus size={22} color="#fff" /></span>
+          <span className="brand__emblem"><img src={logoMediQuetzal} alt="Logo MediQuetzal" /></span>
           <span className="brand__text">
-            <strong>TilinesMédicos</strong>
+            <strong>MediQuetzal</strong>
             <small>PLATAFORMA MÉDICA</small>
           </span>
         </Link>
       </header>
 
       <main className="login__main">
-        <aside className="welcome">
+        <aside className="welcome welcome--brand">
           <p className="welcome__eyebrow">GESTIÓN MÉDICA INTEGRAL</p>
           <h1 className="welcome__title">Tu salud,<br />un poco más<br />cerca.</h1>
           <p className="welcome__text">
             Solicita tus citas y encuentra tu historial y tus recetas en un solo lugar.
           </p>
 
-          <div className="care" aria-hidden="true">
-            <div className="care__halo" />
-            <div className="care__arch" />
-            <HeartHandshake className="care__icon" size={64} color="#fff" strokeWidth={1.5} />
-            <div className="care__card">
-              <span className="care__card-icon"><Sprout size={22} color="#fff" /></span>
-              <div>
-                <strong>Cuidado con continuidad</strong>
-                <span>Antes, durante y después de tu cita.</span>
-              </div>
-            </div>
+          <div className="login-brandmark" aria-hidden="true">
+            <img src={logoMediQuetzal} alt="" />
           </div>
-
-          <p className="welcome__footer">Consultas y expedientes clínicos · TilinesMédicos</p>
         </aside>
 
         <section className="form-panel form-panel--registro">
           <div className="form-panel__intro">
-            <p className="eyebrow">BIENVENIDO A TILINESMÉDICOS</p>
+            <p className="eyebrow">BIENVENIDO A MEDIQUETZAL</p>
             <h2>Empieza a cuidar de ti</h2>
-            <p>Crea tu cuenta de paciente en TilinesMédicos.</p>
+            <p>Crea tu cuenta de paciente en MediQuetzal.</p>
           </div>
 
           <p className="required-note">Todos los campos marcados con * son obligatorios.</p>
@@ -158,25 +149,27 @@ export default function Registro() {
 
             <fieldset className="group">
               <legend>Datos personales</legend>
-              {texto('nombre', 'Nombre *', { input: { placeholder: 'Tu nombre' } })}
-              {texto('apellidos', 'Apellidos *', { input: { placeholder: 'Tus apellidos' } })}
-              <div className="row">
-                {texto('telefono', 'Teléfono *', { input: { type: 'tel', placeholder: '+502 0000 0000' } })}
+              <div className="grid3">
+                {texto('nombre', 'Nombres *', { input: { placeholder: 'Tus nombres' } })}
+                {texto('apellidos', 'Apellidos *', { input: { placeholder: 'Tus apellidos' } })}
+                <Campo label="Teléfono *">
+                  <span className="field__input">
+                    <PhoneInput value={datos.telefono} onChange={cambiar} required />
+                  </span>
+                </Campo>
                 {texto('nacimiento', 'Fecha de nacimiento *', {
                   input: { type: 'date' },
                   icono: <CalendarDays size={18} color="#4f6e5b" />,
                 })}
-              </div>
-              <div className="row">
                 {lista('sexo', 'Sexo *', ['Masculino', 'Femenino'])}
                 {lista('migrante', 'Población migrante *', ['Sí', 'No'])}
+                {texto('direccion', 'Dirección *', { input: { placeholder: 'Calle, zona, municipio' } })}
+                {texto('ocupacion', 'Ocupación *', { input: { placeholder: 'Tu ocupación' } })}
+                {texto('responsable', 'Nombre responsable (opcional)', {
+                  opcional: true,
+                  input: { placeholder: 'Nombre del responsable' },
+                })}
               </div>
-              {texto('direccion', 'Dirección *', { input: { placeholder: 'Calle, zona, municipio' } })}
-              {texto('ocupacion', 'Ocupación *', { input: { placeholder: 'Tu ocupación' } })}
-              {texto('responsable', 'Nombre responsable (opcional)', {
-                opcional: true,
-                input: { placeholder: 'Nombre del responsable' },
-              })}
             </fieldset>
 
             <button type="submit" className="btn-primary" disabled={isSubmitting}>

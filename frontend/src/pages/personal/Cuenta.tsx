@@ -74,7 +74,7 @@ export default function Cuenta({ volverA }: Props) {
     setGuardando(true)
     try {
       if (quiereCambiarClave) await changePassword({ actual: claves.actual, nueva: claves.nueva })
-      const actualizado = await actualizarPerfilPersonal(user, datos)
+      const actualizado = await actualizarPerfilPersonal(datos)
       setPerfil(actualizado)
       setClaves(CLAVES_VACIAS)
       setAviso(quiereCambiarClave ? 'Cambios guardados y contraseña actualizada.' : 'Cambios guardados.')

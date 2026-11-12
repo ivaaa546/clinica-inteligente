@@ -16,9 +16,10 @@
 .esp__emblem { border: 0; padding: 0; cursor: pointer; transition: filter .15s; }
 .esp__emblem:hover { filter: brightness(1.12); }
 .esp__emblem {
-  width: 36px; height: 36px; border-radius: 11px; background: var(--color-primary);
+  width: 42px; height: 42px; border-radius: 11px; background: #fff; border: 1px solid var(--color-border);
   display: grid; place-items: center; box-shadow: 0 4px 12px rgba(79, 110, 91, .3);
 }
+.esp__emblem img { width: 36px; height: 36px; object-fit: contain; }
 .esp__brand-text { display: flex; flex-direction: column; gap: 1px; }
 .esp__brand-text strong { font-size: 20px; line-height: 1.2; color: var(--color-text); }
 .esp__brand-text small { font-size: 10px; font-weight: 700; color: var(--color-primary); }

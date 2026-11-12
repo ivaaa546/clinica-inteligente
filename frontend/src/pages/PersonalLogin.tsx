@@ -1,12 +1,13 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Plus, Lock, Stethoscope, Mail, Eye, EyeOff, ArrowRight, Info } from 'lucide-react'
+import { Lock, Mail, Eye, EyeOff, ArrowRight, Info } from 'lucide-react'
 import { useSesion } from '../features/auth/hooks/useSesion'
 import { personalLoginDestination } from '../features/auth/guards/routePolicy'
 import { esCorreo } from '../shared/lib/texto'
 // Misma estructura visual que el login de pacientes: se reutilizan sus estilos
 import './Login.css'
 import './PersonalLogin.css'
+import logoMediQuetzal from '../assets/MediQuetzalbueno.png'
 
 const INICIO = { MEDICO: '/medico/agenda', ADMINISTRADOR: '/admin/usuarios' } as const
 const MENSAJE_CREDENCIALES = 'Credenciales incorrectas o cuenta no disponible.'
@@ -54,9 +55,9 @@ export default function PersonalLogin() {
     <div className="login">
       <header className="login__header">
         <Link to="/" className="brand">
-          <span className="brand__emblem"><Plus size={22} color="#fff" /></span>
+          <span className="brand__emblem"><img src={logoMediQuetzal} alt="Logo MediQuetzal" /></span>
           <span className="brand__text">
-            <strong>TilinesMédicos</strong>
+            <strong>MediQuetzal</strong>
             <small>PLATAFORMA MÉDICA</small>
           </span>
         </Link>
@@ -64,18 +65,14 @@ export default function PersonalLogin() {
       </header>
 
       <main className="login__main">
-        <aside className="welcome">
+        <aside className="welcome welcome--brand welcome--personal">
           <p className="welcome__eyebrow">ESPACIO DE TRABAJO</p>
           <h1 className="welcome__title">Conectados<br />para cuidar.</h1>
-          <p className="welcome__text">Un acceso independiente para el equipo de TilinesMédicos.</p>
+          <p className="welcome__text">Un acceso independiente para el equipo médico y administrativo.</p>
 
-          <div className="care" aria-hidden="true">
-            <div className="care__halo" />
-            <div className="care__arch" />
-            <Stethoscope className="care__icon" size={64} color="#fff" strokeWidth={1.5} />
+          <div className="login-brandmark" aria-hidden="true">
+            <img src={logoMediQuetzal} alt="" />
           </div>
-
-          <p className="welcome__footer">TilinesMédicos · Acceso de personal</p>
         </aside>
 
         <section className="form-panel">

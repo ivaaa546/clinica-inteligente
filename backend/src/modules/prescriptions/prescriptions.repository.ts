@@ -28,7 +28,24 @@ export class PrescriptionsRepository {
         frecuencia: true,
         duracion: true,
         indicaciones: true,
-        consulta: { select: { diagnostico: true } },
+        consulta: {
+          select: {
+            id: true,
+            diagnostico: true,
+            fechaConsulta: true,
+            cita: {
+              select: {
+                medico: {
+                  select: {
+                    numeroProfesional: true,
+                    usuario: { select: { nombre: true, apellidos: true } },
+                    especialidad: { select: { nombre: true } },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       orderBy: { creadoEn: "desc" },
     });

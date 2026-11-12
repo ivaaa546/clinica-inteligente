@@ -1,9 +1,26 @@
 import { EstadoSignoVital, TipoFichaClinica } from "@prisma/client";
 import { z } from "zod";
 
-const numberVital = z.union([z.number(), z.object({ estado: z.nativeEnum(EstadoSignoVital).optional(), valor: z.number().nullable().optional() })]);
-const pressureVital = z.union([z.string().regex(/^\d{2,3}\/\d{2,3}$/), z.object({ estado: z.nativeEnum(EstadoSignoVital).optional(), valor: z.string().regex(/^\d{2,3}\/\d{2,3}$/).nullable().optional() })]);
-const signs = z.object({ pesoLb: numberVital.optional(), tallaCm: numberVital.optional(), temperatura: numberVital.optional(), presionArterial: pressureVital.optional(), frecCardiaca: numberVital.optional(), frecRespiratoria: numberVital.optional() }).optional();
+const rangedNumberVital = (min: number, max: number, message: string, integer = false) => {
+  const base = integer ? z.number().int().min(min, message).max(max, message) : z.number().min(min, message).max(max, message);
+  return z.union([
+    base,
+    z.object({ estado: z.nativeEnum(EstadoSignoVital).optional(), valor: base.nullable().optional() }),
+  ]);
+};
+const pressureValue = z.string().regex(/^\d{2,3}\/\d{2,3}$/, "La presion debe usar el formato sistolica/diastolica, por ejemplo 135/90");
+const pressureVital = z.union([
+  pressureValue,
+  z.object({ estado: z.nativeEnum(EstadoSignoVital).optional(), valor: pressureValue.nullable().optional() }),
+]);
+const signs = z.object({
+  pesoLb: rangedNumberVital(0.1, 999.99, "El peso debe estar entre 0.1 y 999.99 lb").optional(),
+  tallaCm: rangedNumberVital(1, 300, "La talla debe estar entre 1 y 300 cm").optional(),
+  temperatura: rangedNumberVital(20, 50, "La temperatura debe estar entre 20 y 50 grados Celsius").optional(),
+  presionArterial: pressureVital.optional(),
+  frecCardiaca: rangedNumberVital(1, 300, "La frecuencia cardiaca debe ser un entero entre 1 y 300", true).optional(),
+  frecRespiratoria: rangedNumberVital(1, 150, "La frecuencia respiratoria debe ser un entero entre 1 y 150", true).optional(),
+}).optional();
 const prescription = z.object({ medicamento: z.string().min(1), dosis: z.string().min(1), via: z.string().min(1), frecuencia: z.string().min(1), duracion: z.string().min(1), indicaciones: z.string().min(1) });
 const evaluation = z.union([
   z.object({ tipoFicha: z.literal(TipoFichaClinica.ADULTO), evaluacionClinica: z.object({ problemas_activos: z.array(z.string()), signos_peligro: z.array(z.string()) }) }),

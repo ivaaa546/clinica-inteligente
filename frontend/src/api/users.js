@@ -8,8 +8,19 @@ export function getUser(id) {
   return apiClient(`/users/${id}`)
 }
 
+export function getOwnUser() {
+  return apiClient('/users/me')
+}
+
 export function updateUser(id, payload) {
   return apiClient(`/users/${id}`, {
+    method: 'PATCH',
+    body: payload,
+  })
+}
+
+export function updateOwnUser(payload) {
+  return apiClient('/users/me', {
     method: 'PATCH',
     body: payload,
   })

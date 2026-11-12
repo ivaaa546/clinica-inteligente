@@ -77,10 +77,10 @@ export const erroresConsulta = (f: FormularioConsulta): Partial<Record<CampoCons
   if (!f.diagnostico.trim()) errores.diagnostico = 'El diagnóstico es obligatorio para completar la consulta.'
   // NO_MEDIDO no requiere valor. MEDIDO y AUTORREPORTADO requieren un valor válido.
   const requerido = (campo: keyof typeof f.signos) => f.signosEstado[campo] !== 'NO_MEDIDO'
-  if (requerido('peso') && !entre(f.signos.peso, 0.1, 1000)) errores.peso = 'Indica un peso válido en libras.'
+  if (requerido('peso') && !entre(f.signos.peso, 0.1, 999.99)) errores.peso = 'Indica un peso válido entre 0.1 y 999.99 lb.'
   if (requerido('talla') && !entre(f.signos.talla, 1, 300)) errores.talla = 'Indica una talla válida en centímetros.'
-  if (requerido('temperatura') && !entre(f.signos.temperatura, 30, 45)) errores.temperatura = 'Indica una temperatura entre 30 y 45 °C.'
-  if (requerido('presion') && !/^\d{2,3}\s*\/\s*\d{2,3}$/.test(f.signos.presion.trim())) errores.presion = 'Usa el formato 120/80.'
+  if (requerido('temperatura') && !entre(f.signos.temperatura, 20, 50)) errores.temperatura = 'Indica una temperatura válida entre 20 y 50 °C.'
+  if (requerido('presion') && !/^\d{2,3}\s*\/\s*\d{2,3}$/.test(f.signos.presion.trim())) errores.presion = 'Escribe sistólica/diastólica; por ejemplo, 135/90.'
   if (requerido('fc') && (!entre(f.signos.fc, 1, 300) || !Number.isInteger(aNumero(f.signos.fc)))) errores.fc = 'Indica una frecuencia cardíaca válida.'
   if (requerido('fr') && (!entre(f.signos.fr, 1, 150) || !Number.isInteger(aNumero(f.signos.fr)))) errores.fr = 'Indica una frecuencia respiratoria válida.'
   return errores

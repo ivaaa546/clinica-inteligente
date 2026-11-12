@@ -26,6 +26,20 @@ export const updateUser: RequestHandler = async (request, response, next) => {
   }
 };
 
+export const updateOwnUser: RequestHandler = async (request, response, next) => {
+  try {
+    const input = updateUserSchema.parse(request.body);
+    const user = await new UsersService(request.app.locals.prisma).updateNonClinical(
+      request.auth!.userId,
+      request.auth!.userId,
+      input,
+    );
+    response.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const deactivateUser: RequestHandler = async (request, response, next) => {
   try {
     const user = await new UsersService(request.app.locals.prisma).deactivate(
@@ -53,6 +67,15 @@ export const activateUser: RequestHandler = async (request, response, next) => {
 export const getUser: RequestHandler = async (request, response, next) => {
   try {
     const user = await new UsersService(request.app.locals.prisma).findById(String(request.params.id));
+    response.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getOwnUser: RequestHandler = async (request, response, next) => {
+  try {
+    const user = await new UsersService(request.app.locals.prisma).findById(request.auth!.userId);
     response.status(200).json(user);
   } catch (error) {
     next(error);

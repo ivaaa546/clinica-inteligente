@@ -3,10 +3,11 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../features/auth/hooks/useAuth.js'
 import { patientLoginDestination } from '../features/auth/guards/routePolicy'
 import {
-  Plus, HeartHandshake, Sprout, Calendar, FileText, Pill,
+  Calendar, FileText, Pill,
   Mail, Eye, EyeOff, ArrowRight, UserPlus,
 } from 'lucide-react'
 import './Login.css'
+import logoMediQuetzal from '../assets/MediQuetzalbueno.png'
 
 const BENEFICIOS = [
   { icon: Calendar, texto: 'Consulta y agenda tus próximas citas' },
@@ -49,9 +50,9 @@ export default function Login() {
     <div className="login">
       <header className="login__header">
         <Link to="/" className="brand">
-          <span className="brand__emblem"><Plus size={22} color="#fff" /></span>
+          <span className="brand__emblem"><img src={logoMediQuetzal} alt="Logo MediQuetzal" /></span>
           <span className="brand__text">
-            <strong>TilinesMédicos</strong>
+            <strong>MediQuetzal</strong>
             <small>PLATAFORMA MÉDICA</small>
           </span>
         </Link>
@@ -59,8 +60,7 @@ export default function Login() {
       </header>
 
       <main className="login__main">
-        <aside className="welcome">
-          <p className="welcome__eyebrow">PORTAL DE PACIENTES</p>
+        <aside className="welcome welcome--brand welcome--patient">
           <h1 className="welcome__title">
             Tus citas,<br />diagnósticos<br />y recetas.
           </h1>
@@ -69,17 +69,8 @@ export default function Login() {
             solo lugar, de forma segura y sencilla.
           </p>
 
-          <div className="care" aria-hidden="true">
-            <div className="care__halo" />
-            <div className="care__arch" />
-            <HeartHandshake className="care__icon" size={64} color="#fff" strokeWidth={1.5} />
-            <div className="care__card">
-              <span className="care__card-icon"><Sprout size={22} color="#fff" /></span>
-              <div>
-                <strong>Tus citas, diagnósticos y recetas</strong>
-                <span>Todo en un solo lugar, para ti.</span>
-              </div>
-            </div>
+          <div className="login-brandmark" aria-hidden="true">
+            <img src={logoMediQuetzal} alt="" />
           </div>
 
           <ul className="benefits">
@@ -90,8 +81,6 @@ export default function Login() {
               </li>
             ))}
           </ul>
-
-          <p className="welcome__footer">Portal de pacientes · TilinesMédicos</p>
         </aside>
 
         <section className="form-panel">
@@ -175,7 +164,7 @@ export default function Login() {
               <Link to="/privacidad">Aviso de privacidad</Link><span>·</span>
               <Link to="/soporte">Soporte técnico</Link>
             </nav>
-            <small>© 2026 TilinesMédicos · Portal de pacientes</small>
+            <small>© 2026 MediQuetzal</small>
           </footer>
         </section>
       </main>

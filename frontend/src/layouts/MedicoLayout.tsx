@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Plus, Menu, ChevronDown, CalendarDays, Users, LogOut, UserCog } from 'lucide-react'
+import { Menu, ChevronDown, CalendarDays, Users, LogOut, UserCog, Lock } from 'lucide-react'
 import { useSesion } from '../features/auth/hooks/useSesion'
+import logoMediQuetzal from '../assets/MediQuetzalbueno.png'
 // Estructura y estilos compartidos con el panel del administrador (clases `esp__*`).
 // Es independiente del layout del paciente.
 import './EspacioLayout.css'
 import './MedicoLayout.css'
 
 const SECCIONES = [
-  { to: '/medico/agenda', label: 'Agenda', icon: CalendarDays },
+  { to: '/medico/agenda', label: 'Agenda y horarios', icon: CalendarDays },
   { to: '/medico/pacientes', label: 'Mis pacientes', icon: Users },
 ]
 
@@ -74,10 +75,10 @@ export default function MedicoLayout() {
             aria-label={colapsado ? 'Mostrar menú' : 'Ocultar menú'}
             aria-expanded={!colapsado}
           >
-            {colapsado ? <Menu size={20} color="#fff" /> : <Plus size={20} color="#fff" />}
+            {colapsado ? <Menu size={20} color="#0e5733" /> : <img src={logoMediQuetzal} alt="Logo MediQuetzal" />}
           </button>
           <Link to="/medico/agenda" className="esp__brand-text">
-            <strong>TilinesMédicos</strong>
+            <strong>MediQuetzal</strong>
             <small>PLATAFORMA MÉDICA</small>
           </Link>
         </div>
@@ -85,11 +86,6 @@ export default function MedicoLayout() {
         <div className="esp__account" ref={menuRef}>
           <span className="esp__space">Espacio del médico</span>
           <span className="esp__sep" />
-          <Link to="/medico/cuenta" className="esp__space med__cuenta">
-            Mi cuenta
-            <small>Cambiar contraseña</small>
-          </Link>
-
           <button
             type="button"
             className="esp__user"
@@ -106,6 +102,9 @@ export default function MedicoLayout() {
             <div className="esp__menu" role="menu">
               <Link to="/medico/cuenta" role="menuitem" onClick={() => setAbierto(false)}>
                 <UserCog size={16} /> Mi cuenta
+              </Link>
+              <Link to="/medico/cambiar-password" role="menuitem" onClick={() => setAbierto(false)}>
+                <Lock size={16} /> Cambiar contraseña
               </Link>
               <hr />
               <button type="button" role="menuitem" onClick={cerrarSesion}>
@@ -128,8 +127,8 @@ export default function MedicoLayout() {
           </nav>
 
           <div className="esp__promo">
-            <strong>Siempre un poco más cerca.</strong>
-            <p>Consultas y cuidado, en un mismo lugar.</p>
+            <strong>Tu práctica, siempre organizada.</strong>
+            <p>Publica horarios, gestiona citas y atiende pacientes desde un mismo lugar.</p>
           </div>
         </aside>
 

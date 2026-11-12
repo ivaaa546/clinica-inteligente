@@ -4,7 +4,9 @@ export type Rol = 'PACIENTE' | 'MEDICO' | 'ADMINISTRADOR'
 export interface SessionUser {
   id: string
   nombre: string
+  apellidos?: string
   correo: string
+  telefono?: string
   rol: Rol
 }
 
