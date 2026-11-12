@@ -193,7 +193,7 @@ describe.skipIf(!enabled)("cierre de consulta integrado", () => {
     expect(consultation.cita.estado).toBe("COMPLETADA");
   });
 
-  it("revierte consulta, signos y estado si una escritura transaccional falla", async () => {
+  it("rechaza un signo fuera del limite tecnico antes de escribir la consulta", async () => {
     const response = await doctorAgent
       .post("/api/v1/consultations")
       .send({
@@ -201,7 +201,8 @@ describe.skipIf(!enabled)("cierre de consulta integrado", () => {
         signosVitales: { ...validVitalSigns, pesoLb: 10_000 },
       });
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe("VALIDATION_ERROR");
     expect(await prisma.consulta.count({ where: { citaId: appointmentIds[3] } })).toBe(0);
     expect((await prisma.cita.findUniqueOrThrow({ where: { id: appointmentIds[3] } })).estado).toBe("ACEPTADA");
     expect(

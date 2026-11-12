@@ -1,5 +1,5 @@
 import { ApiError } from '../shared/api/client'
-import { getUser, updateUser } from '../api/users'
+import { getOwnUser, updateOwnUser } from '../api/users'
 import type { DatosCuenta, PerfilPersonal } from '../shared/types/admin'
 import type { SessionUser } from '../shared/types/auth'
 
@@ -29,7 +29,7 @@ const aPerfil = (u: ApiPersonalUser): PerfilPersonal => ({
 
 export async function obtenerPerfilPersonal(sesion: SessionUser): Promise<PerfilPersonal> {
   try {
-    return aPerfil(await getUser(sesion.id) as ApiPersonalUser)
+    return aPerfil(await getOwnUser() as ApiPersonalUser)
   } catch {
     const [nombre, ...resto] = (sesion.nombre || '').trim().split(/\s+/)
     return {
@@ -45,11 +45,11 @@ export async function obtenerPerfilPersonal(sesion: SessionUser): Promise<Perfil
   }
 }
 
-export async function actualizarPerfilPersonal(sesion: SessionUser, datos: Omit<DatosCuenta, 'correo'>): Promise<PerfilPersonal> {
+export async function actualizarPerfilPersonal(datos: Omit<DatosCuenta, 'correo'>): Promise<PerfilPersonal> {
   if (!datos.nombre.trim() || !datos.apellidos.trim() || !datos.telefono.trim()) {
     throw new ApiError('Nombre, apellidos y teléfono son obligatorios.', 400)
   }
-  return aPerfil(await updateUser(sesion.id, {
+  return aPerfil(await updateOwnUser({
     nombre: datos.nombre.trim(),
     apellidos: datos.apellidos.trim(),
     telefono: datos.telefono.trim(),

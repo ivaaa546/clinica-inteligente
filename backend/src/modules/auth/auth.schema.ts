@@ -17,3 +17,8 @@ export const loginSchema = z.object({
   correo: z.string().email(),
   contrasena: z.string().min(1),
 });
+
+export const changePasswordSchema = z.object({
+  contrasenaActual: z.string().min(1),
+  contrasenaNueva: z.string().min(8),
+}).strict();

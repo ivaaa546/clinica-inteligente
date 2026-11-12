@@ -53,3 +53,10 @@ export function logout() {
 export function getCurrentSession() {
   return apiClient('/auth/me')
 }
+
+export function changePassword({ actual, nueva }) {
+  return apiClient('/auth/password', {
+    method: 'PATCH',
+    body: { contrasenaActual: actual, contrasenaNueva: nueva },
+  })
+}

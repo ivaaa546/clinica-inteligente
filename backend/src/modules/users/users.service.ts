@@ -138,7 +138,11 @@ export class UsersService {
     telefono: string;
     rol: RolUsuario;
     activo: boolean;
-    medico?: { especialidadId: string; numeroProfesional: string } | null;
+    medico?: {
+      especialidadId: string;
+      numeroProfesional: string;
+      especialidad?: { nombre: string } | null;
+    } | null;
   }) {
     return {
       id: user.id,
@@ -149,6 +153,7 @@ export class UsersService {
       rol: user.rol,
       activo: user.activo,
       especialidadId: user.medico?.especialidadId ?? null,
+      especialidad: user.medico?.especialidad ?? null,
       numeroProfesional: user.medico?.numeroProfesional ?? null,
     };
   }

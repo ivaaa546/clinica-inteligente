@@ -3,7 +3,7 @@ import './ModalidadTag.css'
 
 /** Muestra si la cita es por videollamada o presencial. */
 export default function ModalidadTag({ modalidad }) {
-  const virtual = modalidad === 'VIDEOLLAMADA'
+  const virtual = modalidad === 'VIDEOLLAMADA' || modalidad === 'VIRTUAL'
   return (
     <span className={`modalidad ${virtual ? 'modalidad--virtual' : ''}`}>
       {virtual ? <Video size={15} /> : <MapPin size={15} />}

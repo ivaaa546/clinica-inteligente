@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Check, Info, Mail } from 'lucide-react'
+import PhoneInput from '../../components/PhoneInput'
 import { actualizarUsuario, cambiarEstadoUsuario, obtenerUsuario } from '../../services/adminService'
 import { useSesion } from '../../features/auth/hooks/useSesion'
 import type { RolUsuario, Usuario } from '../../shared/types/admin'
@@ -76,7 +77,7 @@ export default function EditarUsuario() {
           <h2 id="eu-titulo">Datos de cuenta (no clínicos)</h2>
 
           <div className="md-campo">
-            <label htmlFor="eu-nombre">Nombre</label>
+            <label htmlFor="eu-nombre">Nombres</label>
             <input id="eu-nombre" type="text" value={form.nombre} onChange={(e) => cambiar('nombre', e.target.value)} />
           </div>
           <div className="md-campo">
@@ -94,7 +95,9 @@ export default function EditarUsuario() {
             <div className="md-campo"><span>Rol</span><div className="md-caja" title="El rol no se puede cambiar">{ROL_TEXTO[usuario.rol]}</div></div>
             <div className="md-campo">
               <label htmlFor="eu-telefono">Teléfono de contacto</label>
-              <input id="eu-telefono" type="tel" value={form.telefono} onChange={(e) => cambiar('telefono', e.target.value)} />
+              <span className="ad-phone">
+                <PhoneInput id="eu-telefono" value={form.telefono} onChange={(e: { target: { value: string } }) => cambiar('telefono', e.target.value)} required />
+              </span>
             </div>
           </div>
           <p className="md-ayuda">Solo se editan datos de cuenta. No se muestran ni modifican antecedentes, signos, diagnósticos, recetas ni datos clínicos.</p>

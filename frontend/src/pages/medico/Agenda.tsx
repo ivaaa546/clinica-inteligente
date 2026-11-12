@@ -106,8 +106,8 @@ export default function Agenda() {
   return (
     <>
       <div className="ag-head">
-        <h1>Tu agenda, con calma</h1>
-        <p>Gestiona tus citas y los bloques que ofreces a tus pacientes.</p>
+        <h1>Agenda y horarios disponibles</h1>
+        <p>Publica bloques de atención para que los pacientes puedan elegirlos al solicitar una cita.</p>
       </div>
 
       {reprogramando && (

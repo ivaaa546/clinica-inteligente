@@ -128,24 +128,24 @@ export async function obtenerCitaMedico(codigo: string): Promise<CitaAgenda> {
   return toAgendaAppointment(await getAppointment(codigo) as ApiDoctorAppointment)
 }
 
-/** Acepta una solicitud PENDIENTE. TODO API: PATCH /appointments/:id/accept */
+/** Acepta una solicitud PENDIENTE mediante el backend. */
 export async function aceptarCita(codigo: string): Promise<CitaAgenda> {
   return toAgendaAppointment(await acceptAppointment(codigo) as ApiDoctorAppointment)
 }
 
-/** Rechaza una solicitud PENDIENTE y libera el bloque. TODO API: PATCH /appointments/:id/reject */
+/** Rechaza una solicitud PENDIENTE y libera el bloque. */
 export async function rechazarCita(codigo: string): Promise<CitaAgenda> {
   return toAgendaAppointment(await rejectAppointment(codigo) as ApiDoctorAppointment)
 }
 
-/** Cancela una cita PENDIENTE o ACEPTADA y libera el bloque. TODO API: PATCH /appointments/:id/cancel */
+/** Cancela una cita PENDIENTE o ACEPTADA y libera el bloque. */
 export async function cancelarCitaMedico(codigo: string): Promise<CitaAgenda> {
   return toAgendaAppointment(await cancelAppointment(codigo) as ApiDoctorAppointment)
 }
 
 /**
  * Reprograma una cita a otro bloque libre: la original pasa a REPROGRAMADA y se crea una nueva PENDIENTE
- * enlazada a la original (igual que el backend). TODO API: POST /appointments/:id/reschedule { nuevaDisponibilidadId }
+ * enlazada a la original, según el contrato del backend.
  */
 export async function reprogramarCitaMedico(codigo: string, disponibilidadId: string, modalidad: CitaAgenda['modalidad']): Promise<CitaAgenda> {
   const replacement = await rescheduleAppointment(codigo, disponibilidadId, modalidad === 'VIDEOLLAMADA' ? 'VIRTUAL' : 'PRESENCIAL') as ApiDoctorAppointment
@@ -157,7 +157,7 @@ export async function reprogramarCitaMedico(codigo: string, disponibilidadId: st
 
 /**
  * Publica bloques de 30 min entre `desde` y `hasta` (los ya existentes se omiten).
- * TODO API: POST /availability  (el backend recibe un bloque por llamada: `inicio` en ISO)
+ * El backend recibe un bloque por llamada con `inicio` en formato ISO.
  */
 export async function publicarBloques({ fecha, desde, hasta, modalidades }: NuevoBloque): Promise<BloqueDisponibilidad[]> {
   if (!fecha || !desde || hasta !== sumarMinutos(desde, 30)) {
@@ -177,15 +177,14 @@ export async function publicarBloques({ fecha, desde, hasta, modalidades }: Nuev
   }]
 }
 
-/** Elimina un bloque sin cita activa. TODO API: DELETE /availability/:id */
+/** Elimina un bloque sin cita activa. */
 export async function eliminarBloque(id: string): Promise<void> {
   await removeAvailability(id)
 }
 
 // ---------- Pacientes ----------
 /**
- * Pacientes vinculados al médico, con búsqueda por nombre.
- * ⚠ TODO API: este endpoint NO existe aún (pedir al backend, p. ej. GET /doctors/me/patients?search=...)
+ * Pacientes vinculados al médico, derivados de sus citas reales y con búsqueda por nombre.
  */
 export async function listarPacientes(busqueda = ''): Promise<PacienteVinculado[]> {
   const appointments = await listOwnAppointments() as ApiDoctorAppointment[]
@@ -215,7 +214,7 @@ export async function listarPacientes(busqueda = ''): Promise<PacienteVinculado[
     .filter(({ paciente }) => `${paciente.nombre} ${paciente.apellidos}`.toLowerCase().includes(texto))
 }
 
-/** Expediente completo de un paciente vinculado. TODO API: GET /patients/:id/record */
+/** Expediente completo de un paciente vinculado. */
 type ApiPatientRecord = {
   id: string
   fechaNacimiento: string

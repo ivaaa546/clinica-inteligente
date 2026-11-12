@@ -21,6 +21,7 @@ export const notFoundMiddleware: RequestHandler = (_request, response) => {
 function knownDomainError(error: Error): ApiError | null {
   const message = error.message;
   if (message === "Credenciales invalidas") return new ApiError(401, "INVALID_CREDENTIALS", message);
+  if (message === "La contrasena actual es incorrecta") return new ApiError(401, "INVALID_CURRENT_PASSWORD", message);
   if (/no encontrada|no encontrado|no existe|no pertenece|no esta autorizado|no puede gestionar|no esta asignado/i.test(message)) {
     return new ApiError(404, "RESOURCE_NOT_FOUND", "Recurso no encontrado");
   }
@@ -46,7 +47,7 @@ export const errorMiddleware: ErrorRequestHandler = (error, _request, response, 
     return;
   }
   if (error instanceof ZodError) {
-    response.status(400).json({ error: "Datos invalidos", code: "VALIDATION_ERROR" });
+    response.status(400).json({ error: error.issues[0]?.message ?? "Datos invalidos", code: "VALIDATION_ERROR" });
     return;
   }
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {

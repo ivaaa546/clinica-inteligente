@@ -1,16 +1,17 @@
 import { Link } from 'react-router-dom'
-import { Plus, LockKeyhole, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
 import './Login.css'
 import './Recuperar.css'
+import logoMediQuetzal from '../assets/MediQuetzalbueno.png'
 
 export default function Recuperar() {
   return (
     <div className="login recuperar">
       <header className="login__header">
         <Link to="/" className="brand">
-          <span className="brand__emblem"><Plus size={22} color="#fff" /></span>
+          <span className="brand__emblem"><img src={logoMediQuetzal} alt="Logo MediQuetzal" /></span>
           <span className="brand__text">
-            <strong>TilinesMédicos</strong>
+            <strong>MediQuetzal</strong>
             <small>PLATAFORMA MÉDICA</small>
           </span>
         </Link>
@@ -18,14 +19,14 @@ export default function Recuperar() {
       </header>
 
       <main className="login__main">
-        <aside className="welcome">
+        <aside className="welcome welcome--brand">
           <p className="welcome__eyebrow">TU CUENTA, PROTEGIDA</p>
           <h1 className="welcome__title">Vuelve a tu espacio de cuidado.</h1>
           <p className="welcome__text">
-            Recupera el acceso a TilinesMédicos sin compartir tu contraseña con nadie.
+            Recupera el acceso a MediQuetzal sin compartir tu contraseña con nadie.
           </p>
-          <div className="lock" aria-hidden="true">
-            <LockKeyhole size={48} color="#fff" strokeWidth={1.5} />
+          <div className="login-brandmark" aria-hidden="true">
+            <img src={logoMediQuetzal} alt="" />
           </div>
           <hr className="welcome__divider" />
           <p className="welcome__note">Para pacientes, médicos y administradores.</p>

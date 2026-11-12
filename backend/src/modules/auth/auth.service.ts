@@ -112,7 +112,34 @@ export class AuthService {
     return this.publicUser(user);
   }
 
-  private publicUser(user: { id: string; nombre: string; correo: string; rol: RolUsuario }) {
-    return { id: user.id, nombre: user.nombre, correo: user.correo, rol: user.rol };
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const users = new UsersRepository(this.db);
+    const user = await users.findById(userId);
+    if (!user || !(await verifyPassword(user.contrasenaHash, currentPassword))) {
+      throw new Error("La contrasena actual es incorrecta");
+    }
+    if (currentPassword === newPassword) {
+      throw new Error("La nueva contrasena debe ser diferente de la actual");
+    }
+
+    const passwordHash = await hashPassword(newPassword);
+    await users.updateNonClinical(userId, { contrasenaHash: passwordHash });
+    await new AuditService(this.db).record({
+      usuarioId: userId,
+      accion: "CONTRASENA_ACTUALIZADA",
+      entidad: "Usuario",
+      entidadId: userId,
+    });
+  }
+
+  private publicUser(user: { id: string; nombre: string; apellidos: string; correo: string; telefono: string; rol: RolUsuario }) {
+    return {
+      id: user.id,
+      nombre: user.nombre,
+      apellidos: user.apellidos,
+      correo: user.correo,
+      telefono: user.telefono,
+      rol: user.rol,
+    };
   }
 }

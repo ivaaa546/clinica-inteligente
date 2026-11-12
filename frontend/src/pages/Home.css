@@ -3,7 +3,8 @@ html { scroll-behavior: smooth; }
 
 /* Marca (compartida con Login: si prefieres, muévela a index.css) */
 .home .brand { display: flex; align-items: center; gap: 12px; }
-.home .brand__emblem { width: 40px; height: 40px; border-radius: 12px; background: var(--color-primary); display: grid; place-items: center; }
+.home .brand__emblem { width: 44px; height: 44px; border-radius: 12px; background: #fff; border: 1px solid var(--color-border); display: grid; place-items: center; }
+.home .brand__emblem img { width: 40px; height: 40px; object-fit: contain; }
 .home .brand__text { display: flex; flex-direction: column; gap: 1px; }
 .home .brand__text strong { font-size: 22px; color: var(--color-text); }
 .home .brand__text small { font-size: 10px; font-weight: 700; color: var(--color-primary); }
@@ -45,7 +46,46 @@ html { scroll-behavior: smooth; }
   font-size: 14px; color: var(--color-muted); text-align: center; padding: 16px;
 }
 .photo-slot--hero { width: 600px; height: 404px; }
-.photo-slot--about { width: 480px; height: 220px; }
+.photo-slot--about { width: 480px; height: auto; aspect-ratio: 4 / 3; }
+
+.about__photo { overflow: hidden; padding: 0; border: 0; background: #f4f8f5; }
+.about__photo img { width: 100%; height: 100%; object-fit: contain; }
+
+.hero-gallery {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: #dcebe2;
+  box-shadow: 0 20px 48px rgba(14, 87, 51, .14);
+}
+.hero-gallery__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.025);
+  animation: hero-crossfade 24s ease-in-out infinite both;
+}
+.hero-gallery__image--2 { animation-delay: -18s; }
+.hero-gallery__image--3 { animation-delay: -12s; }
+.hero-gallery__image--4 { animation-delay: -6s; }
+
+@keyframes hero-crossfade {
+  0% { opacity: 1; transform: scale(1.025); }
+  20% { opacity: 1; }
+  25% { opacity: 0; transform: scale(1); }
+  95% { opacity: 0; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.025); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-gallery__image { display: none; animation: none; }
+  .hero-gallery__image--1 { display: block; opacity: 1; transform: none; }
+}
 
 /* Bloques genéricos */
 .block { padding: 40px 64px; display: flex; flex-direction: column; gap: 26px; }
@@ -105,17 +145,10 @@ html { scroll-behavior: smooth; }
 .channel span { font-size: 15px; color: var(--color-muted); }
 
 /* Pie */
-.home__footer { padding: 36px 64px 28px; display: flex; flex-direction: column; gap: 30px; }
-.invite {
-  display: flex; align-items: center; justify-content: space-between; gap: 24px;
-  padding: 32px; border-radius: 16px; background: var(--color-accent);
-}
-.invite h2 { margin: 0 0 10px; font-size: 30px; color: var(--color-primary-dark); }
-.invite p { font-size: 16px; color: var(--color-muted); }
-.footer__row { display: flex; align-items: center; justify-content: space-between; }
-.footer__links { display: flex; gap: 12px; font-size: 14px; color: var(--color-muted); }
-.home__footer hr { width: 100%; height: 1px; border: 0; margin: 0; background: var(--color-border); }
+.home__footer { padding: 22px 64px 26px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .home__footer small { font-size: 12px; color: var(--color-muted); }
+.home__footer > a { font-size: 13px; color: var(--color-muted); }
+.home__footer > a:hover { color: var(--color-primary); }
 
 /* Responsive */
 @media (max-width: 1100px) {
@@ -131,5 +164,5 @@ html { scroll-behavior: smooth; }
   .hero, .block, .home__footer { padding-left: 20px; padding-right: 20px; }
   .hero h1 { font-size: 38px; }
   .cards, .steps { grid-template-columns: 1fr; }
-  .invite, .footer__row { flex-direction: column; align-items: flex-start; }
+  .home__footer { align-items: center; }
 }
