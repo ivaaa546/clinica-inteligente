@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import './Phoneinput.css'
+import './PhoneInput.css'
 
 const PREFIJO = '+502' // Guatemala
 
