@@ -18,7 +18,7 @@ import {
   deleteSpecialty as deleteSpecialtyApi,
 } from '../api/specialties'
 import { getAdminMetrics, listAdminAppointments, cancelAdminAppointment } from '../api/admin'
-import type { EstadoCita, Modalidad } from '../shared/types/cita'
+import type { EstadoCita } from '../shared/types/cita'
 import type { CitaAdmin, DatosCuenta, EspecialidadAdmin, Metricas, NuevoMedico, PeriodoMetricas, Usuario } from '../shared/types/admin'
 import type { FechaISO } from '../shared/types/medico'
 
@@ -76,13 +76,6 @@ export async function actualizarUsuario(id: string, datos: DatosCuenta): Promise
 export async function cambiarEstadoUsuario(id: string, activo: boolean, _actorCorreo: string): Promise<Usuario> {
   void _actorCorreo
   return toUsuario(await (activo ? activateUserApi(id) : deactivateUserApi(id)) as ApiUser)
-}
-
-export async function enviarRecuperacion(id: string): Promise<string> {
-  const usuario = await obtenerUsuario(id)
-  if (!usuario.activo) throw new ApiError('La cuenta está inactiva: actívala antes de enviar la recuperación.', 409)
-  // El backend conserva la política de privacidad y gestiona el envío; aquí solo devolvemos el correo mostrado.
-  return usuario.correo
 }
 
 export async function crearMedico(datos: NuevoMedico): Promise<Usuario> {
@@ -146,7 +139,7 @@ type ApiAdminAppointment = {
   inicio: string
   fin: string
   estado: EstadoCita
-  modalidad: Modalidad
+  modalidad: 'PRESENCIAL' | 'VIRTUAL'
   paciente?: string
   medico?: string
   especialidad?: string
@@ -157,11 +150,11 @@ const toCitaAdmin = (c: ApiAdminAppointment): CitaAdmin => {
   const fin = new Date(c.fin)
   const pad = (n: number) => String(n).padStart(2, '0')
   return {
-    codigo: c.id.slice(0, 8),
+    codigo: c.id,
     fecha: c.inicio.slice(0, 10),
     hora: `${pad(inicio.getHours())}:${pad(inicio.getMinutes())}–${pad(fin.getHours())}:${pad(fin.getMinutes())}`,
     estado: c.estado,
-    modalidad: c.modalidad,
+    modalidad: c.modalidad === 'VIRTUAL' ? 'VIDEOLLAMADA' : 'PRESENCIAL',
     paciente: c.paciente || 'Paciente',
     medico: c.medico || 'Médico',
     especialidad: c.especialidad || 'General',

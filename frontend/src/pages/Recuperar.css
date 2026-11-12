@@ -1,9 +1,6 @@
 /* Extiende los estilos de Login.css */
 .recuperar__top { font-size: 12px; color: var(--color-muted); }
 
-.recuperar .welcome {
-  background: linear-gradient(to right, var(--color-primary-darker), var(--color-primary));
-}
 .recuperar .welcome__title { line-height: 1.4; }
 .recuperar .welcome__text, .welcome__note { color: #dcefd6; }
 .welcome__note { margin: 0; font-size: 14px; line-height: 1.4; }

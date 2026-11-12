@@ -1,9 +1,10 @@
 import { Link, useParams } from 'react-router-dom'
-import { CircleCheck, Download, Info, Link2, Plus, Printer } from 'lucide-react'
+import { CircleCheck, Download, Info, Link2, Printer } from 'lucide-react'
 import EstadoCita from '../../components/EstadoCita'
 import { useCompletedConsultation } from '../../features/consultas/hooks/useCompletedConsultation'
 import { formatearFecha, mesMayusculas } from '../../shared/lib/fechas'
 import type { Medicamento } from '../../shared/types/medico'
+import logoMediQuetzal from '../../assets/MediQuetzalbueno.png'
 import '../../shared/styles/medical.css'
 import './ConsultaCompletada.css'
 
@@ -62,7 +63,7 @@ export default function ConsultaCompletada() {
       <div className="cc-layout">
         <article className="md-card cc-receta" aria-labelledby="cc-titulo">
           <header className="cc-receta__cabecera">
-            <span className="cc-marca"><span className="cc-marca__icono"><Plus size={20} color="#fff" /></span><span><strong>TilinesMédicos</strong><small>PLATAFORMA MÉDICA</small></span></span>
+            <span className="cc-marca"><span className="cc-marca__icono"><img src={logoMediQuetzal} alt="Logo MediQuetzal" /></span><span><strong>MediQuetzal</strong><small>PLATAFORMA MÉDICA</small></span></span>
             <time dateTime={fecha}>{fechaLarga(fecha)}</time>
           </header>
 

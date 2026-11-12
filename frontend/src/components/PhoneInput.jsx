@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import './Phoneinput.css'
+import './PhoneInput.css'
 
 const PREFIJO = '+502' // Guatemala
 
@@ -28,7 +28,7 @@ const normalizarTelefono = (texto = '') => {
  * (o '' si está vacío), para guardarlo tal cual en `usuario.telefono`.
  * Colócalo dentro de un contenedor flex (`.field__input` o `.cta-pass`).
  */
-export default function PhoneInput({ value = '', onChange, name = 'telefono', required }) {
+export default function PhoneInput({ value = '', onChange, name = 'telefono', required, id }) {
   const [fallo, setFallo] = useState(false)
   const local = soloLocales(value.startsWith(PREFIJO) ? value.slice(PREFIJO.length) : value)
 
@@ -57,6 +57,7 @@ export default function PhoneInput({ value = '', onChange, name = 'telefono', re
       )}
       <span className="phone-code">{PREFIJO}</span>
       <input
+        id={id}
         type="tel"
         inputMode="numeric"
         autoComplete="tel-national"

@@ -13,3 +13,4 @@ pnpm-workspace.yaml
 backend/pnpm-lock.yaml
 backend/pnpm-workspace.yaml
 frontend/pnpm-lock.yaml
+.vercel

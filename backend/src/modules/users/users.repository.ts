@@ -7,6 +7,11 @@ const includeMedico = {
     select: {
       especialidadId: true,
       numeroProfesional: true,
+      especialidad: {
+        select: {
+          nombre: true,
+        },
+      },
     },
   },
 } as const;

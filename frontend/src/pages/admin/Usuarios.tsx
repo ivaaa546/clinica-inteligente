@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Info, Plus, Search } from 'lucide-react'
 import CitasAdmin from '../../components/admin/CitasAdmin'
-import { cambiarEstadoUsuario, enviarRecuperacion, listarUsuarios, nombreCompleto } from '../../services/adminService'
+import { cambiarEstadoUsuario, listarUsuarios, nombreCompleto } from '../../services/adminService'
 import { useSesion } from '../../features/auth/hooks/useSesion'
 import { normalizar } from '../../shared/lib/texto'
 import type { RolUsuario, Usuario } from '../../shared/types/admin'
@@ -73,9 +73,6 @@ export default function Usuarios() {
     })
   }
 
-  const recuperar = (u: Usuario) =>
-    ejecutar(async () => `Se envió el enlace de recuperación de contraseña a ${await enviarRecuperacion(u.id)}.`)
-
   return (
     <>
       <div className="ad-head">
@@ -135,7 +132,6 @@ export default function Usuarios() {
                           {u.activo ? 'Desactivar' : 'Activar'}
                         </button>
                       </div>
-                      <button type="button" className="ad-enlace ad-enlace--suave" disabled={ocupado} onClick={() => recuperar(u)}>Enviar recuperación de contraseña</button>
                     </div>
                   </td>
                 </tr>

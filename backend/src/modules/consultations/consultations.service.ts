@@ -135,12 +135,12 @@ export class ConsultationsService {
 
   private normalizeVitalSigns(signs: ConsultationInput["signosVitales"]) {
     return {
-      ...this.normalizeVitalSign(signs?.pesoLb, "pesoLb", (value) => this.validNumber(value)),
-      ...this.normalizeVitalSign(signs?.tallaCm, "tallaCm", (value) => this.validNumber(value)),
-      ...this.normalizeVitalSign(signs?.temperatura, "temperatura", (value) => this.validNumber(value)),
+      ...this.normalizeVitalSign(signs?.pesoLb, "pesoLb", (value) => this.validNumber(value, 0.1, 999.99)),
+      ...this.normalizeVitalSign(signs?.tallaCm, "tallaCm", (value) => this.validNumber(value, 1, 300)),
+      ...this.normalizeVitalSign(signs?.temperatura, "temperatura", (value) => this.validNumber(value, 20, 50)),
       ...this.normalizeVitalSign(signs?.presionArterial, "presionArterial", (value) => /^\d{2,3}\/\d{2,3}$/.test(value)),
-      ...this.normalizeVitalSign(signs?.frecCardiaca, "frecCardiaca", (value) => this.validNumber(value)),
-      ...this.normalizeVitalSign(signs?.frecRespiratoria, "frecRespiratoria", (value) => this.validNumber(value)),
+      ...this.normalizeVitalSign(signs?.frecCardiaca, "frecCardiaca", (value) => this.validNumber(value, 1, 300, true)),
+      ...this.normalizeVitalSign(signs?.frecRespiratoria, "frecRespiratoria", (value) => this.validNumber(value, 1, 150, true)),
     };
   }
 
@@ -161,8 +161,8 @@ export class ConsultationsService {
     return { [field]: value, [`${field}Estado`]: state };
   }
 
-  private validNumber(value: number) {
-    return Number.isFinite(value) && value > 0;
+  private validNumber(value: number, min: number, max: number, integer = false) {
+    return Number.isFinite(value) && value >= min && value <= max && (!integer || Number.isInteger(value));
   }
 
   private validateEvaluation(type: TipoFichaClinica, evaluation?: Prisma.InputJsonValue) {

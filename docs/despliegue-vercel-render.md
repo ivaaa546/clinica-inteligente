@@ -55,6 +55,7 @@ Configure en Render, nunca en el repositorio:
 - `CORS_ORIGINS`, con el origen HTTPS exacto del frontend Vercel correspondiente
 - `CLINIC_TIMEZONE=America/Guatemala`
 - `LIVEKIT_URL`, `LIVEKIT_API_KEY` y `LIVEKIT_API_SECRET` exclusivos del ambiente
+- `DEVICE_API_KEY` (mínimo 32 caracteres) compartida con la ESP32 mediante el header `x-device-key`
 
 En cada GitHub Environment configure:
 

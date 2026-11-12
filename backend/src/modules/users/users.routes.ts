@@ -7,8 +7,10 @@ import {
   activateUser,
   createDoctor,
   deactivateUser,
+  getOwnUser,
   getUser,
   listUsers,
+  updateOwnUser,
   updateUser,
 } from "./users.controller.js";
 
@@ -17,6 +19,8 @@ const adminOnly = [requireAuth(prisma), requireRoles(RolUsuario.ADMINISTRADOR)];
 
 usersRouter.get("/", ...adminOnly, listUsers);
 usersRouter.post("/doctors", ...adminOnly, createDoctor);
+usersRouter.get("/me", requireAuth(prisma), getOwnUser);
+usersRouter.patch("/me", requireAuth(prisma), updateOwnUser);
 usersRouter.get("/:id", ...adminOnly, getUser);
 usersRouter.patch("/:id", ...adminOnly, updateUser);
 usersRouter.patch("/:id/deactivate", ...adminOnly, deactivateUser);

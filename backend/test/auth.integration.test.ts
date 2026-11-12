@@ -7,6 +7,7 @@ import { app } from "../src/lib/app.js";
 const hasTestDatabase = Boolean(process.env.TEST_DATABASE_URL);
 const email = `integration-${Date.now()}@example.test`;
 const password = "Integration-password-123!";
+const newPassword = "Integration-password-456!";
 
 describe.skipIf(!hasTestDatabase)("autenticacion integrada", () => {
   let userId: string;
@@ -46,7 +47,7 @@ describe.skipIf(!hasTestDatabase)("autenticacion integrada", () => {
     expect(await argon2.verify(user.contrasenaHash, password)).toBe(true);
   });
 
-  it("crea, conserva y destruye la sesion de login", async () => {
+  it("crea la sesion, cambia la contrasena y destruye la sesion", async () => {
     const login = await agent.post("/api/v1/auth/login").send({ correo: email, contrasena: password });
     expect(login.status).toBe(200);
 
@@ -54,9 +55,33 @@ describe.skipIf(!hasTestDatabase)("autenticacion integrada", () => {
     expect(current.status).toBe(200);
     expect(current.body.id).toBe(userId);
 
+    const ownProfile = await agent.get("/api/v1/users/me");
+    expect(ownProfile.status).toBe(200);
+    expect(ownProfile.body).toMatchObject({ id: userId, nombre: "Paciente", telefono: "00000002" });
+    expect(ownProfile.body).not.toHaveProperty("contrasenaHash");
+
+    const updatedProfile = await agent.patch("/api/v1/users/me").send({ telefono: "00000004" });
+    expect(updatedProfile.status).toBe(200);
+    expect(updatedProfile.body.telefono).toBe("00000004");
+
+    const wrongCurrent = await agent.patch("/api/v1/auth/password").send({
+      contrasenaActual: "incorrecta",
+      contrasenaNueva: newPassword,
+    });
+    expect(wrongCurrent.status).toBe(401);
+
+    const changed = await agent.patch("/api/v1/auth/password").send({
+      contrasenaActual: password,
+      contrasenaNueva: newPassword,
+    });
+    expect(changed.status).toBe(204);
+
     const logout = await agent.post("/api/v1/auth/logout");
     expect(logout.status).toBe(204);
     expect((await agent.get("/api/v1/auth/me")).status).toBe(401);
+    expect((await agent.post("/api/v1/auth/login").send({ correo: email, contrasena: password })).status).toBe(401);
+    expect((await agent.post("/api/v1/auth/login").send({ correo: email, contrasena: newPassword })).status).toBe(200);
+    expect((await agent.post("/api/v1/auth/logout")).status).toBe(204);
   });
 
   it("rechaza roles enviados en el registro publico", async () => {

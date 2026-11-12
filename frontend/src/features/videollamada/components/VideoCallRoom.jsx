@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Info, LogOut, Mic, MicOff, Plus, Video, VideoOff } from 'lucide-react'
+import { Info, LogOut, Mic, MicOff, Video, VideoOff } from 'lucide-react'
 import { requestVideoAccess } from '../api/videoCalls.js'
+import logoMediQuetzal from '../../../assets/MediQuetzalbueno.png'
 import './Videollamada.css'
 
 const formatDuration = (seconds) => `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
@@ -137,7 +138,7 @@ export default function VideoCallRoom({ appointmentId, backLabel, onLeave }) {
   return (
     <div className="vc">
       <header className="vc-top">
-        <div className="vc-brand"><span><Plus size={18} color="#fff" /></span> TilinesMédicos</div>
+        <div className="vc-brand"><span><img src={logoMediQuetzal} alt="Logo MediQuetzal" /></span> MediQuetzal</div>
         <div className="vc-info"><strong>Videollamada</strong><small>Cita {appointmentId}</small></div>
         <span className="vc-timer">{formatDuration(seconds)}</span>
       </header>

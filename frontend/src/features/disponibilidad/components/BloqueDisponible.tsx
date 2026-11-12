@@ -15,8 +15,8 @@ interface Props {
 export default function BloqueDisponible({ form, existe, conCitaActiva, ocupado, onCambio, onGuardar, onNuevo, onEliminar }: Props) {
   return (
     <aside className="ag-card ag-bloque" aria-labelledby="ag-bloque-titulo">
-      <h2 id="ag-bloque-titulo" className="ag-card__title">Bloque disponible</h2>
-      <p className="ag-chips"><span className="ag-chip">Editar disponibilidad</span></p>
+      <h2 id="ag-bloque-titulo" className="ag-card__title">Horario para pacientes</h2>
+      <p className="ag-chips"><span className="ag-chip">Publicar disponibilidad</span></p>
 
       <label className="ag-campo">
         <span>Fecha</span>
@@ -66,9 +66,9 @@ export default function BloqueDisponible({ form, existe, conCitaActiva, ocupado,
         </div>
       </div>
 
-      <p className="ag-ayuda">Solo los bloques disponibles podrán recibir nuevas solicitudes de cita. Cada bloque dura 30 minutos.</p>
+      <p className="ag-ayuda">Al guardar, este horario aparecerá en “Solicitar cita” para los pacientes. Cada bloque dura 30 minutos.</p>
 
-      <button type="button" className="ag-btn ag-btn--primario" onClick={onGuardar} disabled={ocupado}>Guardar cambios</button>
+      <button type="button" className="ag-btn ag-btn--primario" onClick={onGuardar} disabled={ocupado}>Publicar horario</button>
       <button type="button" className="ag-btn ag-btn--borde" onClick={onNuevo} disabled={ocupado}>
         <Plus size={16} aria-hidden="true" /> Agregar nuevo bloque
       </button>

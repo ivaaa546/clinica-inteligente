@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
 import { AuthService } from "./auth.service.js";
-import { loginSchema, registerSchema } from "./auth.schema.js";
+import { changePasswordSchema, loginSchema, registerSchema } from "./auth.schema.js";
 
 export const register: RequestHandler = async (request, response, next) => {
   try {
@@ -44,6 +44,20 @@ export const me: RequestHandler = async (request, response, next) => {
       return;
     }
     response.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const changePassword: RequestHandler = async (request, response, next) => {
+  try {
+    const input = changePasswordSchema.parse(request.body);
+    await new AuthService(request.app.locals.prisma).changePassword(
+      request.auth!.userId,
+      input.contrasenaActual,
+      input.contrasenaNueva,
+    );
+    response.status(204).send();
   } catch (error) {
     next(error);
   }

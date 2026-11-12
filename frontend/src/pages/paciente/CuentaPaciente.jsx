@@ -1,148 +1,158 @@
 import { useEffect, useState } from 'react'
-import { Save } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Mail, Check, Pencil } from 'lucide-react'
 import { getOwnPatientProfile, updateOwnPatientProfile } from '../../features/pacientes/api/profile.js'
-import ApiError from '../../shared/components/ApiError.jsx'
-import LoadingState from '../../shared/components/LoadingState.jsx'
-import { formatBirthDate } from '../../shared/lib/date.js'
 import { useAuth } from '../../features/auth/hooks/useAuth.js'
-import './CuentaPaciente.css'
+import './Cuenta.css'
 
 const SEX_LABELS = { M: 'Masculino', F: 'Femenino', NO_ESPECIFICADO: 'No especificado' }
-const unavailable = 'No disponible en este contrato'
+const iniciales = (nombre = '', apellidos = '') => `${nombre[0] ?? ''}${apellidos[0] ?? ''}`.toUpperCase()
+
+function Campo({ label, children, ancho }) {
+  return (
+    <label className={`cta-field ${ancho ? 'cta-field--full' : ''}`}>
+      <span>{label}</span>
+      {children}
+    </label>
+  )
+}
 
 export default function CuentaPaciente() {
   const { user } = useAuth()
-  const [profile, setProfile] = useState(null)
-  const [form, setForm] = useState({ direccion: '', ocupacion: '', nombreResponsable: '' })
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(null)
-  const [saved, setSaved] = useState(false)
+  const [original, setOriginal] = useState(null)
+  const [datos, setDatos] = useState(null)
+  const [editando, setEditando] = useState(false)
+  const [guardando, setGuardando] = useState(false)
+  const [mensaje, setMensaje] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    let active = true
+    let activo = true
     getOwnPatientProfile()
-      .then((value) => {
-        if (!active) return
-        setProfile(value)
-        setForm({
-          direccion: value?.direccion || '',
-          ocupacion: value?.ocupacion || '',
-          nombreResponsable: value?.nombreResponsable || '',
-        })
+      .then((perfil) => {
+        if (!activo) return
+        const vista = {
+          ...perfil,
+          nombre: user?.nombre || '',
+          apellidos: user?.apellidos || '',
+          correo: user?.correo || '',
+          telefono: user?.telefono || '',
+          direccion: perfil?.direccion || '',
+          ocupacion: perfil?.ocupacion || '',
+          nombreResponsable: perfil?.nombreResponsable || '',
+        }
+        setOriginal(vista)
+        setDatos(vista)
       })
-      .catch((requestError) => active && setError(requestError))
-      .finally(() => active && setLoading(false))
+      .catch((requestError) => activo && setError(requestError?.message || 'No se pudo cargar tu perfil.'))
+    return () => { activo = false }
+  }, [user])
 
-    return () => { active = false }
-  }, [])
+  if (!datos) return <p className="cta-loading">{error || 'Cargando tus datos...'}</p>
 
-  const change = (event) => {
-    setSaved(false)
-    setForm((current) => ({ ...current, [event.target.name]: event.target.value }))
+  const cambiar = (evento) => {
+    setDatos((actual) => ({ ...actual, [evento.target.name]: evento.target.value }))
+    setMensaje('')
   }
 
-  const save = async (event) => {
-    event.preventDefault()
-    if (saving) return
-    setError(null)
-    setSaved(false)
-    setSaving(true)
+  const empezar = () => { setEditando(true); setMensaje(''); setError('') }
+  const cancelar = () => { setDatos(original); setEditando(false); setError('') }
 
+  const guardar = async (evento) => {
+    evento.preventDefault()
+    if (!editando || guardando) return
+    setGuardando(true)
+    setError('')
     try {
-      const updated = await updateOwnPatientProfile(form)
-      setProfile(updated)
-      setForm({
-        direccion: updated?.direccion || '',
-        ocupacion: updated?.ocupacion || '',
-        nombreResponsable: updated?.nombreResponsable || '',
+      const perfil = await updateOwnPatientProfile({
+        direccion: datos.direccion,
+        ocupacion: datos.ocupacion,
+        nombreResponsable: datos.nombreResponsable,
       })
-      setSaved(true)
+      const guardado = { ...datos, ...perfil }
+      setOriginal(guardado)
+      setDatos(guardado)
+      setEditando(false)
+      setMensaje('Cambios guardados.')
     } catch (requestError) {
-      setError(requestError)
+      setError(requestError?.message || 'No se pudieron guardar los cambios.')
     } finally {
-      setSaving(false)
+      setGuardando(false)
     }
   }
 
-  if (loading) return <LoadingState message="Cargando los datos de tu cuenta…" />
-  if (error && !profile) return <ApiError error={error} onRetry={() => window.location.reload()} />
-
   return (
-    <>
-      <div className="cuenta-head">
+    <form className="cta" onSubmit={guardar}>
+      <Link to="/paciente" className="cta-back">← Volver a mi espacio</Link>
+
+      <div className="cta-head">
+        <h1>Mi cuenta</h1>
+        <p>Consulta y actualiza tus datos personales.</p>
+      </div>
+
+      <div className="cta-profile">
+        <span className="cta-profile__avatar">{iniciales(datos.nombre, datos.apellidos)}</span>
         <div>
-          <h1>Mi cuenta</h1>
-          <p>Consulta tus datos disponibles y actualiza únicamente la información permitida.</p>
+          <strong>{datos.nombre} {datos.apellidos}</strong>
+          <small>Tu cuenta personal · {datos.id || 'Paciente'}</small>
+        </div>
+        <span className="cta-pill">Paciente</span>
+      </div>
+
+      <section className="cta-panel">
+        <h2>Datos personales</h2>
+        <div className="cta-fields cta-fields--three">
+          <Campo label="Nombres"><input value={datos.nombre || ''} readOnly /></Campo>
+          <Campo label="Apellidos"><input value={datos.apellidos || 'No disponible'} readOnly /></Campo>
+          <Campo label="Correo electrónico">
+            <span className="cta-pass">
+              <input type="email" value={datos.correo || 'No disponible'} readOnly />
+              <Mail size={18} color="#4f6e5b" />
+            </span>
+          </Campo>
+          <Campo label="Teléfono"><input value={datos.telefono || 'No disponible'} readOnly /></Campo>
+          <Campo label="Fecha de nacimiento"><input value={datos.fechaNacimiento?.slice?.(0, 10) || 'No disponible'} readOnly /></Campo>
+          <Campo label="Sexo"><input value={SEX_LABELS[datos.sexo] || 'No disponible'} readOnly /></Campo>
+          <Campo label="Población migrante"><input value={typeof datos.poblacionMigrante === 'boolean' ? (datos.poblacionMigrante ? 'Sí' : 'No') : 'No disponible'} readOnly /></Campo>
+          <Campo label="Ocupación">
+            <input name="ocupacion" value={datos.ocupacion} onChange={cambiar} disabled={!editando || guardando} placeholder="No registrada" />
+          </Campo>
+          <Campo label="Responsable (opcional)">
+            <input name="nombreResponsable" value={datos.nombreResponsable} onChange={cambiar} disabled={!editando || guardando} placeholder="—" />
+          </Campo>
+          <Campo label="Dirección" ancho>
+            <input name="direccion" value={datos.direccion} onChange={cambiar} disabled={!editando || guardando} placeholder="No registrada" />
+          </Campo>
+        </div>
+      </section>
+
+      <div className="cta-actions">
+        <div>
+          <strong>
+            {error ? <span className="cta-error">{error}</span>
+              : mensaje || (editando ? 'Estás editando tus datos.' : 'Tus datos están protegidos.')}
+          </strong>
+          <small>
+            {editando
+              ? 'Puedes actualizar dirección, ocupación y responsable; los datos de acceso permanecen protegidos.'
+              : 'Presiona “Actualizar datos” para editar la información permitida.'}
+          </small>
+        </div>
+        <div className="cta-actions__btns">
+          {editando ? (
+            <>
+              <button type="button" className="cta-btn cta-btn--ghost" onClick={cancelar} disabled={guardando}>Cancelar</button>
+              <button type="submit" className="cta-btn cta-btn--primary" disabled={guardando}>
+                <Check size={18} /> {guardando ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+            </>
+          ) : (
+            <button type="button" className="cta-btn cta-btn--primary" onClick={empezar}>
+              <Pencil size={17} /> Actualizar datos
+            </button>
+          )}
         </div>
       </div>
-
-      {error && <ApiError error={error} />}
-      {saved && <p className="cuenta-success" role="status">Datos de cuenta actualizados.</p>}
-
-      <div className="cuenta-grid">
-        <section className="cuenta-card">
-          <h2>Datos de acceso</h2>
-          <div className="cuenta-fields">
-            <div className="cuenta-field">
-              <span>Nombre</span>
-              <strong>{user?.nombre || unavailable}</strong>
-            </div>
-            <div className="cuenta-field">
-              <span>Correo electrónico</span>
-              <strong>{user?.correo || unavailable}</strong>
-            </div>
-            <div className="cuenta-field">
-              <span>Apellidos</span>
-              <strong>{unavailable}</strong>
-            </div>
-            <div className="cuenta-field">
-              <span>Teléfono</span>
-              <strong>{unavailable}</strong>
-            </div>
-          </div>
-          <p className="cuenta-note">El contrato actual no permite editar apellidos, teléfono, correo ni contraseña desde esta pantalla.</p>
-        </section>
-
-        <section className="cuenta-card">
-          <h2>Datos del paciente</h2>
-          <div className="cuenta-fields">
-            <div className="cuenta-field">
-              <span>Fecha de nacimiento</span>
-              <strong>{formatBirthDate(profile?.fechaNacimiento?.slice?.(0, 10)) || unavailable}</strong>
-            </div>
-            <div className="cuenta-field">
-              <span>Sexo</span>
-              <strong>{SEX_LABELS[profile?.sexo] || unavailable}</strong>
-            </div>
-            <div className="cuenta-field">
-              <span>Población migrante</span>
-              <strong>{typeof profile?.poblacionMigrante === 'boolean' ? (profile.poblacionMigrante ? 'Sí' : 'No') : unavailable}</strong>
-            </div>
-          </div>
-        </section>
-
-        <section className="cuenta-card cuenta-card--editable">
-          <h2>Información editable</h2>
-          <form onSubmit={save}>
-            <label className="cuenta-edit-field">
-              <span>Dirección</span>
-              <input name="direccion" value={form.direccion} onChange={change} placeholder="No registrada" />
-            </label>
-            <label className="cuenta-edit-field">
-              <span>Ocupación</span>
-              <input name="ocupacion" value={form.ocupacion} onChange={change} placeholder="No registrada" />
-            </label>
-            <label className="cuenta-edit-field">
-              <span>Nombre del responsable</span>
-              <input name="nombreResponsable" value={form.nombreResponsable} onChange={change} placeholder="No registrado" />
-            </label>
-            <button className="cuenta-save" type="submit" disabled={saving}>
-              <Save size={17} /> {saving ? 'Guardando…' : 'Guardar cambios'}
-            </button>
-          </form>
-        </section>
-      </div>
-    </>
+    </form>
   )
 }

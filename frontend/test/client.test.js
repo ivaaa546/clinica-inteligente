@@ -9,6 +9,7 @@ import { getPatientRecord, updateBackground } from '../src/features/expedientes/
 import { requestVideoAccess } from '../src/features/videollamada/api/videoCalls.js'
 import { toMedicalAgendaAppointment, toMedicalAvailabilityBlock, uniqueLinkedPatients } from '../src/features/disponibilidad/adapters/medical.ts'
 import { ApiError, apiClient } from '../src/shared/api/client.ts'
+import { erroresConsulta, formularioVacio } from '../src/shared/lib/consulta.ts'
 
 const originalFetch = globalThis.fetch
 
@@ -21,6 +22,28 @@ function jsonResponse(body, status = 200) {
 
 afterEach(() => {
   globalThis.fetch = originalFetch
+})
+
+describe('validación clínica', () => {
+  it('acepta signos anormales dentro del margen técnico y distintas presiones', () => {
+    const form = formularioVacio('ADULTO')
+    form.motivo = 'Fiebre y control de presión'
+    form.diagnostico = 'Evaluación en curso'
+    form.signosEstado.temperatura = 'MEDIDO'
+    form.signos.temperatura = '40.2'
+    form.signosEstado.presion = 'MEDIDO'
+    form.signos.presion = '145 / 95'
+    assert.deepEqual(erroresConsulta(form), {})
+  })
+
+  it('rechaza únicamente formatos o límites técnicos incompatibles', () => {
+    const form = formularioVacio('ADULTO')
+    form.motivo = 'Control'
+    form.diagnostico = 'Control'
+    form.signosEstado.presion = 'MEDIDO'
+    form.signos.presion = 'presión normal'
+    assert.match(erroresConsulta(form).presion, /sistólica\/diastólica/)
+  })
 })
 
 describe('cliente HTTP', () => {
