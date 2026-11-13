@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Video, MapPin } from 'lucide-react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Activity, CheckCircle2, Clock3, Copy, Video, MapPin } from 'lucide-react'
 import EstadoCita from '../../components/EstadoCita.jsx'
 import ModalidadTag from '../../components/ModalidadTag.jsx'
 import { listDoctorAvailability } from '../../features/disponibilidad/api/availability.js'
@@ -19,13 +19,12 @@ const especialidadDoctor = (doctor) => doctor?.especialidad?.nombre || 'Especial
 
 export default function DetalleCita() {
   const { id } = useParams()
-  const { pathname } = useLocation()
   const navigate = useNavigate()
   const { user } = useAuth()
   const [cita, setCita] = useState(null)
   const [doctor, setDoctor] = useState(null)
   const [disponibilidades, setDisponibilidades] = useState([])
-  const [quiere, setQuiere] = useState(pathname.endsWith('/reprogramar'))
+  const [quiere, setQuiere] = useState(false)
   const [fecha, setFecha] = useState(hoy())
   const [bloqueId, setBloqueId] = useState('')
   const [motivoConsulta, setMotivoConsulta] = useState('')
@@ -35,7 +34,8 @@ export default function DetalleCita() {
   const [guardandoPreconsulta, setGuardandoPreconsulta] = useState(false)
   const [error, setError] = useState('')
   const [aviso, setAviso] = useState('')
-  const [ahora] = useState(() => Date.now())
+  const [ahora, setAhora] = useState(() => Date.now())
+  const [copiado, setCopiado] = useState(false)
 
   useEffect(() => {
     let vigente = true
@@ -59,6 +59,19 @@ export default function DetalleCita() {
     return () => { vigente = false }
   }, [id])
 
+  useEffect(() => {
+    const timer = window.setInterval(() => setAhora(Date.now()), 15_000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    if (!cita || cita.modalidad !== 'VIRTUAL' || cita.estado !== 'ACEPTADA' || cita.lecturaSignosVitales) return undefined
+    const timer = window.setInterval(() => {
+      getAppointment(id).then((valor) => setCita(valor)).catch(() => {})
+    }, 10_000)
+    return () => window.clearInterval(timer)
+  }, [cita, id])
+
   const bloques = useMemo(() => disponibilidades.filter((item) => (
     item.activa !== false
     && new Date(item.inicio).getTime() > ahora
@@ -72,8 +85,23 @@ export default function DetalleCita() {
   const activa = ACTIVAS.includes(cita.estado)
   const puedeCambiar = activa && new Date(cita.inicio).getTime() > ahora
   const virtual = cita.modalidad === 'VIRTUAL'
-  const puedeUnirse = virtual && cita.estado === 'ACEPTADA'
+  const inicio = new Date(cita.inicio).getTime()
+  const fin = new Date(cita.fin).getTime()
+  const ventanaMedicion = ahora >= inicio - 10 * 60_000 && ahora < fin
+  const enHorario = ahora >= inicio && ahora < fin
+  const lecturaLista = Boolean(cita.lecturaSignosVitales)
+  const puedeUnirse = virtual && cita.estado === 'ACEPTADA' && enHorario && lecturaLista
   const bloque = bloques.find((item) => item.id === bloqueId)
+
+  const copiarCodigo = async () => {
+    try {
+      await navigator.clipboard.writeText(cita.id)
+      setCopiado(true)
+      window.setTimeout(() => setCopiado(false), 2000)
+    } catch {
+      setError('No se pudo copiar el código. Selecciónalo y cópialo manualmente.')
+    }
+  }
 
   const cancelar = async () => {
     if (!puedeCambiar || enviando || !window.confirm('¿Seguro que deseas cancelar esta cita?')) return
@@ -163,6 +191,36 @@ export default function DetalleCita() {
           {puedeCambiar && <button type="button" className="dc-cancel" onClick={cancelar} disabled={enviando}>Cancelar cita</button>}
         </div>
       </section>
+
+      {virtual && activa && (
+        <section className="dc-sensor" aria-labelledby="dc-sensor-title">
+          <div className="dc-sensor__head">
+            <div>
+              <span className="dc-sensor__eyebrow"><Activity size={16} /> PRECONSULTA CON SENSOR</span>
+              <h2 id="dc-sensor-title">Mide tu frecuencia cardíaca antes de entrar</h2>
+              <p>Realiza estos pasos desde 10 minutos antes de la cita. La videollamada se habilitará dentro del horario cuando el dispositivo haya enviado tu lectura.</p>
+            </div>
+            <span className={`dc-sensor__status ${lecturaLista ? 'is-ready' : ''}`}>
+              {lecturaLista ? <><CheckCircle2 size={18} /> Lectura recibida: {cita.lecturaSignosVitales.frecCardiaca} lpm</> : <><Clock3 size={18} /> {ventanaMedicion ? 'Esperando lectura' : 'Disponible 10 min antes'}</>}
+            </span>
+          </div>
+          <label className="dc-code">
+            <span>Código de tu cita</span>
+            <span className="dc-code__row">
+              <input value={cita.id} readOnly aria-label="Código de la cita" />
+              <button type="button" onClick={copiarCodigo}><Copy size={17} /> {copiado ? '¡Copiado!' : 'Copiar código'}</button>
+            </span>
+          </label>
+          <ol className="dc-steps">
+            <li><strong>Conecta tu sensor</strong><span>Enchufa el dispositivo médico a la corriente.</span></li>
+            <li><strong>Copia tu código</strong><span>Haz clic en el botón “Copiar código” de esta pantalla.</span></li>
+            <li><strong>Conéctate al sensor</strong><span>Ve a los ajustes de WiFi de tu computadora o celular y conéctate a <b>Sensor_Cardiaco_ESP32</b>.</span></li>
+            <li><strong>Vincula tu cita</strong><span>En la pantalla que se abrirá, selecciona el WiFi de tu casa, escribe la contraseña y pega el código copiado.</span></li>
+            <li><strong>Toma tu lectura</strong><span>Haz clic en “Guardar”. Cuando el dispositivo se conecte a internet, coloca los parches en el pecho derecho, el pecho izquierdo y el área del estómago para enviar tu frecuencia cardíaca.</span></li>
+          </ol>
+          {!lecturaLista && <p className="dc-sensor__notice">Por seguridad, no podrás entrar a la videollamada hasta que se reciba la lectura. La página verifica el resultado automáticamente.</p>}
+        </section>
+      )}
 
       <div className="dc-main">
         <section className="dc-card">

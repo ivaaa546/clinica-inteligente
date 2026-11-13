@@ -24,6 +24,21 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
     steps:
+      - name: Verificar configuración de Render
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          RENDER_HEALTHCHECK_URL: ${{ vars.RENDER_HEALTHCHECK_URL }}
+        run: |
+          faltan=0
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "::error::Falta el SECRET RENDER_DEPLOY_HOOK (pestaña Secrets)"
+            faltan=1
+          fi
+          if [ -z "$RENDER_HEALTHCHECK_URL" ]; then
+            echo "::error::Falta la VARIABLE RENDER_HEALTHCHECK_URL (pestaña Variables, no Secrets)"
+            faltan=1
+          fi
+          exit $faltan
       - name: Trigger Render deployment
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}

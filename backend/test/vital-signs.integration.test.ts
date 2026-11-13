@@ -26,11 +26,11 @@ describe.skipIf(!enabled)("signos vitales de dispositivo (ESP32)", () => {
     const doctorUser = await prisma.usuario.create({ data: { nombre: "Medico", apellidos: "VS", correo: emails[1], contrasenaHash: hash, telefono: "00000022", rol: "MEDICO" } });
     patientId = (await prisma.paciente.create({ data: { usuarioId: patientUser.id, fechaNacimiento: new Date("1990-01-01"), sexo: "M" } })).id;
     doctorId = (await prisma.medico.create({ data: { usuarioId: doctorUser.id, especialidadId: specialtyId, numeroProfesional: `VS-${suffix}` } })).id;
-    const start = new Date(Date.now() + 86_400_000);
+    const start = new Date(Date.now() + 5 * 60_000);
     const availability = await prisma.disponibilidad.create({ data: { medicoId: doctorId, inicio: start, fin: new Date(+start + 1_800_000) } });
     availabilityId = availability.id;
     appointmentId = (await prisma.cita.create({ data: { pacienteId: patientId, medicoId: doctorId, disponibilidadId: availability.id, inicio: availability.inicio, fin: availability.fin, estado: "ACEPTADA", modalidad: "PRESENCIAL", direccionAtencionPresencial: "Direccion de prueba" } })).id;
-    const start2 = new Date(Date.now() + 2 * 86_400_000);
+    const start2 = new Date(start.getTime() + 31 * 60_000);
     const availability2 = await prisma.disponibilidad.create({ data: { medicoId: doctorId, inicio: start2, fin: new Date(+start2 + 1_800_000) } });
     pendingAvailabilityId = availability2.id;
     pendingAppointmentId = (await prisma.cita.create({ data: { pacienteId: patientId, medicoId: doctorId, disponibilidadId: availability2.id, inicio: availability2.inicio, fin: availability2.fin, estado: "PENDIENTE", modalidad: "PRESENCIAL", direccionAtencionPresencial: "Direccion de prueba" } })).id;
@@ -38,11 +38,11 @@ describe.skipIf(!enabled)("signos vitales de dispositivo (ESP32)", () => {
   });
 
   afterAll(async () => {
-    const ids = [appointmentId, pendingAppointmentId];
+    const ids = [appointmentId, pendingAppointmentId].filter((id): id is string => Boolean(id));
     await prisma.lecturaSignosVitales.deleteMany({ where: { citaId: { in: ids } } });
     await prisma.preconsulta.deleteMany({ where: { citaId: { in: ids } } });
     await prisma.cita.deleteMany({ where: { id: { in: ids } } });
-    await prisma.disponibilidad.deleteMany({ where: { id: { in: [availabilityId, pendingAvailabilityId] } } });
+    await prisma.disponibilidad.deleteMany({ where: { id: { in: [availabilityId, pendingAvailabilityId].filter((id): id is string => Boolean(id)) } } });
     await prisma.medico.deleteMany({ where: { id: doctorId } });
     await prisma.paciente.deleteMany({ where: { id: patientId } });
     await prisma.usuario.deleteMany({ where: { correo: { in: emails } } });
@@ -54,10 +54,10 @@ describe.skipIf(!enabled)("signos vitales de dispositivo (ESP32)", () => {
     expect((await request(app).get(url(appointmentId)).set("x-device-key", "incorrecta")).status).toBe(401);
   });
 
-  it("GET devuelve la preconsulta como base y 404 si la cita no existe", async () => {
+  it("GET no acepta una frecuencia autorreportada como lectura del dispositivo y devuelve 404 si la cita no existe", async () => {
     const response = await request(app).get(url(appointmentId)).set(key);
     expect(response.status).toBe(200);
-    expect(response.body).toMatchObject({ origen: "PRECONSULTA", frecCardiaca: 70 });
+    expect(response.body).toMatchObject({ origen: "VACIO", frecCardiaca: null });
     expect((await request(app).get(url("00000000-0000-4000-8000-000000000000")).set(key)).status).toBe(404);
   });
 

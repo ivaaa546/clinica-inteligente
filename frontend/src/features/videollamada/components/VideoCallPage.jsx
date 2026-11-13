@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom'
+import RegistrarConsulta from '../../../pages/medico/RegistrarConsulta.tsx'
 import VideoCallRoom from './VideoCallRoom.jsx'
 
 const PORTAL_CONFIG = {
@@ -13,11 +14,23 @@ export default function VideoCallPage({ portal }) {
   const config = PORTAL_CONFIG[portal]
   const appointmentId = params[config.param] || ''
 
-  return (
+  const room = (
     <VideoCallRoom
       appointmentId={appointmentId}
       backLabel={config.backLabel}
       onLeave={() => navigate(config.backTo)}
+      embedded={portal === 'medico'}
     />
+  )
+
+  if (portal !== 'medico') return room
+
+  return (
+    <div className="vc-doctor-workspace">
+      <div className="vc-doctor-video">{room}</div>
+      <aside className="vc-doctor-form" aria-label="Formulario de consulta">
+        <RegistrarConsulta citaCodigoProp={appointmentId} embedded />
+      </aside>
+    </div>
   )
 }

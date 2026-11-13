@@ -13,7 +13,7 @@ function toWebSocketUrl(value) {
   return url.toString()
 }
 
-export default function VideoCallRoom({ appointmentId, backLabel, onLeave }) {
+export default function VideoCallRoom({ appointmentId, backLabel, onLeave, embedded = false }) {
   const localVideoRef = useRef(null)
   const remoteMediaRef = useRef(null)
   const roomRef = useRef(null)
@@ -136,7 +136,7 @@ export default function VideoCallRoom({ appointmentId, backLabel, onLeave }) {
   }
 
   return (
-    <div className="vc">
+    <div className={`vc ${embedded ? 'vc--embedded' : ''}`}>
       <header className="vc-top">
         <div className="vc-brand"><span><img src={logoMediQuetzal} alt="Logo MediQuetzal" /></span> MediQuetzal</div>
         <div className="vc-info"><strong>Videollamada</strong><small>Cita {appointmentId}</small></div>

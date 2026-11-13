@@ -28,7 +28,7 @@ function knownDomainError(error: Error): ApiError | null {
   if (/transicion|ya esta reservado|ya esta publicada|ya tiene una consulta|solapa|citas activas|fue modificada/i.test(message)) {
     return new ApiError(409, "RESOURCE_CONFLICT", message);
   }
-  if (/perfil|debe |no puede |no esta habilitada|no son validas|se requiere |tiene un formato|no cumple|fuera de su periodo|no tiene videollamada|acceso de videollamada/i.test(message)) {
+  if (/perfil|debe(?:s)? |no puede |no esta habilitada|no son validas|se requiere |tiene un formato|no cumple|fuera de su periodo|no tiene videollamada|acceso de videollamada|estara disponible|horario.*finalizo|frecuencia cardiaca/i.test(message)) {
     return new ApiError(422, "BUSINESS_RULE_VIOLATION", message);
   }
   return null;

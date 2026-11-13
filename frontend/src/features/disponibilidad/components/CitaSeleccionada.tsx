@@ -55,11 +55,15 @@ export default function CitaSeleccionada({
         <button type="button" className="ag-btn ag-btn--primario" disabled title="Solo disponible para citas aceptadas">Registrar consulta</button>
       )}
 
-      {virtual && cita.estado === 'ACEPTADA' && (
+      {virtual && cita.estado === 'ACEPTADA' && (cita.enHorario ? (
         <Link to={`/medico/citas/${cita.codigo}/llamada`} className="ag-btn ag-btn--borde">
           <Video size={17} aria-hidden="true" /> Entrar a videollamada
         </Link>
-      )}
+      ) : (
+        <button type="button" className="ag-btn ag-btn--borde" disabled title="La videollamada se habilita únicamente durante el horario de la cita">
+          <Video size={17} aria-hidden="true" /> Videollamada fuera de horario
+        </button>
+      ))}
 
       <button type="button" className="ag-btn ag-btn--borde" disabled={!modificable} onClick={onCancelar}>Cancelar cita</button>
       {reprogramando ? (

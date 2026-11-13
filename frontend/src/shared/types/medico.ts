@@ -106,6 +106,8 @@ export interface CitaAgenda {
   paciente: PacienteResumen
   /** La cita aún no llega a su fecha/hora: solo entonces se puede aceptar, rechazar o cancelar */
   futura: boolean
+  /** La hora actual está dentro del inicio y fin programados. */
+  enHorario: boolean
   /** Solo aplica a citas por videollamada */
   llamada: EstadoLlamada
   /** Cita ACEPTADA sin consulta registrada: se puede abrir la ficha */

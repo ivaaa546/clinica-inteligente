@@ -19,6 +19,7 @@ export class AppointmentsRepository {
         medico: true,
         disponibilidad: true,
         preconsulta: true,
+        lecturaSignosVitales: true,
         consulta: true,
       },
     });
