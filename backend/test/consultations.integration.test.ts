@@ -237,7 +237,6 @@ describe.skipIf(!enabled)("cierre de consulta integrado", () => {
     });
     expect(consultation.signosVitales).toMatchObject({
       pesoLb: null,
-      tallaCm: 169,
       tallaCmEstado: "AUTORREPORTADO",
       temperatura: null,
       presionArterial: null,
@@ -245,5 +244,6 @@ describe.skipIf(!enabled)("cierre de consulta integrado", () => {
       frecCardiacaEstado: "MEDIDO",
       frecRespiratoria: null,
     });
+    expect(consultation.signosVitales?.tallaCm?.toString()).toBe("169");
   });
 });

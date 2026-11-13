@@ -100,10 +100,11 @@ describe.skipIf(!enabled)("emisor y revocador de videollamadas", () => {
   });
 
   async function createAppointment(estado: EstadoCita, inicio = new Date(now.getTime() + 60_000), modalidad: "VIRTUAL" | "PRESENCIAL" = "VIRTUAL") {
-    const scheduledStart = new Date(inicio.getTime() + appointmentSequence++);
-    const availability = await prisma.disponibilidad.create({ data: { medicoId: doctorId, inicio: scheduledStart, fin: new Date(scheduledStart.getTime() + 30 * 60_000), modalidades: [modalidad] } });
+    const scheduledStart = inicio;
+    const availabilityStart = new Date(Date.UTC(2040, 0, 1) + appointmentSequence++ * 31 * 60_000);
+    const availability = await prisma.disponibilidad.create({ data: { medicoId: doctorId, inicio: availabilityStart, fin: new Date(availabilityStart.getTime() + 30 * 60_000), modalidades: [modalidad] } });
     const appointment = await prisma.cita.create({ data: {
-      pacienteId: patientId, medicoId: doctorId, disponibilidadId: availability.id, inicio: scheduledStart, fin: availability.fin, estado, modalidad,
+      pacienteId: patientId, medicoId: doctorId, disponibilidadId: availability.id, inicio: scheduledStart, fin: new Date(scheduledStart.getTime() + 30 * 60_000), estado, modalidad,
       direccionAtencionPresencial: modalidad === "PRESENCIAL" ? "Consultorio" : null,
       salaVideoId: modalidad === "VIRTUAL" ? `video-room_${randomUUID()}` : null,
     } });

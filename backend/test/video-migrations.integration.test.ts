@@ -5,8 +5,11 @@ const enabled = Boolean(process.env.TEST_DATABASE_URL);
 describe.runIf(enabled)("migraciones de modalidad y revocacion", () => {
   it("instala restricciones e indices para agenda, signos y revocacion", async () => {
     const constraints = await prisma.$queryRaw<Array<{ conname: string }>>`
-      SELECT conname FROM pg_constraint
-      WHERE conname IN (
+      SELECT constraint_info.conname
+      FROM pg_constraint AS constraint_info
+      JOIN pg_namespace AS namespace_info ON namespace_info.oid = constraint_info.connamespace
+      WHERE namespace_info.nspname = current_schema()
+        AND constraint_info.conname IN (
         'disponibilidad_modalidades_no_vacias',
         'cita_modalidad_datos_validos',
         'signos_vitales_estados_y_valores_validos'
@@ -14,7 +17,7 @@ describe.runIf(enabled)("migraciones de modalidad y revocacion", () => {
     `;
     const indexes = await prisma.$queryRaw<Array<{ indexname: string }>>`
       SELECT indexname FROM pg_indexes
-      WHERE schemaname = 'public' AND indexname IN (
+      WHERE schemaname = current_schema() AND indexname IN (
         'cita_disponibilidad_activa_key',
         'tarea_revocacion_video_activa_por_cita_y_causa_key'
       )
