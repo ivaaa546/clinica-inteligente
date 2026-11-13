@@ -1,5 +1,6 @@
 import { EstadoCita, PrismaClient, RolUsuario } from "@prisma/client";
 import { env } from "../../lib/env.js";
+import { ApiError } from "../../middleware/error.middleware.js";
 import { AuditService } from "../audit/audit.service.js";
 import { AppointmentsRepository } from "../appointments/appointments.repository.js";
 import { LiveKitAdapter, type VideoAccess, type VideoCallProvider } from "./livekit.adapter.js";
@@ -20,8 +21,8 @@ export class VideoCallsService {
   async issueAccess(actor: AuthenticatedActor, appointmentId: string, now = new Date()): Promise<VideoAccess> {
     try {
       const appointment = await new AppointmentsRepository(this.db).findById(appointmentId);
-      const reason = this.denialReason(actor, appointment, now);
-      if (reason) throw new Error(reason);
+      const denial = this.denialError(actor, appointment, now);
+      if (denial) throw denial;
 
       const access = await this.provider.issueAccess({
         roomId: appointment!.salaVideoId!,
@@ -47,19 +48,23 @@ export class VideoCallsService {
     }
   }
 
-  private denialReason(
+  private denialError(
     actor: AuthenticatedActor,
     appointment: Awaited<ReturnType<AppointmentsRepository["findById"]>>,
     now: Date,
   ) {
-    if (!appointment) return "Cita no encontrada";
-    if (actor.role === RolUsuario.ADMINISTRADOR) return "El administrador no puede acceder a videollamadas";
-    if (actor.role === RolUsuario.PACIENTE && appointment.paciente.usuarioId !== actor.userId) return "El paciente no esta asignado a la cita";
-    if (actor.role === RolUsuario.MEDICO && appointment.medico.usuarioId !== actor.userId) return "El medico no esta asignado a la cita";
-    if (![RolUsuario.PACIENTE, RolUsuario.MEDICO].includes(actor.role)) return "Rol no autorizado";
-    if (appointment.modalidad !== "VIRTUAL" || !appointment.salaVideoId) return "La cita no tiene videollamada";
-    if (appointment.estado !== EstadoCita.ACEPTADA || appointment.videoRevocadaEn) return "El acceso de videollamada no esta habilitado";
-    // Una cita virtual aceptada puede abrirse en cualquier momento hasta que cambie de estado.
+    if (!appointment) return new ApiError(404, "APPOINTMENT_NOT_FOUND", "Cita no encontrada");
+    if (actor.role === RolUsuario.ADMINISTRADOR) return new ApiError(403, "VIDEO_ACCESS_DENIED", "El administrador no puede acceder a videollamadas");
+    if (actor.role === RolUsuario.PACIENTE && appointment.paciente.usuarioId !== actor.userId) return new ApiError(404, "APPOINTMENT_NOT_FOUND", "Cita no encontrada");
+    if (actor.role === RolUsuario.MEDICO && appointment.medico.usuarioId !== actor.userId) return new ApiError(404, "APPOINTMENT_NOT_FOUND", "Cita no encontrada");
+    if (![RolUsuario.PACIENTE, RolUsuario.MEDICO].includes(actor.role)) return new ApiError(403, "VIDEO_ACCESS_DENIED", "Rol no autorizado");
+    if (appointment.modalidad !== "VIRTUAL" || !appointment.salaVideoId) return new ApiError(422, "VIDEO_NOT_AVAILABLE", "La cita no tiene videollamada");
+    if (appointment.estado !== EstadoCita.ACEPTADA || appointment.videoRevocadaEn) return new ApiError(422, "VIDEO_NOT_AVAILABLE", "El acceso de videollamada no esta habilitado");
+    if (now < appointment.inicio) return new ApiError(422, "VIDEO_TOO_EARLY", "La videollamada estara disponible a la hora programada");
+    if (now >= appointment.fin) return new ApiError(422, "VIDEO_ENDED", "El horario de la videollamada ya finalizo");
+    if (actor.role === RolUsuario.PACIENTE && !appointment.lecturaSignosVitales) {
+      return new ApiError(422, "HEART_RATE_REQUIRED", "Debes registrar tu frecuencia cardiaca antes de entrar a la videollamada");
+    }
     return null;
   }
 }

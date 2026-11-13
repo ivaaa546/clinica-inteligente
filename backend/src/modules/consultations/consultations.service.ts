@@ -88,6 +88,10 @@ export class ConsultationsService {
         throw new Error("La cita ya tiene una consulta registrada");
       }
 
+      const vitalSigns = appointment.modalidad === ModalidadAtencion.VIRTUAL
+        ? this.virtualVitalSigns(appointment.preconsulta?.signosVitales, appointment.lecturaSignosVitales?.frecCardiaca)
+        : input.signosVitales;
+
       const consultation = await consultations.create({
         citaId: input.citaId,
         tipoFicha: input.tipoFicha,
@@ -101,7 +105,7 @@ export class ConsultationsService {
 
       await consultations.createVitalSigns({
         consultaId: consultation.id,
-        ...this.normalizeVitalSigns(input.signosVitales),
+        ...this.normalizeVitalSigns(vitalSigns),
       });
       const prescriptions = new PrescriptionsRepository(transaction);
       for (const receta of input.recetas) {
@@ -142,6 +146,22 @@ export class ConsultationsService {
       ...this.normalizeVitalSign(signs?.frecCardiaca, "frecCardiaca", (value) => this.validNumber(value, 1, 300, true)),
       ...this.normalizeVitalSign(signs?.frecRespiratoria, "frecRespiratoria", (value) => this.validNumber(value, 1, 150, true)),
     };
+  }
+
+  private virtualVitalSigns(preconsultationSigns: Prisma.JsonValue | null | undefined, heartRate?: number | null) {
+    if (heartRate == null) {
+      throw new Error("La frecuencia cardiaca del dispositivo es obligatoria para completar la consulta virtual");
+    }
+    const declared = preconsultationSigns && typeof preconsultationSigns === "object" && !Array.isArray(preconsultationSigns)
+      ? preconsultationSigns as Prisma.JsonObject
+      : {};
+    const height = declared.tallaCm;
+    return {
+      ...(typeof height === "number" && Number.isFinite(height)
+        ? { tallaCm: { estado: EstadoSignoVital.AUTORREPORTADO, valor: height } }
+        : {}),
+      frecCardiaca: { estado: EstadoSignoVital.MEDIDO, valor: heartRate },
+    } satisfies ConsultationInput["signosVitales"];
   }
 
   private normalizeVitalSign<T extends number | string>(

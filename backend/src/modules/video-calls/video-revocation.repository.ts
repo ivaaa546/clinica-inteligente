@@ -1,10 +1,8 @@
-import { randomUUID } from "node:crypto";
 import {
   CausaRevocacionVideo,
   EstadoTareaRevocacionVideo,
   Prisma,
   PrismaClient,
-  TareaRevocacionVideo,
 } from "@prisma/client";
 
 type DbClient = PrismaClient | Prisma.TransactionClient;
@@ -15,51 +13,33 @@ export class VideoRevocationRepository {
   constructor(private readonly db: DbClient) {}
 
   async enqueue(citaId: string, causa: CausaRevocacionVideo, now = new Date()) {
-    const id = randomUUID();
-    const tasks = await this.db.$queryRaw<TareaRevocacionVideo[]>(Prisma.sql`
-      INSERT INTO "tarea_revocacion_video" (
-        "id", "cita_id", "causa", "estado", "intentos", "proximo_intento_en", "creado_en", "actualizado_en"
-      ) VALUES (
-        ${id}::uuid, ${citaId}::uuid, ${causa}::"CausaRevocacionVideo", 'PENDIENTE'::"EstadoTareaRevocacionVideo", 0, ${now}, ${now}, ${now}
-      )
-      ON CONFLICT ("cita_id", "causa")
-        WHERE "estado" IN ('PENDIENTE', 'EN_PROCESO')
-      DO UPDATE SET "actualizado_en" = "tarea_revocacion_video"."actualizado_en"
-      RETURNING
-        "id", "cita_id" AS "citaId", "causa", "estado", "intentos",
-        "proximo_intento_en" AS "proximoIntentoEn", "completada_en" AS "completadaEn",
-        "creado_en" AS "creadoEn", "actualizado_en" AS "actualizadoEn"
-    `);
-
-    return tasks[0];
+    try {
+      return await this.db.tareaRevocacionVideo.create({
+        data: { citaId, causa, proximoIntentoEn: now },
+      });
+    } catch (error) {
+      if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") throw error;
+      return this.db.tareaRevocacionVideo.findFirstOrThrow({
+        where: { citaId, causa, estado: { in: ["PENDIENTE", "EN_PROCESO"] } },
+      });
+    }
   }
 
-  // SKIP LOCKED permite que cada consumidor reciba una tarea distinta sin bloqueo global.
+  // Reclamo optimista: si dos consumidores eligen la misma tarea, solo uno cambia su estado.
   async claimNext(now = new Date()) {
-    const tasks = await this.db.$queryRaw<TareaRevocacionVideo[]>(Prisma.sql`
-      WITH siguiente AS (
-        SELECT "id"
-        FROM "tarea_revocacion_video"
-        WHERE "estado" = 'PENDIENTE'::"EstadoTareaRevocacionVideo"
-          AND "proximo_intento_en" <= ${now}
-        ORDER BY "proximo_intento_en" ASC, "creado_en" ASC
-        FOR UPDATE SKIP LOCKED
-        LIMIT 1
-      )
-      UPDATE "tarea_revocacion_video" AS tarea
-      SET
-        "estado" = 'EN_PROCESO'::"EstadoTareaRevocacionVideo",
-        "intentos" = tarea."intentos" + 1,
-        "actualizado_en" = ${now}
-      FROM siguiente
-      WHERE tarea."id" = siguiente."id"
-      RETURNING
-        tarea."id", tarea."cita_id" AS "citaId", tarea."causa", tarea."estado", tarea."intentos",
-        tarea."proximo_intento_en" AS "proximoIntentoEn", tarea."completada_en" AS "completadaEn",
-        tarea."creado_en" AS "creadoEn", tarea."actualizado_en" AS "actualizadoEn"
-    `);
-
-    return tasks[0] ?? null;
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const task = await this.db.tareaRevocacionVideo.findFirst({
+        where: { estado: "PENDIENTE", proximoIntentoEn: { lte: now } },
+        orderBy: [{ proximoIntentoEn: "asc" }, { creadoEn: "asc" }],
+      });
+      if (!task) return null;
+      const claimed = await this.db.tareaRevocacionVideo.updateMany({
+        where: { id: task.id, estado: "PENDIENTE", proximoIntentoEn: { lte: now } },
+        data: { estado: "EN_PROCESO", intentos: { increment: 1 } },
+      });
+      if (claimed.count === 1) return this.db.tareaRevocacionVideo.findUnique({ where: { id: task.id } });
+    }
+    return null;
   }
 
   async complete(id: string, completedAt = new Date()) {

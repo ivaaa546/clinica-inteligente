@@ -155,6 +155,11 @@ export class AppointmentsService {
           antecedentesIniciales: appointment.preconsulta.antecedentesIniciales,
           signosVitales: appointment.preconsulta.signosVitales,
         },
+        lecturaSignosVitales: appointment.lecturaSignosVitales && {
+          frecCardiaca: appointment.lecturaSignosVitales.frecCardiaca,
+          medidoEn: appointment.lecturaSignosVitales.medidoEn,
+          actualizadoEn: appointment.lecturaSignosVitales.actualizadoEn,
+        },
         consulta: appointment.consulta && { diagnostico: appointment.consulta.diagnostico },
       };
     }
@@ -176,9 +181,19 @@ export class AppointmentsService {
     }
 
     // El médico conserva la vista clínica prevista, sin identificadores operativos de sala.
-    const { salaVideoId: _salaVideoId, videoRevocadaEn: _videoRevocadaEn, ...doctorView } = appointment;
+    const {
+      salaVideoId: _salaVideoId,
+      videoRevocadaEn: _videoRevocadaEn,
+      lecturaSignosVitales,
+      ...doctorView
+    } = appointment;
     return {
       ...doctorView,
+      lecturaSignosVitales: lecturaSignosVitales && {
+        frecCardiaca: lecturaSignosVitales.frecCardiaca,
+        medidoEn: lecturaSignosVitales.medidoEn,
+        actualizadoEn: lecturaSignosVitales.actualizadoEn,
+      },
       ...(appointment.modalidad === ModalidadAtencion.PRESENCIAL
         ? { direccionAtencionPresencial: appointment.direccionAtencionPresencial }
         : { direccionAtencionPresencial: undefined }),

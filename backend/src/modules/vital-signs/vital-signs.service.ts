@@ -6,14 +6,11 @@ import { VitalSignsRepository } from "./vital-signs.repository.js";
 export class VitalSignsService {
   constructor(private readonly db: PrismaClient) {}
 
-  // Devuelve la lectura del dispositivo o, si aún no existe, los signos autorreportados en la preconsulta.
+  // Solo una lectura real del dispositivo habilita la videollamada.
   async get(citaId: string) {
-    const appointment = await this.findAppointment(citaId);
+    await this.findAppointment(citaId);
     const reading = await new VitalSignsRepository(this.db).findByAppointment(citaId);
-    if (!reading) {
-      const declared = (appointment.preconsulta?.signosVitales ?? {}) as { frecCardiaca?: number };
-      return { citaId, origen: declared.frecCardiaca != null ? "PRECONSULTA" : "VACIO", frecCardiaca: declared.frecCardiaca ?? null };
-    }
+    if (!reading) return { citaId, origen: "VACIO", frecCardiaca: null };
     return { citaId, origen: "DISPOSITIVO", ...this.present(reading) };
   }
 
@@ -22,6 +19,11 @@ export class VitalSignsService {
     const appointment = await this.findAppointment(citaId);
     if (appointment.estado !== "ACEPTADA") throw new Error("La cita debe estar aceptada para registrar signos vitales");
     if (await this.db.consulta.findUnique({ where: { citaId } })) throw new Error("La cita ya tiene una consulta registrada");
+    const now = new Date();
+    const measurementStartsAt = new Date(appointment.inicio.getTime() - 10 * 60_000);
+    if (now < measurementStartsAt || now >= appointment.fin) {
+      throw new Error("La frecuencia cardiaca solo puede registrarse desde 10 minutos antes y durante la cita");
+    }
 
     const reading = await new VitalSignsRepository(this.db).upsert(citaId, {
       frecCardiaca: input.frecCardiaca,

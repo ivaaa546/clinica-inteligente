@@ -92,7 +92,7 @@ describe.skipIf(!enabled)("cierre de consulta integrado", () => {
       })
     ).id;
 
-    for (let index = 1; index <= 4; index += 1) {
+    for (let index = 1; index <= 5; index += 1) {
       const inicio = new Date(Date.now() + (24 + index) * 60 * 60 * 1_000);
       const disponibilidad = await prisma.disponibilidad.create({
         data: {
@@ -110,10 +110,17 @@ describe.skipIf(!enabled)("cierre de consulta integrado", () => {
           disponibilidadId: disponibilidad.id,
           inicio: disponibilidad.inicio,
           fin: disponibilidad.fin,
-          estado: "ACEPTADA", modalidad: "PRESENCIAL", direccionAtencionPresencial: "Direccion de prueba",
+          estado: "ACEPTADA",
+          modalidad: index === 5 ? "VIRTUAL" : "PRESENCIAL",
+          direccionAtencionPresencial: index === 5 ? null : "Direccion de prueba",
+          salaVideoId: index === 5 ? `video-room_consultations-${suffix}` : null,
         },
       });
       appointmentIds.push(cita.id);
+      if (index === 5) {
+        await prisma.preconsulta.create({ data: { citaId: cita.id, motivoConsulta: "Control virtual", signosVitales: { tallaCm: 169 } } });
+        await prisma.lecturaSignosVitales.create({ data: { citaId: cita.id, frecCardiaca: 77 } });
+      }
     }
 
     const login = await doctorAgent
@@ -132,6 +139,9 @@ describe.skipIf(!enabled)("cierre de consulta integrado", () => {
     await prisma.consulta.deleteMany({
       where: { citaId: { in: appointmentIds } },
     });
+    await prisma.tareaRevocacionVideo.deleteMany({ where: { citaId: { in: appointmentIds } } });
+    await prisma.lecturaSignosVitales.deleteMany({ where: { citaId: { in: appointmentIds } } });
+    await prisma.preconsulta.deleteMany({ where: { citaId: { in: appointmentIds } } });
     await prisma.cita.deleteMany({ where: { id: { in: appointmentIds } } });
     await prisma.disponibilidad.deleteMany({
       where: { id: { in: availabilityIds } },
@@ -210,5 +220,30 @@ describe.skipIf(!enabled)("cierre de consulta integrado", () => {
         where: { usuarioId: doctorUserId, accion: "CONSULTA_CREADA" },
       }),
     ).toBe(2);
+  });
+
+  it("en videollamada usa solo la talla de preconsulta y la frecuencia del ESP32", async () => {
+    const response = await doctorAgent
+      .post("/api/v1/consultations")
+      .send({
+        ...consultationPayload(appointmentIds[4]),
+        signosVitales: { ...validVitalSigns, tallaCm: 190, frecCardiaca: 250 },
+      });
+
+    expect(response.status).toBe(201);
+    const consultation = await prisma.consulta.findUniqueOrThrow({
+      where: { citaId: appointmentIds[4] },
+      include: { signosVitales: true },
+    });
+    expect(consultation.signosVitales).toMatchObject({
+      pesoLb: null,
+      tallaCmEstado: "AUTORREPORTADO",
+      temperatura: null,
+      presionArterial: null,
+      frecCardiaca: 77,
+      frecCardiacaEstado: "MEDIDO",
+      frecRespiratoria: null,
+    });
+    expect(consultation.signosVitales?.tallaCm?.toString()).toBe("169");
   });
 });
