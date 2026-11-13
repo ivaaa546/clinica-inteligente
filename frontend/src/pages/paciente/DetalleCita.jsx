@@ -216,7 +216,7 @@ export default function DetalleCita() {
             <li><strong>Copia tu código</strong><span>Haz clic en el botón “Copiar código” de esta pantalla.</span></li>
             <li><strong>Conéctate al sensor</strong><span>Ve a los ajustes de WiFi de tu computadora o celular y conéctate a <b>Sensor_Cardiaco_ESP32</b>.</span></li>
             <li><strong>Vincula tu cita</strong><span>En la pantalla que se abrirá, selecciona el WiFi de tu casa, escribe la contraseña y pega el código copiado.</span></li>
-            <li><strong>Toma tu lectura</strong><span>Haz clic en “Guardar”. Cuando el dispositivo se conecte a internet, coloca tu dedo sobre el sensor para enviar tu frecuencia cardíaca.</span></li>
+            <li><strong>Toma tu lectura</strong><span>Haz clic en “Guardar”. Cuando el dispositivo se conecte a internet, coloca los parches en el pecho derecho, el pecho izquierdo y el área del estómago para enviar tu frecuencia cardíaca.</span></li>
           </ol>
           {!lecturaLista && <p className="dc-sensor__notice">Por seguridad, no podrás entrar a la videollamada hasta que se reciba la lectura. La página verifica el resultado automáticamente.</p>}
         </section>
