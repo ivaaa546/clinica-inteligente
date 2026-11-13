@@ -65,6 +65,7 @@ const toAgendaAppointment = (appointment: ApiDoctorAppointment): CitaAgenda => {
   const fecha = clinicDateKey(appointment.inicio)
   const inicio = agendaTime(appointment.inicio)
   const fin = agendaTime(appointment.fin)
+  const now = Date.now()
   if (!fecha || !inicio || !fin) throw new Error('La API devolvió una cita con horario inválido.')
 
   return {
@@ -78,7 +79,8 @@ const toAgendaAppointment = (appointment: ApiDoctorAppointment): CitaAgenda => {
       nombre: `${appointment.paciente.nombre} ${appointment.paciente.apellidos}`,
       telefono: appointment.paciente.telefono,
     },
-    futura: new Date(appointment.inicio).getTime() > Date.now(),
+    futura: new Date(appointment.inicio).getTime() > now,
+    enHorario: new Date(appointment.inicio).getTime() <= now && now < new Date(appointment.fin).getTime(),
     llamada: 'SIN_INICIAR',
     puedeConsultar: appointment.estado === 'ACEPTADA' && appointment.consultaId === null,
     consultaId: appointment.consultaId,
@@ -472,10 +474,13 @@ export async function obtenerContextoConsulta(citaId: string): Promise<ContextoC
   const cita = toMedicalAppointment(appointment)
   const paciente = toPatient(appointment.paciente)
   const fichas = fichasDisponibles(paciente, cita.fecha)
+  const preconsultationSigns = appointment.preconsulta?.signosVitales ?? {}
+  const reportedHeight = preconsultationSigns.tallaCm
   const preconsulta = appointment.preconsulta ? {
     ...appointment.preconsulta,
+    // No se muestran ni reutilizan mediciones antiguas de campos ahora bloqueados.
     signosVitales: {
-      ...(appointment.preconsulta.signosVitales ?? {}),
+      ...(typeof reportedHeight === 'number' && Number.isFinite(reportedHeight) ? { tallaCm: reportedHeight } : {}),
       ...(appointment.lecturaSignosVitales ? { frecCardiaca: appointment.lecturaSignosVitales.frecCardiaca } : {}),
     },
   } : null

@@ -6,14 +6,11 @@ import { VitalSignsRepository } from "./vital-signs.repository.js";
 export class VitalSignsService {
   constructor(private readonly db: PrismaClient) {}
 
-  // Devuelve la lectura del dispositivo o, si aún no existe, los signos autorreportados en la preconsulta.
+  // Solo una lectura real del dispositivo habilita la videollamada.
   async get(citaId: string) {
-    const appointment = await this.findAppointment(citaId);
+    await this.findAppointment(citaId);
     const reading = await new VitalSignsRepository(this.db).findByAppointment(citaId);
-    if (!reading) {
-      const declared = (appointment.preconsulta?.signosVitales ?? {}) as { frecCardiaca?: number };
-      return { citaId, origen: declared.frecCardiaca != null ? "PRECONSULTA" : "VACIO", frecCardiaca: declared.frecCardiaca ?? null };
-    }
+    if (!reading) return { citaId, origen: "VACIO", frecCardiaca: null };
     return { citaId, origen: "DISPOSITIVO", ...this.present(reading) };
   }
 

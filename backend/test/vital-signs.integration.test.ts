@@ -54,10 +54,10 @@ describe.skipIf(!enabled)("signos vitales de dispositivo (ESP32)", () => {
     expect((await request(app).get(url(appointmentId)).set("x-device-key", "incorrecta")).status).toBe(401);
   });
 
-  it("GET devuelve la preconsulta como base y 404 si la cita no existe", async () => {
+  it("GET no acepta una frecuencia autorreportada como lectura del dispositivo y devuelve 404 si la cita no existe", async () => {
     const response = await request(app).get(url(appointmentId)).set(key);
     expect(response.status).toBe(200);
-    expect(response.body).toMatchObject({ origen: "PRECONSULTA", frecCardiaca: 70 });
+    expect(response.body).toMatchObject({ origen: "VACIO", frecCardiaca: null });
     expect((await request(app).get(url("00000000-0000-4000-8000-000000000000")).set(key)).status).toBe(404);
   });
 

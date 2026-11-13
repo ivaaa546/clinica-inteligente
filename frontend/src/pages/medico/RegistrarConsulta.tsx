@@ -76,6 +76,7 @@ const PRECONSULTA_SIGNOS = [
   ['pesoLb', 'Peso', 'lb'], ['tallaCm', 'Talla', 'cm'], ['temperatura', 'Temperatura', '°C'],
   ['presionArterial', 'Presión arterial', ''], ['frecCardiaca', 'Frecuencia cardíaca', 'lpm'], ['frecRespiratoria', 'Frecuencia respiratoria', 'rpm'],
 ] as const
+const PRECONSULTA_HABILITADOS = new Set(['tallaCm', 'frecCardiaca'])
 
 const textoPreconsulta = (value: unknown) => typeof value === 'string' ? value : value ? JSON.stringify(value) : 'No registrado'
 
@@ -242,10 +243,15 @@ export default function RegistrarConsulta({ citaCodigoProp, embedded = false }: 
           <div className="md-grid2">
             {PRECONSULTA_SIGNOS.map(([field, label, unit]) => {
               const value = preconsulta.signosVitales?.[field]
-              return <div className="md-campo" key={field}><span>{label}</span><div className="md-caja">{value === undefined || value === null || value === '' ? 'No registrado' : `${value}${unit ? ` ${unit}` : ''}`}</div></div>
+              const locked = !PRECONSULTA_HABILITADOS.has(field)
+              const emptyLabel = field === 'frecCardiaca' ? 'Pendiente del sensor' : 'No registrado'
+              const text = locked
+                ? 'Próximamente'
+                : value === undefined || value === null || value === '' ? emptyLabel : `${value}${unit ? ` ${unit}` : ''}`
+              return <div className="md-campo" key={field}><span>{label}</span><div className={`md-caja ${locked ? 'rc-locked-value' : ''}`}>{text}</div></div>
             })}
           </div>
-          <p className="md-ayuda">Son datos autorreportados por el paciente; verifica o registra las mediciones clínicas si corresponde.</p>
+          <p className="md-aviso"><Info size={15} aria-hidden="true" /> Solo la talla puede ser autorreportada. La frecuencia cardíaca llegará desde el sensor ESP32; las demás mediciones permanecerán bloqueadas hasta una próxima implementación.</p>
         </section>
       )}
 

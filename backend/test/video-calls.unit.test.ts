@@ -119,7 +119,7 @@ describe.skipIf(!enabled)("emisor y revocador de videollamadas", () => {
 
     await expect(service.issueAccess({ userId: patientUserId, role: RolUsuario.PACIENTE }, appointment.id, now)).resolves.toMatchObject({ url: "https://fake.livekit.invalid" });
     await expect(service.issueAccess({ userId: doctorUserId, role: RolUsuario.MEDICO }, appointment.id, now)).resolves.toBeDefined();
-    await expect(service.issueAccess({ userId: thirdPartyUserId, role: RolUsuario.PACIENTE }, appointment.id, now)).rejects.toThrow("no esta asignado");
+    await expect(service.issueAccess({ userId: thirdPartyUserId, role: RolUsuario.PACIENTE }, appointment.id, now)).rejects.toThrow("Cita no encontrada");
     await expect(service.issueAccess({ userId: adminUserId, role: RolUsuario.ADMINISTRADOR }, appointment.id, now)).rejects.toThrow("administrador");
     expect(provider.accessRequests).toHaveLength(2);
 
@@ -139,8 +139,8 @@ describe.skipIf(!enabled)("emisor y revocador de videollamadas", () => {
     for (const appointment of cases) await expect(service.issueAccess(actor, appointment.id, now)).rejects.toThrow();
     const early = await createAppointment("ACEPTADA", new Date(now.getTime() + 6 * 60_000));
     const finished = await createAppointment("ACEPTADA", new Date(now.getTime() - 31 * 60_000));
-    await expect(service.issueAccess(actor, early.id, now)).rejects.toThrow("hora programada");
-    await expect(service.issueAccess(actor, finished.id, now)).rejects.toThrow("finalizo");
+    await expect(service.issueAccess(actor, early.id, now)).rejects.toMatchObject({ status: 422, code: "VIDEO_TOO_EARLY" });
+    await expect(service.issueAccess(actor, finished.id, now)).rejects.toMatchObject({ status: 422, code: "VIDEO_ENDED" });
     expect(provider.accessRequests).toHaveLength(0);
   });
 
@@ -148,7 +148,7 @@ describe.skipIf(!enabled)("emisor y revocador de videollamadas", () => {
     const appointment = await createAppointment("ACEPTADA", new Date(now.getTime() - 60_000));
     const provider = new FakeVideoProvider();
     const service = new VideoCallsService(prisma, provider);
-    await expect(service.issueAccess({ userId: patientUserId, role: RolUsuario.PACIENTE }, appointment.id, now)).rejects.toThrow("frecuencia cardiaca");
+    await expect(service.issueAccess({ userId: patientUserId, role: RolUsuario.PACIENTE }, appointment.id, now)).rejects.toMatchObject({ status: 422, code: "HEART_RATE_REQUIRED" });
     await expect(service.issueAccess({ userId: doctorUserId, role: RolUsuario.MEDICO }, appointment.id, now)).resolves.toBeDefined();
     await prisma.lecturaSignosVitales.create({ data: { citaId: appointment.id, frecCardiaca: 78 } });
     await expect(service.issueAccess({ userId: patientUserId, role: RolUsuario.PACIENTE }, appointment.id, now)).resolves.toBeDefined();

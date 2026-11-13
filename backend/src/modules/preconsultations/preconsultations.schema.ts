@@ -1,12 +1,7 @@
 import { z } from "zod";
 
 export const vitalSignsSchema = z.object({
-  pesoLb: z.number().positive().optional(),
   tallaCm: z.number().positive().optional(),
-  temperatura: z.number().positive().optional(),
-  presionArterial: z.string().regex(/^\d{2,3}\/\d{2,3}$/).optional(),
-  frecCardiaca: z.number().int().positive().optional(),
-  frecRespiratoria: z.number().int().positive().optional(),
 }).strict();
 
 export const preconsultationSchema = z.object({
@@ -14,6 +9,6 @@ export const preconsultationSchema = z.object({
   citaId: z.string().uuid(),
   motivoConsulta: z.string().min(1),
   antecedentesIniciales: z.any().optional(),
-  // Son datos autorreportados y completamente opcionales antes de la consulta.
+  // En esta fase solo la talla puede ser autorreportada; los demás campos se obtendrán de dispositivos.
   signosVitales: vitalSignsSchema.optional(),
 });
