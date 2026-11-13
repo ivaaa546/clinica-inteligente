@@ -2,6 +2,18 @@
   height: 100vh; height: 100dvh; display: flex; flex-direction: column;
   background: #0f1f17; color: #fff;
 }
+.vc-doctor-workspace { height: 100vh; height: 100dvh; display: grid; grid-template-columns: minmax(420px, 54%) minmax(420px, 46%); background: #f5faf6; overflow: hidden; }
+.vc-doctor-video, .vc-doctor-form { min-width: 0; min-height: 0; }
+.vc-doctor-form { overflow: auto; padding: 18px; border-left: 1px solid #d6e6da; }
+.vc--embedded { height: 100%; }
+.vc--embedded .vc-top { height: 58px; padding: 0 18px; }
+.vc--embedded .vc-stage { padding: 14px; }
+.vc--embedded .vc-remote { border-radius: 14px; padding: 14px; }
+.vc--embedded .vc-remote__media { inset: 14px; }
+.vc--embedded .vc-remote__media video { border-radius: 14px; }
+.vc--embedded .vc-self { right: 28px; bottom: 28px; width: 180px; height: 112px; }
+.vc--embedded .vc-controls { height: 74px; gap: 10px; }
+.vc--embedded .vc-btn { height: 46px; min-width: 46px; }
 .vc--center { align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px; }
 .vc--center p { margin: 0; max-width: 460px; font-size: 16px; line-height: 1.5; color: #d3e7d9; }
 .vc-link { font-weight: 700; color: #9fe0b6; }
@@ -54,6 +66,12 @@
   .vc-top { padding: 0 16px; }
   .vc-stage { padding: 12px; }
   .vc-self { right: 24px; bottom: 24px; width: 140px; height: 96px; }
+}
+
+@media (max-width: 1050px) {
+  .vc-doctor-workspace { height: auto; min-height: 100dvh; grid-template-columns: 1fr; overflow: visible; }
+  .vc-doctor-video { height: 70dvh; min-height: 520px; }
+  .vc-doctor-form { overflow: visible; border-left: 0; border-top: 1px solid #d6e6da; }
 }
 
 .vc-btn--ghost { background: transparent; border: 1px solid rgba(255, 255, 255, .3); padding: 0 20px; }

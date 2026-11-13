@@ -10,6 +10,14 @@
 
 .rc-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
 .rc-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.rc-page { display: flex; flex-direction: column; gap: 20px; }
+.rc-page--embedded { gap: 14px; }
+.rc-page--embedded .md-head h1 { font-size: 24px; }
+.rc-page--embedded .rc-layout { grid-template-columns: 1fr; gap: 14px; }
+.rc-page--embedded .rc-banner { padding: 14px; }
+.rc-page--embedded .rc-banner__cita { margin-left: 0; text-align: left; }
+.rc-page--embedded .md-card { padding: 16px; }
+.rc-page--embedded .rc-pie { position: static; }
 
 /* Tipo de ficha */
 .rc-ficha { display: grid; grid-template-columns: auto 1fr; gap: 12px 28px; align-items: center; }

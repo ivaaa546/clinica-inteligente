@@ -37,6 +37,25 @@
 .dc-hero--presencial .dc-cancel:hover:not(:disabled) { background: #fdf1f0; }
 .dc-cancel:disabled { opacity: .55; cursor: not-allowed; }
 
+.dc-sensor { padding: 22px; border: 1px solid #cfe5d6; border-radius: 16px; background: #fff; display: flex; flex-direction: column; gap: 18px; }
+.dc-sensor__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+.dc-sensor__head h2 { margin: 6px 0; color: var(--color-text); font-size: 22px; }
+.dc-sensor__head p { margin: 0; max-width: 760px; color: var(--color-muted); line-height: 1.5; }
+.dc-sensor__eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 800; color: var(--color-primary); }
+.dc-sensor__status { flex-shrink: 0; padding: 9px 12px; border-radius: 999px; background: #fff6d6; color: #6e5700; display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; }
+.dc-sensor__status.is-ready { background: #e8f6ed; color: var(--color-primary-dark); }
+.dc-code { display: flex; flex-direction: column; gap: 7px; max-width: 720px; }
+.dc-code > span:first-child { font-size: 13px; font-weight: 700; color: #617366; }
+.dc-code__row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+.dc-code input { min-width: 0; height: 44px; padding: 0 12px; border: 1px solid var(--color-border); border-radius: 10px; background: #f6f9f7; font: inherit; color: var(--color-text); }
+.dc-code button { padding: 0 16px; border: 0; border-radius: 10px; background: var(--color-primary); color: #fff; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; }
+.dc-steps { margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; list-style: none; counter-reset: sensor-step; }
+.dc-steps li { min-width: 0; padding: 14px; border-radius: 12px; background: var(--color-soft); display: flex; flex-direction: column; gap: 7px; counter-increment: sensor-step; }
+.dc-steps li::before { content: counter(sensor-step); width: 26px; height: 26px; border-radius: 50%; background: var(--color-primary); color: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 800; }
+.dc-steps strong { color: var(--color-text); font-size: 14px; }
+.dc-steps span { color: var(--color-muted); font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+.dc-sensor__notice { margin: 0; padding: 10px 12px; border-radius: 9px; background: #fff6d6; color: #6e5700; font-size: 13px; font-weight: 700; }
+
 /* ---- Datos y reprogramación ---- */
 .dc-main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
 .dc-card {
@@ -92,11 +111,15 @@
 
 @media (max-width: 1000px) {
   .dc-main { grid-template-columns: 1fr; }
+  .dc-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {
   .dc-head { flex-direction: column; align-items: flex-start; }
   .dc-data, .dc-two { grid-template-columns: 1fr; }
   .dc-hero__actions { width: 100%; }
+  .dc-sensor__head { flex-direction: column; }
+  .dc-code__row, .dc-steps { grid-template-columns: 1fr; }
+  .dc-code button { min-height: 44px; }
 }
 
 .dc-preconsult { grid-column: 1 / -1; }

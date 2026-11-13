@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Search, ChevronDown, CalendarDays, ArrowRight, MapPin, Video } from 'lucide-react'
+import { Search, ChevronDown, CalendarDays, ArrowRight, Info, MapPin, Video } from 'lucide-react'
 import { listDoctorAvailability } from '../../features/disponibilidad/api/availability.js'
 import { requestAppointment } from '../../features/citas/api/appointments.js'
 import { listDoctors } from '../../api/doctors.js'
@@ -38,8 +38,7 @@ export default function SolicitarCita() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createdAppointment, setCreatedAppointment] = useState(null)
   const [preconsulta, setPreconsulta] = useState({
-    motivoConsulta: '', antecedentesIniciales: '', pesoLb: '', tallaCm: '', temperatura: '',
-    presionArterial: '', frecCardiaca: '', frecRespiratoria: '',
+    motivoConsulta: '', antecedentesIniciales: '', tallaCm: '',
   })
   const [now] = useState(() => Date.now())
 
@@ -127,14 +126,13 @@ export default function SolicitarCita() {
   const construirPreconsulta = () => {
     const motivoConsulta = preconsulta.motivoConsulta.trim()
     const antecedentesIniciales = preconsulta.antecedentesIniciales.trim()
-    const vitalFields = ['pesoLb', 'tallaCm', 'temperatura', 'presionArterial', 'frecCardiaca', 'frecRespiratoria']
     if (!motivoConsulta || !antecedentesIniciales) {
       throw new Error('Motivo de consulta y antecedentes iniciales son obligatorios.')
     }
 
-    const signosVitales = Object.fromEntries(vitalFields
-      .filter((field) => preconsulta[field].trim())
-      .map((field) => [field, field === 'presionArterial' ? preconsulta[field].trim() : Number(preconsulta[field])]))
+    const signosVitales = preconsulta.tallaCm.trim()
+      ? { tallaCm: Number(preconsulta.tallaCm) }
+      : {}
     return {
       motivoConsulta,
       ...(antecedentesIniciales ? { antecedentesIniciales } : {}),
@@ -170,7 +168,7 @@ export default function SolicitarCita() {
         preconsulta: construirPreconsulta(),
       })
       setCreatedAppointment(appointment)
-      window.setTimeout(() => navigate('/paciente', { replace: true }), 800)
+      window.setTimeout(() => navigate(`/paciente/citas/${appointment.id}`, { replace: true }), 800)
     } catch (requestError) {
       setError(requestError)
     } finally {
@@ -339,14 +337,18 @@ export default function SolicitarCita() {
               <span>Antecedentes iniciales *</span>
               <textarea required value={preconsulta.antecedentesIniciales} onChange={(event) => actualizarPreconsulta('antecedentesIniciales', event.target.value)} rows="3" placeholder="Alergias, tratamientos o información relevante" />
             </label>
-            <p className="sol-slots__title">Signos vitales (opcionales, autorreportados)</p>
+            <p className="sol-slots__title">Datos físicos de preconsulta</p>
+            <div className="sol-info" role="status">
+              <Info size={17} color="#4f6e5b" />
+              <p>Por ahora solo puedes registrar tu talla. Las demás mediciones se habilitarán con nuevas implementaciones para seguir mejorando el servicio; la frecuencia cardíaca se obtendrá con el sensor antes de la videollamada.</p>
+            </div>
             <div className="sol-row">
-              <label className="sol-field"><span>Peso (lb)</span><input type="number" min="0" step="0.1" value={preconsulta.pesoLb} onChange={(event) => actualizarPreconsulta('pesoLb', event.target.value)} /></label>
+              <label className="sol-field"><span>Peso (lb)</span><input disabled placeholder="Próximamente" /></label>
               <label className="sol-field"><span>Talla (cm)</span><input type="number" min="0" step="0.1" value={preconsulta.tallaCm} onChange={(event) => actualizarPreconsulta('tallaCm', event.target.value)} /></label>
-              <label className="sol-field"><span>Temperatura (°C)</span><input type="number" min="0" step="0.1" value={preconsulta.temperatura} onChange={(event) => actualizarPreconsulta('temperatura', event.target.value)} /></label>
-              <label className="sol-field"><span>Presión arterial</span><input value={preconsulta.presionArterial} placeholder="120/80" onChange={(event) => actualizarPreconsulta('presionArterial', event.target.value)} /></label>
-              <label className="sol-field"><span>Frecuencia cardíaca</span><input type="number" min="0" value={preconsulta.frecCardiaca} onChange={(event) => actualizarPreconsulta('frecCardiaca', event.target.value)} /></label>
-              <label className="sol-field"><span>Frecuencia respiratoria</span><input type="number" min="0" value={preconsulta.frecRespiratoria} onChange={(event) => actualizarPreconsulta('frecRespiratoria', event.target.value)} /></label>
+              <label className="sol-field"><span>Temperatura (°C)</span><input disabled placeholder="Próximamente" /></label>
+              <label className="sol-field"><span>Presión arterial</span><input disabled placeholder="Próximamente" /></label>
+              <label className="sol-field"><span>Frecuencia cardíaca</span><input disabled placeholder="Se obtiene con el sensor" /></label>
+              <label className="sol-field"><span>Frecuencia respiratoria</span><input disabled placeholder="Próximamente" /></label>
             </div>
           </section>
         </section>

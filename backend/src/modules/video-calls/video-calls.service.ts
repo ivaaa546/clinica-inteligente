@@ -59,7 +59,11 @@ export class VideoCallsService {
     if (![RolUsuario.PACIENTE, RolUsuario.MEDICO].includes(actor.role)) return "Rol no autorizado";
     if (appointment.modalidad !== "VIRTUAL" || !appointment.salaVideoId) return "La cita no tiene videollamada";
     if (appointment.estado !== EstadoCita.ACEPTADA || appointment.videoRevocadaEn) return "El acceso de videollamada no esta habilitado";
-    // Una cita virtual aceptada puede abrirse en cualquier momento hasta que cambie de estado.
+    if (now < appointment.inicio) return "La videollamada estara disponible a la hora programada";
+    if (now >= appointment.fin) return "El horario de la videollamada ya finalizo";
+    if (actor.role === RolUsuario.PACIENTE && !appointment.lecturaSignosVitales) {
+      return "Debes registrar tu frecuencia cardiaca antes de entrar a la videollamada";
+    }
     return null;
   }
 }

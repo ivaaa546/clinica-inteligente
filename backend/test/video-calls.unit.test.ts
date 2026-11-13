@@ -90,6 +90,7 @@ describe.skipIf(!enabled)("emisor y revocador de videollamadas", () => {
   afterAll(async () => {
     await prisma.auditoria.deleteMany({ where: { usuarioId: { in: [patientUserId, doctorUserId, thirdPartyUserId, adminUserId] } } });
     await prisma.tareaRevocacionVideo.deleteMany({ where: { cita: { medicoId: doctorId } } });
+    await prisma.lecturaSignosVitales.deleteMany({ where: { citaId: { in: appointmentIds } } });
     await prisma.cita.deleteMany({ where: { id: { in: appointmentIds } } });
     await prisma.disponibilidad.deleteMany({ where: { medicoId: doctorId } });
     await prisma.medico.deleteMany({ where: { id: doctorId } });
@@ -99,8 +100,7 @@ describe.skipIf(!enabled)("emisor y revocador de videollamadas", () => {
   });
 
   async function createAppointment(estado: EstadoCita, inicio = new Date(now.getTime() + 60_000), modalidad: "VIRTUAL" | "PRESENCIAL" = "VIRTUAL") {
-    const nextTestSlot = now.getTime() + (appointmentSequence++ + 1) * 31 * 60_000;
-    const scheduledStart = new Date(Math.max(inicio.getTime(), nextTestSlot));
+    const scheduledStart = new Date(inicio.getTime() + appointmentSequence++);
     const availability = await prisma.disponibilidad.create({ data: { medicoId: doctorId, inicio: scheduledStart, fin: new Date(scheduledStart.getTime() + 30 * 60_000), modalidades: [modalidad] } });
     const appointment = await prisma.cita.create({ data: {
       pacienteId: patientId, medicoId: doctorId, disponibilidadId: availability.id, inicio: scheduledStart, fin: availability.fin, estado, modalidad,
@@ -112,7 +112,8 @@ describe.skipIf(!enabled)("emisor y revocador de videollamadas", () => {
   }
 
   it("autoriza solo a Paciente y Medico asignados para una cita virtual aceptada y nunca audita secretos", async () => {
-    const appointment = await createAppointment("ACEPTADA", new Date(now.getTime() + 4 * 60_000));
+    const appointment = await createAppointment("ACEPTADA", new Date(now.getTime() - 60_000));
+    await prisma.lecturaSignosVitales.create({ data: { citaId: appointment.id, frecCardiaca: 72 } });
     const provider = new FakeVideoProvider();
     const service = new VideoCallsService(prisma, provider);
 
@@ -127,20 +128,30 @@ describe.skipIf(!enabled)("emisor y revocador de videollamadas", () => {
     expect(JSON.stringify(records)).not.toContain("https://fake.livekit.invalid");
   });
 
-  it("deniega modalidad presencial y todos los estados no aceptados, sin restringir horario", async () => {
+  it("deniega modalidad presencial, estados no aceptados y accesos fuera del horario", async () => {
     const provider = new FakeVideoProvider();
     const service = new VideoCallsService(prisma, provider);
     const actor = { userId: patientUserId, role: RolUsuario.PACIENTE };
     const cases = [
-      await createAppointment("ACEPTADA", new Date(now.getTime() + 60_000), "PRESENCIAL"),
-      ...await Promise.all((["PENDIENTE", "RECHAZADA", "CANCELADA", "REPROGRAMADA", "COMPLETADA"] as EstadoCita[]).map((estado) => createAppointment(estado))),
+      await createAppointment("ACEPTADA", now, "PRESENCIAL"),
+      ...await Promise.all((["PENDIENTE", "RECHAZADA", "CANCELADA", "REPROGRAMADA", "COMPLETADA"] as EstadoCita[]).map((estado) => createAppointment(estado, now))),
     ];
     for (const appointment of cases) await expect(service.issueAccess(actor, appointment.id, now)).rejects.toThrow();
     const early = await createAppointment("ACEPTADA", new Date(now.getTime() + 6 * 60_000));
     const finished = await createAppointment("ACEPTADA", new Date(now.getTime() - 31 * 60_000));
-    await expect(service.issueAccess(actor, early.id, now)).resolves.toBeDefined();
-    await expect(service.issueAccess(actor, finished.id, now)).resolves.toBeDefined();
-    expect(provider.accessRequests).toHaveLength(2);
+    await expect(service.issueAccess(actor, early.id, now)).rejects.toThrow("hora programada");
+    await expect(service.issueAccess(actor, finished.id, now)).rejects.toThrow("finalizo");
+    expect(provider.accessRequests).toHaveLength(0);
+  });
+
+  it("exige lectura del sensor al paciente, pero no al medico asignado", async () => {
+    const appointment = await createAppointment("ACEPTADA", new Date(now.getTime() - 60_000));
+    const provider = new FakeVideoProvider();
+    const service = new VideoCallsService(prisma, provider);
+    await expect(service.issueAccess({ userId: patientUserId, role: RolUsuario.PACIENTE }, appointment.id, now)).rejects.toThrow("frecuencia cardiaca");
+    await expect(service.issueAccess({ userId: doctorUserId, role: RolUsuario.MEDICO }, appointment.id, now)).resolves.toBeDefined();
+    await prisma.lecturaSignosVitales.create({ data: { citaId: appointment.id, frecCardiaca: 78 } });
+    await expect(service.issueAccess({ userId: patientUserId, role: RolUsuario.PACIENTE }, appointment.id, now)).resolves.toBeDefined();
   });
 
   it("reintenta revocaciones, revoca ambos participantes y registra el exito una sola vez sin secretos", async () => {

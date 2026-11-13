@@ -5,7 +5,7 @@ import EstadoCita from '../../components/EstadoCita'
 import GinecoCampos from '../../features/expedientes/components/GinecoCampos'
 import RecetaEditor from '../../features/recetas/components/RecetaEditor'
 import {
-  guardarGineco, obtenerContextoConsulta, registrarConsulta,
+  guardarGineco, obtenerContextoConsulta, obtenerFrecuenciaCardiaca, registrarConsulta,
 } from '../../services/medicoService'
 import { diaSemana, formatearFecha } from '../../shared/lib/fechas'
 import {
@@ -79,8 +79,14 @@ const PRECONSULTA_SIGNOS = [
 
 const textoPreconsulta = (value: unknown) => typeof value === 'string' ? value : value ? JSON.stringify(value) : 'No registrado'
 
-export default function RegistrarConsulta() {
-  const { citaCodigo = '' } = useParams()
+interface RegistrarConsultaProps {
+  citaCodigoProp?: string
+  embedded?: boolean
+}
+
+export default function RegistrarConsulta({ citaCodigoProp, embedded = false }: RegistrarConsultaProps = {}) {
+  const { citaCodigo: citaCodigoRuta = '' } = useParams()
+  const citaCodigo = citaCodigoProp || citaCodigoRuta
   const navigate = useNavigate()
 
   const [ctx, setCtx] = useState<ContextoConsulta | null>(null)
@@ -106,9 +112,29 @@ export default function RegistrarConsulta() {
     return () => { vigente = false }
   }, [citaCodigo])
 
+  useEffect(() => {
+    if (!ctx || ctx.cita.modalidad !== 'VIDEOLLAMADA') return undefined
+    const actualizarFrecuencia = () => {
+      obtenerFrecuenciaCardiaca(citaCodigo)
+        .then((frecuencia) => {
+          if (frecuencia === null) return
+          setForm((actual) => actual ? {
+            ...actual,
+            signos: { ...actual.signos, fc: String(frecuencia) },
+            signosEstado: { ...actual.signosEstado, fc: 'MEDIDO' },
+          } : actual)
+        })
+        .catch(() => {})
+    }
+    actualizarFrecuencia()
+    const timer = window.setInterval(actualizarFrecuencia, 10_000)
+    return () => window.clearInterval(timer)
+  }, [citaCodigo, ctx])
+
   const errores = useMemo(() => (form ? erroresConsulta(form) : {}), [form])
   const recetaOk = form ? recetaValida(form.receta) : true
-  const completo = Object.keys(errores).length === 0 && recetaOk
+  const sensorListo = ctx?.cita.modalidad !== 'VIDEOLLAMADA' || Boolean(form?.signos.fc && form?.signosEstado.fc === 'MEDIDO')
+  const completo = Object.keys(errores).length === 0 && recetaOk && sensorListo
 
   if (error) {
     return (
@@ -138,14 +164,18 @@ export default function RegistrarConsulta() {
   ].filter(Boolean)
 
   const mensajePie = !completo
-    ? (Object.keys(errores).length > 0 ? resumenFaltantes(errores, 'la consulta') : 'Completa los seis campos de cada medicamento de la receta.')
+    ? (!sensorListo
+      ? 'Esperando la frecuencia cardíaca enviada por el sensor del paciente.'
+      : Object.keys(errores).length > 0 ? resumenFaltantes(errores, 'la consulta') : 'Completa los seis campos de cada medicamento de la receta.')
     : 'El registro y las recetas se guardarán juntos.'
 
   const completar = async () => {
     if (!completo) {
       const camposInvalidos = Object.keys(errores) as CampoConsulta[]
       setTocados(new Set(camposInvalidos))
-      setErrorAccion(Object.keys(errores).length > 0
+      setErrorAccion(!sensorListo
+        ? 'La frecuencia cardíaca del sensor es obligatoria para completar una consulta virtual.'
+        : Object.keys(errores).length > 0
         ? resumenFaltantes(errores, 'la consulta')
         : 'La receta está incompleta. Completa sus seis campos o quita el medicamento.')
       window.requestAnimationFrame(() => {
@@ -178,7 +208,7 @@ export default function RegistrarConsulta() {
   }
 
   return (
-    <>
+    <div className={embedded ? 'rc-page rc-page--embedded' : 'rc-page'}>
       <div className="md-head">
         <h1>Registrar consulta · {TIPOS_FICHA.find((t) => t.valor === form.tipoFicha)?.etiqueta}</h1>
         <p>{textos.subtitulo}</p>
@@ -314,6 +344,7 @@ export default function RegistrarConsulta() {
                   <label htmlFor={`rc-s-${clave}`}>{etiqueta}</label>
                   <select
                     aria-label={`Estado de ${etiqueta}`} value={form.signosEstado[clave]}
+                    disabled
                     onChange={(e) => cambiarEstadoSigno(clave, e.target.value as FormularioConsulta['signosEstado'][keyof SignosVitales])}
                   >
                     <option value="NO_MEDIDO">No medido</option>
@@ -322,14 +353,14 @@ export default function RegistrarConsulta() {
                   </select>
                   <input
                     id={`rc-s-${clave}`} type="text" inputMode={modo} value={form.signos[clave]} placeholder={placeholder}
-                    disabled={form.signosEstado[clave] === 'NO_MEDIDO'}
+                    disabled
                     onChange={(e) => cambiarSigno(clave, e.target.value)} onBlur={() => tocar(clave)}
                   />
                   {verError(clave) && <span className="md-campo__error">{errores[clave]}</span>}
                 </div>
               ))}
             </div>
-            <p className="md-aviso"><Info size={15} aria-hidden="true" /> Los ejemplos solo muestran el formato. Registra el valor real del paciente, aunque sea anormal; si no se tomó, selecciona “No medido”.</p>
+            <p className="md-aviso"><Info size={15} aria-hidden="true" /> La talla proviene de la preconsulta y la frecuencia cardíaca del sensor ESP32. Peso, temperatura, presión arterial y frecuencia respiratoria estarán disponibles en una próxima implementación para seguir mejorando el servicio.</p>
           </section>
 
           {form.tipoFicha === 'PRENATAL' && gineco ? (
@@ -365,6 +396,6 @@ export default function RegistrarConsulta() {
           <button type="button" className="md-btn md-btn--primario" onClick={completar} disabled={ocupado}>Guardar y completar consulta</button>
         </div>
       </section>
-    </>
+    </div>
   )
 }

@@ -22,6 +22,11 @@ export class VitalSignsService {
     const appointment = await this.findAppointment(citaId);
     if (appointment.estado !== "ACEPTADA") throw new Error("La cita debe estar aceptada para registrar signos vitales");
     if (await this.db.consulta.findUnique({ where: { citaId } })) throw new Error("La cita ya tiene una consulta registrada");
+    const now = new Date();
+    const measurementStartsAt = new Date(appointment.inicio.getTime() - 10 * 60_000);
+    if (now < measurementStartsAt || now >= appointment.fin) {
+      throw new Error("La frecuencia cardiaca solo puede registrarse desde 10 minutos antes y durante la cita");
+    }
 
     const reading = await new VitalSignsRepository(this.db).upsert(citaId, {
       frecCardiaca: input.frecCardiaca,

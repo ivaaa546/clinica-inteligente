@@ -387,6 +387,7 @@ type ApiClinicalAppointment = Omit<ApiDoctorAppointment, 'paciente' | 'consultaI
   paciente: ApiPatient
   consulta: { id: string } | null
   preconsulta: PreconsultaPaciente | null
+  lecturaSignosVitales: { frecCardiaca: number; medidoEn: string | null; actualizadoEn: string } | null
 }
 
 const toPatient = (patient: ApiPatient): Paciente => ({
@@ -471,22 +472,25 @@ export async function obtenerContextoConsulta(citaId: string): Promise<ContextoC
   const cita = toMedicalAppointment(appointment)
   const paciente = toPatient(appointment.paciente)
   const fichas = fichasDisponibles(paciente, cita.fecha)
-  const preconsulta = appointment.preconsulta ?? null
+  const preconsulta = appointment.preconsulta ? {
+    ...appointment.preconsulta,
+    signosVitales: {
+      ...(appointment.preconsulta.signosVitales ?? {}),
+      ...(appointment.lecturaSignosVitales ? { frecCardiaca: appointment.lecturaSignosVitales.frecCardiaca } : {}),
+    },
+  } : null
   const borrador = (() => {
     if (!preconsulta) return null
     const form = { ...formularioVacio(fichaSugerida(fichas)), motivo: preconsulta.motivoConsulta }
-    const source = preconsulta.signosVitales ?? {}
-    const fields = [
-      ['peso', 'pesoLb'], ['talla', 'tallaCm'], ['temperatura', 'temperatura'],
-      ['presion', 'presionArterial'], ['fc', 'frecCardiaca'], ['fr', 'frecRespiratoria'],
-    ] as const
-    fields.forEach(([field, sourceField]) => {
-      const value = source[sourceField]
-      if (value !== undefined && value !== null && value !== '') {
-        form.signos[field] = String(value)
-        form.signosEstado[field] = 'AUTORREPORTADO'
-      }
-    })
+    const source: Record<string, unknown> = preconsulta.signosVitales ?? {}
+    if (source.tallaCm !== undefined && source.tallaCm !== null && source.tallaCm !== '') {
+      form.signos.talla = String(source.tallaCm)
+      form.signosEstado.talla = 'AUTORREPORTADO'
+    }
+    if (appointment.lecturaSignosVitales) {
+      form.signos.fc = String(appointment.lecturaSignosVitales.frecCardiaca)
+      form.signosEstado.fc = 'MEDIDO'
+    }
     return form
   })()
   return {
@@ -501,6 +505,12 @@ export async function obtenerContextoConsulta(citaId: string): Promise<ContextoC
     preconsulta,
     borrador,
   }
+}
+
+/** Consulta periódica y segura de la lectura que el ESP32 vinculó a la cita. */
+export async function obtenerFrecuenciaCardiaca(citaId: string): Promise<number | null> {
+  const appointment = await getAppointment(citaId) as ApiClinicalAppointment
+  return appointment.lecturaSignosVitales?.frecCardiaca ?? null
 }
 
 /** Completa consulta, diagnóstico, signos vitales y recetas en una sola transacción. */
