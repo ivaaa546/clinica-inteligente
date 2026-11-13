@@ -1,8 +1,9 @@
+
 name: Backend Deploy
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
     paths:
       - 'backend/**'
       - '.github/workflows/backend-ci.yml'
@@ -12,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: backend-deploy-${{ github.ref_name }}
+  group: backend-deploy-production
   cancel-in-progress: false
 
 jobs:
@@ -22,7 +23,7 @@ jobs:
   deploy:
     needs: verify
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+    environment: production
     steps:
       - name: Verificar configuración de Render
         env:
@@ -35,14 +36,16 @@ jobs:
             faltan=1
           fi
           if [ -z "$RENDER_HEALTHCHECK_URL" ]; then
-            echo "::error::Falta la VARIABLE RENDER_HEALTHCHECK_URL (pestaña Variables, no Secrets)"
+            echo "::error::Falta la VARIABLE RENDER_HEALTHCHECK_URL (pestaña Variables)"
             faltan=1
           fi
           exit $faltan
+
       - name: Trigger Render deployment
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: curl --fail --silent --show-error --request POST "$RENDER_DEPLOY_HOOK"
+
       - name: Wait for API health check
         env:
           RENDER_HEALTHCHECK_URL: ${{ vars.RENDER_HEALTHCHECK_URL }}
