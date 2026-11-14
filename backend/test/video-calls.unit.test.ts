@@ -138,11 +138,18 @@ describe.skipIf(!enabled)("emisor y revocador de videollamadas", () => {
       ...await Promise.all((["PENDIENTE", "RECHAZADA", "CANCELADA", "REPROGRAMADA", "COMPLETADA"] as EstadoCita[]).map((estado) => createAppointment(estado, now))),
     ];
     for (const appointment of cases) await expect(service.issueAccess(actor, appointment.id, now)).rejects.toThrow();
-    const early = await createAppointment("ACEPTADA", new Date(now.getTime() + 6 * 60_000));
+    const early = await createAppointment("ACEPTADA", new Date(now.getTime() + 11 * 60_000));
     const finished = await createAppointment("ACEPTADA", new Date(now.getTime() - 31 * 60_000));
     await expect(service.issueAccess(actor, early.id, now)).rejects.toMatchObject({ status: 422, code: "VIDEO_TOO_EARLY" });
     await expect(service.issueAccess(actor, finished.id, now)).rejects.toMatchObject({ status: 422, code: "VIDEO_ENDED" });
     expect(provider.accessRequests).toHaveLength(0);
+  });
+
+  it("permite el acceso desde 10 minutos antes del inicio", async () => {
+    const appointment = await createAppointment("ACEPTADA", new Date(now.getTime() + 9 * 60_000));
+    const provider = new FakeVideoProvider();
+    const service = new VideoCallsService(prisma, provider);
+    await expect(service.issueAccess({ userId: doctorUserId, role: RolUsuario.MEDICO }, appointment.id, now)).resolves.toBeDefined();
   });
 
   it("exige lectura del sensor al paciente, pero no al medico asignado", async () => {
