@@ -7,6 +7,9 @@ import { LiveKitAdapter, type VideoAccess, type VideoCallProvider } from "./live
 
 type AuthenticatedActor = { userId: string; role: RolUsuario };
 
+/** La sala se habilita 10 minutos antes del inicio de la cita. */
+const VIDEO_EARLY_ACCESS_MS = 10 * 60_000;
+
 export class VideoCallsService {
   private readonly provider: VideoCallProvider;
 
@@ -60,7 +63,7 @@ export class VideoCallsService {
     if (![RolUsuario.PACIENTE, RolUsuario.MEDICO].includes(actor.role)) return new ApiError(403, "VIDEO_ACCESS_DENIED", "Rol no autorizado");
     if (appointment.modalidad !== "VIRTUAL" || !appointment.salaVideoId) return new ApiError(422, "VIDEO_NOT_AVAILABLE", "La cita no tiene videollamada");
     if (appointment.estado !== EstadoCita.ACEPTADA || appointment.videoRevocadaEn) return new ApiError(422, "VIDEO_NOT_AVAILABLE", "El acceso de videollamada no esta habilitado");
-    if (now < appointment.inicio) return new ApiError(422, "VIDEO_TOO_EARLY", "La videollamada estara disponible a la hora programada");
+    if (now.getTime() < appointment.inicio.getTime() - VIDEO_EARLY_ACCESS_MS) return new ApiError(422, "VIDEO_TOO_EARLY", "La videollamada estara disponible 10 minutos antes de la hora programada");
     if (now >= appointment.fin) return new ApiError(422, "VIDEO_ENDED", "El horario de la videollamada ya finalizo");
     if (actor.role === RolUsuario.PACIENTE && !appointment.lecturaSignosVitales) {
       return new ApiError(422, "HEART_RATE_REQUIRED", "Debes registrar tu frecuencia cardiaca antes de entrar a la videollamada");

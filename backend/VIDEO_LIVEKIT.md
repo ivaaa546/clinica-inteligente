@@ -86,7 +86,7 @@ git diff --check
 
 ## Límites funcionales y de seguridad
 
-- La API solo emite acceso a una cita `VIRTUAL`, `ACEPTADA`, para el Paciente o Médico asignados, desde cinco minutos antes de su inicio y hasta su fin programado.
+- La API solo emite acceso a una cita `VIRTUAL`, `ACEPTADA`, para el Paciente o Médico asignados, desde diez minutos antes de su inicio y hasta su fin programado.
 - Los JWT son temporales (máximo diez minutos), se emiten desde el backend y usan sala e identidad opacas; no contienen nombre, correo ni información clínica.
 - No se almacenan JWT, URL de acceso, audio, vídeo, grabaciones, transcripciones, chat, archivos ni pantalla compartida.
 - La finalización o abandono de la llamada no completa una Consulta clínica.
