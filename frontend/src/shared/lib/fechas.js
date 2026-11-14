@@ -36,10 +36,8 @@ export const separarBloque = (bloque = '') => {
   return { inicio, fin }
 }
 
-/** Hoy, o el lunes siguiente si hoy es sábado o domingo (formato 'YYYY-MM-DD') */
+/** Hoy (formato 'YYYY-MM-DD'); las citas también se pueden agendar en fin de semana */
 export const proximoDiaHabil = () => {
   const d = new Date()
-  if (d.getDay() === 6) d.setDate(d.getDate() + 2)
-  else if (d.getDay() === 0) d.setDate(d.getDate() + 1)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
