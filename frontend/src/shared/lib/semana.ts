@@ -23,18 +23,18 @@ export const lunesDe = (iso: FechaISO): FechaISO => {
   return sumarDias(iso, dia === 0 ? -6 : 1 - dia)
 }
 
-/** De lunes a viernes */
-export const diasHabiles = (lunes: FechaISO): FechaISO[] => [0, 1, 2, 3, 4].map((n) => sumarDias(lunes, n))
+/** De lunes a domingo (incluye fines de semana) */
+export const diasHabiles = (lunes: FechaISO): FechaISO[] => [0, 1, 2, 3, 4, 5, 6].map((n) => sumarDias(lunes, n))
 
 /** '2026-10-19' -> '19–23 de octubre, 2026' */
 export const etiquetaSemana = (lunes: FechaISO): string => {
-  const viernes = sumarDias(lunes, 4)
+  const domingo = sumarDias(lunes, 6)
   const mes = (iso: FechaISO) => mesMayusculas(iso).toLowerCase()
-  const [anio] = viernes.split('-')
+  const [anio] = domingo.split('-')
   const inicio = aDate(lunes).getDate()
-  const fin = aDate(viernes).getDate()
-  const mismoMes = mes(lunes) === mes(viernes)
-  return `${inicio}${mismoMes ? '' : ` de ${mes(lunes)}`}–${fin} de ${mes(viernes)}, ${anio}`
+  const fin = aDate(domingo).getDate()
+  const mismoMes = mes(lunes) === mes(domingo)
+  return `${inicio}${mismoMes ? '' : ` de ${mes(lunes)}`}–${fin} de ${mes(domingo)}, ${anio}`
 }
 
 /** '10:30' + 30 -> '11:00' */
